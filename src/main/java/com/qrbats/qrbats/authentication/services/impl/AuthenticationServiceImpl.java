@@ -1,0 +1,82 @@
+package com.qrbats.qrbats.authentication.services.impl;
+
+import com.qrbats.qrbats.authentication.dto.SigninRequest;
+import com.qrbats.qrbats.authentication.entities.user.Role;
+import com.qrbats.qrbats.authentication.entities.user.User;
+import com.qrbats.qrbats.authentication.entities.user.repository.UserRepository;
+import com.qrbats.qrbats.authentication.dto.JwtAuthenticationResponse;
+import com.qrbats.qrbats.authentication.dto.RefreshTokenRequest;
+import com.qrbats.qrbats.authentication.dto.SignUpRequest;
+import com.qrbats.qrbats.authentication.services.AuthenticationService;
+import com.qrbats.qrbats.authentication.services.JWTService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+
+@Service
+@RequiredArgsConstructor
+public class AuthenticationServiceImpl implements AuthenticationService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    private final AuthenticationManager authenticationManager;
+    private final JWTService jwtService;
+    public User signup(SignUpRequest signUpRequest){
+        User user = new User();
+
+        user.setFirstName(signUpRequest.getFirstName());
+        user.setLastName(signUpRequest.getLastName());
+        user.setEmail(signUpRequest.getEmail());
+        user.setUserName(signUpRequest.getUserName());
+        user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
+        user.setRole(Role.LECTURER);
+        user.setDepartmentId(signUpRequest.getDepartmentId());
+
+        return userRepository.save(user);
+    }
+
+    public JwtAuthenticationResponse signin(SigninRequest signinRequest){
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                signinRequest.getUserName(),
+                signinRequest.getPassword()
+                )
+        );
+
+        var user = userRepository.findByUserName(
+                signinRequest.getUserName()).orElseThrow(
+                        () -> new IllegalArgumentException("Invalid userName or password")
+        );
+
+        var jwt = jwtService.generateToken(user);
+        var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
+
+        JwtAuthenticationResponse jwtAuthenticationResponse = new JwtAuthenticationResponse();
+
+        jwtAuthenticationResponse.setToken(jwt);
+        jwtAuthenticationResponse.setRefreshToken(refreshToken);
+        return jwtAuthenticationResponse;
+    }
+
+    public JwtAuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest){
+        String userName = jwtService.extractUserName(refreshTokenRequest.getToken());
+        User user = userRepository.findByUserName(userName).orElseThrow();
+
+        if(jwtService.isTokenValid(refreshTokenRequest.getToken(),user)){
+            var jwt = jwtService.generateToken(user);
+
+            JwtAuthenticationResponse jwtAuthenticationResponse = new JwtAuthenticationResponse();
+
+            jwtAuthenticationResponse.setToken(jwt);
+            jwtAuthenticationResponse.setRefreshToken(refreshTokenRequest.getToken());
+            return jwtAuthenticationResponse;
+
+        }
+        return null;
+    }
+
+}
