@@ -2,6 +2,7 @@ package com.qrbats.qrbats.authentication.controller.mobile;
 
 import com.qrbats.qrbats.authentication.dto.JwtAuthenticationResponse;
 import com.qrbats.qrbats.authentication.dto.RefreshTokenRequest;
+import com.qrbats.qrbats.authentication.dto.mobile.StudentCheckStudentEmailRequest;
 import com.qrbats.qrbats.authentication.dto.mobile.StudentSignUpRequest;
 import com.qrbats.qrbats.authentication.dto.mobile.StudentSigninRequest;
 import com.qrbats.qrbats.authentication.entities.student.Student;
@@ -28,6 +29,11 @@ public class StudentAuthenticationController {
     @PostMapping("/signin")
     public ResponseEntity<JwtAuthenticationResponse> signin(@RequestBody StudentSigninRequest signinRequest){
         return ResponseEntity.ok(mobileAuthenticationService.signin(signinRequest));
+    }
+
+    @PostMapping("/checkstudentemail")
+    public ResponseEntity<Boolean> checkStudentEmailIsExist(@RequestBody StudentCheckStudentEmailRequest studentCheckStudentEmailRequest){
+        return ResponseEntity.ok(mobileAuthenticationService.checkStudentIsExist(studentCheckStudentEmailRequest.getStudentEmail()));
     }
 
     @PostMapping("/refresh")

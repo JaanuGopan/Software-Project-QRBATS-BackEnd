@@ -30,7 +30,7 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http.csrf(AbstractHttpConfigurer :: disable)
-                .authorizeHttpRequests(request -> request.requestMatchers("/api/v1/auth/**")
+                .authorizeHttpRequests(request -> request.requestMatchers("/api/v1/auth/**","/api/v1/mobile/**","/swagger-ui.html")
                         .permitAll()
                         .requestMatchers("api/v1/admin").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("api/v1/lecturer").hasAnyAuthority(Role.LECTURER.name())
@@ -38,6 +38,7 @@ public class SecurityConfiguration {
                         .requestMatchers("api/v1/attendance/**").permitAll()
                         .requestMatchers("api/v1/module/**").permitAll()
                         .requestMatchers("api/v1/event/**").permitAll()
+                        .requestMatchers("/swagger-ui.html").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(

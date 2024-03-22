@@ -28,32 +28,46 @@ public class MobileAuthenticationServicesImpl implements MobileAuthenticationSer
     private final JWTService jwtService;
     @Override
     public Student signup(StudentSignUpRequest studentSignUpRequest) {
-        Student student = new Student();
-        student.setStudentEmail(studentSignUpRequest.getStudentEmail());
-        student.setStudentName(studentSignUpRequest.getStudentName());
-        student.setIndexNumber(studentSignUpRequest.getIndexNumber());
-        student.setDepartmentId(studentSignUpRequest.getDepartmentId());
-        student.setStudentRole(StudentRole.UORSTUDENT);
-        student.setCurrentSemester(studentSignUpRequest.getCurrentSemester());
-        student.setUserName(studentSignUpRequest.getUserName());
-        student.setPassword(passwordEncoder.encode(studentSignUpRequest.getPassword()));
+        if(!checkStudentIsExist(studentSignUpRequest.getStudentEmail())){
+            Student student = new Student();
+            student.setStudentEmail(studentSignUpRequest.getStudentEmail());
+            student.setStudentName(studentSignUpRequest.getStudentName());
+            student.setIndexNumber(studentSignUpRequest.getIndexNumber());
+            student.setDepartmentId(studentSignUpRequest.getDepartmentId());
+            student.setStudentRole(StudentRole.UORSTUDENT);
+            student.setCurrentSemester(studentSignUpRequest.getCurrentSemester());
+            student.setUserName(studentSignUpRequest.getUserName());
+            student.setPassword(passwordEncoder.encode(studentSignUpRequest.getPassword()));
 
-        return studentRepository.save(student);
+            return studentRepository.save(student);
+        }else {
+            throw new RuntimeException("This Student is already exist.");
+        }
+    }
 
+    @Override
+    public boolean checkStudentIsExist(String email) {
+        Student oldStudent = studentRepository.findByStudentEmail(email);
+        System.out.println(oldStudent);
+        return oldStudent != null;
     }
 
     @Override
     public JwtAuthenticationResponse signin(StudentSigninRequest studentSigninRequest) {
+        System.out.println("qwerty");
+
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                        studentSigninRequest.getUserName(),
+                        studentSigninRequest.getStudentUserName(),
                         studentSigninRequest.getPassword()
                 )
         );
+        System.out.println("student");
 
         var student = studentRepository.findByUserName(
-                studentSigninRequest.getUserName()).orElseThrow(
+                studentSigninRequest.getStudentUserName()).orElseThrow(
                 () -> new IllegalArgumentException("Invalid userName or password")
         );
+        System.out.println(student);
 
         var jwt = jwtService.generateToken(student);
         var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), student);

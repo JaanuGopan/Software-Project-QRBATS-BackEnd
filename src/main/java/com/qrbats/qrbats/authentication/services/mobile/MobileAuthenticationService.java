@@ -8,7 +8,7 @@ import com.qrbats.qrbats.authentication.entities.student.Student;
 
 public interface MobileAuthenticationService {
     Student signup(StudentSignUpRequest studentSignUpRequest);
-
+    boolean checkStudentIsExist(String email);
     JwtAuthenticationResponse signin(StudentSigninRequest studentSigninRequest);
 
     JwtAuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest);
