@@ -1,4 +1,4 @@
-package com.qrbats.qrbats.functionalities.module_creation;
+package com.qrbats.qrbats.functionalities.module_creation.dto;
 
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;

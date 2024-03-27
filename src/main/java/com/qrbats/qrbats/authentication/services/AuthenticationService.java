@@ -6,10 +6,14 @@ import com.qrbats.qrbats.authentication.dto.JwtAuthenticationResponse;
 import com.qrbats.qrbats.authentication.dto.RefreshTokenRequest;
 import com.qrbats.qrbats.authentication.dto.SignUpRequest;
 
+import java.util.List;
+
 public interface AuthenticationService {
     User signup(SignUpRequest signUpRequest);
 
     JwtAuthenticationResponse signin(SigninRequest signinRequest);
 
     JwtAuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest);
+
+    List<User> getAllStaffs();
 }

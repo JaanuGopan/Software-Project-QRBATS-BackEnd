@@ -16,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -52,7 +54,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         () -> new IllegalArgumentException("Invalid userName or password")
         );
 
-        var jwt = jwtService.generateToken(user);
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("firstName",user.getFirstName());
+        extraClaims.put("lastName",user.getLastName());
+        extraClaims.put("email",user.getEmail());
+        extraClaims.put("role",user.getRole());
+        extraClaims.put("userId",user.getUserId());
+
+        var jwt = jwtService.generateToken(user,extraClaims);
         var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
 
         JwtAuthenticationResponse jwtAuthenticationResponse = new JwtAuthenticationResponse();
@@ -67,7 +76,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = userRepository.findByUserName(userName).orElseThrow();
 
         if(jwtService.isTokenValid(refreshTokenRequest.getToken(),user)){
-            var jwt = jwtService.generateToken(user);
+            Map<String, Object> extraClaims = new HashMap<>();
+            extraClaims.put("firstName",user.getFirstName());
+            extraClaims.put("lastName",user.getLastName());
+            extraClaims.put("email",user.getEmail());
+            extraClaims.put("role",user.getRole());
+            extraClaims.put("userId",user.getUserId());
+
+
+            var jwt = jwtService.generateToken(user,extraClaims);
 
             JwtAuthenticationResponse jwtAuthenticationResponse = new JwtAuthenticationResponse();
 
@@ -78,5 +95,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
         return null;
     }
+
+    @Override
+    public List<User> getAllStaffs() {
+        return userRepository.findAll();
+    }
+
+
 
 }

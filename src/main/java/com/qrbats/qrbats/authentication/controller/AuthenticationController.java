@@ -10,10 +10,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-@CrossOrigin("http://localhost:3000/")
+@CrossOrigin("http://localhost:3000")
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
@@ -31,4 +33,10 @@ public class AuthenticationController {
     public ResponseEntity<JwtAuthenticationResponse> refresh(@RequestBody RefreshTokenRequest refreshTokenRequest){
         return ResponseEntity.ok(authenticationService.refreshToken(refreshTokenRequest));
     }
+
+    @PostMapping("/getallstaffs")
+    public ResponseEntity<List<User>> getAllStaffs(){
+       return ResponseEntity.ok(authenticationService.getAllStaffs());
+    }
+
 }

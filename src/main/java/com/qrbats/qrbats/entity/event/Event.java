@@ -37,11 +37,14 @@ public class Event {
     @Column(name = "Event_time")
     private LocalTime eventTime;
 
+    @Column(name = "Event_end_time")
+    private LocalTime eventEndTime;
+
     @Column(name = "Event_assigned_user_id")
     private Integer eventAssignedUserId;
 
-    @Column(name = "Event_module_id")
-    private Integer eventModuleId;
+    @Column(name = "Event_module_code")
+    private String eventModuleCode;
 
     private EventRole eventRole;
 

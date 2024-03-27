@@ -16,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -69,7 +71,10 @@ public class MobileAuthenticationServicesImpl implements MobileAuthenticationSer
         );
         System.out.println(student);
 
-        var jwt = jwtService.generateToken(student);
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("studentName",student.getStudentName());
+        extraClaims.put("email",student.getStudentEmail());
+        var jwt = jwtService.generateToken(student,extraClaims);
         var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), student);
 
         JwtAuthenticationResponse jwtAuthenticationResponse = new JwtAuthenticationResponse();
@@ -85,7 +90,10 @@ public class MobileAuthenticationServicesImpl implements MobileAuthenticationSer
         Student student = studentRepository.findByUserName(userName).orElseThrow();
 
         if(jwtService.isTokenValid(refreshTokenRequest.getToken(),student)){
-            var jwt = jwtService.generateToken(student);
+            Map<String, Object> extraClaims = new HashMap<>();
+            extraClaims.put("studentName",student.getStudentName());
+            extraClaims.put("email",student.getStudentEmail());
+            var jwt = jwtService.generateToken(student,extraClaims);
 
             JwtAuthenticationResponse jwtAuthenticationResponse = new JwtAuthenticationResponse();
 
@@ -95,5 +103,10 @@ public class MobileAuthenticationServicesImpl implements MobileAuthenticationSer
 
         }
         return null;
+    }
+
+    @Override
+    public List<Student> getAllStudent() {
+        return studentRepository.findAll();
     }
 }

@@ -9,14 +9,14 @@ import com.qrbats.qrbats.authentication.entities.student.Student;
 import com.qrbats.qrbats.authentication.services.mobile.MobileAuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/mobile")
 @RequiredArgsConstructor
+@CrossOrigin("http://localhost:3000")
 public class StudentAuthenticationController {
 
     private final MobileAuthenticationService mobileAuthenticationService;
@@ -40,5 +40,12 @@ public class StudentAuthenticationController {
     public ResponseEntity<JwtAuthenticationResponse> refresh(@RequestBody RefreshTokenRequest refreshTokenRequest){
         return ResponseEntity.ok(mobileAuthenticationService.refreshToken(refreshTokenRequest));
     }
+
+    @PostMapping("/getallstudents")
+    public ResponseEntity<List<Student>> getAllStudents(){
+        return ResponseEntity.ok(mobileAuthenticationService.getAllStudent());
+    }
+
+
 
 }

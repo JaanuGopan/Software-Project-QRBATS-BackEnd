@@ -1,4 +1,4 @@
-package com.qrbats.qrbats.functionalities.module_creation;
+package com.qrbats.qrbats.functionalities.module_creation.exception;
 
 public class ModuleCreationException extends RuntimeException {
 

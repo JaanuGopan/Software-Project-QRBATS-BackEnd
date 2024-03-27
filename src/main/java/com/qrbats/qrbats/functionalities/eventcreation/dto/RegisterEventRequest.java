@@ -1,4 +1,4 @@
-package com.qrbats.qrbats.functionalities.eventcreation;
+package com.qrbats.qrbats.functionalities.eventcreation.dto;
 
 import com.qrbats.qrbats.entity.event.EventRole;
 import lombok.AllArgsConstructor;
@@ -15,10 +15,12 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RegisterEventRequest {
+    private Integer eventId;
     private String eventName;
     private LocalDate eventDate;
     private LocalDate eventValidDate;
     private LocalTime eventTime;
+    private LocalTime eventEndTime;
     private String eventVenue;
     private String eventModuleName;
     private String eventRole;

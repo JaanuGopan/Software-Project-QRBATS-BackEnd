@@ -1,4 +1,4 @@
-package com.qrbats.qrbats.functionalities.module_creation;
+package com.qrbats.qrbats.functionalities.module_creation.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
