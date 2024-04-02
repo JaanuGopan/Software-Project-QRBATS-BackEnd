@@ -1,9 +1,12 @@
 package com.qrbats.qrbats.functionalities.eventcreation.services.impl;
 
+import com.qrbats.qrbats.entity.attendance.Attendance;
+import com.qrbats.qrbats.entity.attendance.AttendanceRepository;
 import com.qrbats.qrbats.entity.event.Event;
 import com.qrbats.qrbats.entity.event.EventRepository;
 import com.qrbats.qrbats.entity.event.EventRole;
 import com.qrbats.qrbats.entity.module.ModuleRepository;
+import com.qrbats.qrbats.functionalities.attendance.service.AttendanceMarkingService;
 import com.qrbats.qrbats.functionalities.eventcreation.dto.RegisterEventRequest;
 import com.qrbats.qrbats.functionalities.eventcreation.services.EventService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +21,7 @@ public class EventServiceImpl implements EventService {
 
     private final EventRepository repository;
     private final ModuleRepository moduleRepository;
+    private final AttendanceRepository attendanceRepository;
 
     @Override
     public Event createEvent(RegisterEventRequest request){
@@ -72,7 +76,18 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public void deleteEvent(Integer id) {
-        repository.deleteById(id);
+        Optional<Event> event = repository.findById(id);
+        if (event.isPresent()){
+            Optional<List<Attendance>> attendanceList = attendanceRepository.findAllByEventId(id);
+            if (attendanceList.isPresent()){
+                for (Attendance attendance : attendanceList.get()){
+                    attendanceRepository.delete(attendance);
+                }
+            }
+            repository.deleteById(id);
+        }else {
+            throw new RuntimeException("The event not found for given eventId");
+        }
     }
 
 }

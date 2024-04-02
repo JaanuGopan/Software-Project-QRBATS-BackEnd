@@ -1,9 +1,6 @@
 package com.qrbats.qrbats.authentication.controller;
 
-import com.qrbats.qrbats.authentication.dto.JwtAuthenticationResponse;
-import com.qrbats.qrbats.authentication.dto.RefreshTokenRequest;
-import com.qrbats.qrbats.authentication.dto.SignUpRequest;
-import com.qrbats.qrbats.authentication.dto.SigninRequest;
+import com.qrbats.qrbats.authentication.dto.*;
 import com.qrbats.qrbats.authentication.entities.user.User;
 import com.qrbats.qrbats.authentication.services.AuthenticationService;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +34,11 @@ public class AuthenticationController {
     @PostMapping("/getallstaffs")
     public ResponseEntity<List<User>> getAllStaffs(){
        return ResponseEntity.ok(authenticationService.getAllStaffs());
+    }
+
+    @PostMapping("/deleteuserbyuserid")
+    public void deleteUserById(@RequestBody DeleteUserByIdRequest deleteUserByIdRequest){
+        authenticationService.deleteByUserId(deleteUserByIdRequest.getUserId());
     }
 
 }

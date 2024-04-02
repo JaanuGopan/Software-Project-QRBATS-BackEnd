@@ -101,6 +101,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return userRepository.findAll();
     }
 
+    @Override
+    public void deleteByUserId(Integer userId) {
+        userRepository.deleteById(userId);
+    }
 
 
 }

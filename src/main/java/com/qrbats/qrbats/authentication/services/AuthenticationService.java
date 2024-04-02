@@ -16,4 +16,6 @@ public interface AuthenticationService {
     JwtAuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest);
 
     List<User> getAllStaffs();
+
+    void deleteByUserId(Integer userId);
 }

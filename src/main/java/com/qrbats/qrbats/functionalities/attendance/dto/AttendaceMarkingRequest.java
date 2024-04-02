@@ -1,4 +1,4 @@
-package com.qrbats.qrbats.functionalities.attendance;
+package com.qrbats.qrbats.functionalities.attendance.dto;
 
 
 import lombok.AllArgsConstructor;
@@ -14,15 +14,10 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @Builder
 public class AttendaceMarkingRequest {
-
     private Integer eventID;
-
     private Integer attendeeID;
-
     private LocalDate attendanceDate;
-
     private LocalTime attendanceTime;
-
-    private double locationX;
-    private double locationY;
+    private double locationGPSLatitude;
+    private double locationGPSLongitude;
 }
