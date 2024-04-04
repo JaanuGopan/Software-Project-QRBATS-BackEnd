@@ -44,7 +44,7 @@ public class AttendanceMarkingServiceImpl implements AttendanceMarkingService {
         // Calculate the distance
         double distance = R * c * 1000;
         System.out.println("The distance is : "+ distance);
-        return distance <= 500.0;
+        return distance <= 30.0;
     }
 
     public List<Double> findEventLocation(int eventId){
