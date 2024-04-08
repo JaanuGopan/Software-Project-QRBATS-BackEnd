@@ -11,6 +11,8 @@ import java.util.List;
 public interface MobileAuthenticationService {
     Student signup(StudentSignUpRequest studentSignUpRequest);
     boolean checkStudentIsExist(String email);
+    boolean checkIndexNoIsExist(String indexNo);
+    boolean checkUserNameIsExist(String userName);
     JwtAuthenticationResponse signin(StudentSigninRequest studentSigninRequest);
 
     JwtAuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest);

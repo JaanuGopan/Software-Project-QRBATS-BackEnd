@@ -2,9 +2,7 @@ package com.qrbats.qrbats.authentication.controller.mobile;
 
 import com.qrbats.qrbats.authentication.dto.JwtAuthenticationResponse;
 import com.qrbats.qrbats.authentication.dto.RefreshTokenRequest;
-import com.qrbats.qrbats.authentication.dto.mobile.StudentCheckStudentEmailRequest;
-import com.qrbats.qrbats.authentication.dto.mobile.StudentSignUpRequest;
-import com.qrbats.qrbats.authentication.dto.mobile.StudentSigninRequest;
+import com.qrbats.qrbats.authentication.dto.mobile.*;
 import com.qrbats.qrbats.authentication.entities.student.Student;
 import com.qrbats.qrbats.authentication.services.mobile.MobileAuthenticationService;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +42,17 @@ public class StudentAuthenticationController {
     @PostMapping("/getallstudents")
     public ResponseEntity<List<Student>> getAllStudents(){
         return ResponseEntity.ok(mobileAuthenticationService.getAllStudent());
+    }
+
+
+    @PostMapping("/checkstudentindexno")
+    public ResponseEntity<Boolean> checkStudentIndexNoIsExist(@RequestBody StudentCheckStudentIndexNoRequest studentCheckStudentIndexNoRequest){
+        return ResponseEntity.ok(mobileAuthenticationService.checkIndexNoIsExist(studentCheckStudentIndexNoRequest.getStudentIndexNo()));
+    }
+
+    @PostMapping("/checkstudentusername")
+    public ResponseEntity<Boolean> checkStudentUserNameIsExist(@RequestBody StudentCheckUserNameRequest studentCheckUserNameRequest){
+        return ResponseEntity.ok(mobileAuthenticationService.checkUserNameIsExist(studentCheckUserNameRequest.getStudentUserName()));
     }
 
 
