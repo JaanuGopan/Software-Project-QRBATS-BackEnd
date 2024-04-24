@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/event")
-@CrossOrigin("http://localhost:3000")
+@CrossOrigin("*")
 @RequiredArgsConstructor
 public class EventCreationController {
 

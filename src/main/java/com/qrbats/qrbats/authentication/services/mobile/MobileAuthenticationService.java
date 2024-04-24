@@ -4,6 +4,7 @@ import com.qrbats.qrbats.authentication.dto.mobile.StudentSigninRequest;
 import com.qrbats.qrbats.authentication.dto.JwtAuthenticationResponse;
 import com.qrbats.qrbats.authentication.dto.RefreshTokenRequest;
 import com.qrbats.qrbats.authentication.dto.mobile.StudentSignUpRequest;
+import com.qrbats.qrbats.authentication.dto.mobile.StudentUpdateRequest;
 import com.qrbats.qrbats.authentication.entities.student.Student;
 
 import java.util.List;
@@ -18,4 +19,7 @@ public interface MobileAuthenticationService {
     JwtAuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest);
 
     List<Student> getAllStudent();
+
+    void updateStudentDetails(StudentUpdateRequest studentUpdateRequest);
+
 }

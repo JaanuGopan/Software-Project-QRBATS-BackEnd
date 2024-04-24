@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/v1/location")
-@CrossOrigin("http://localhost:3000")
+@CrossOrigin("*")
 @RequiredArgsConstructor
 public class LocationController {
 

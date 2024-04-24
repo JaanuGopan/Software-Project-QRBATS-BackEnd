@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-@CrossOrigin("http://localhost:3000")
+@CrossOrigin("*")
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
@@ -39,6 +39,11 @@ public class AuthenticationController {
     @PostMapping("/deleteuserbyuserid")
     public void deleteUserById(@RequestBody DeleteUserByIdRequest deleteUserByIdRequest){
         authenticationService.deleteByUserId(deleteUserByIdRequest.getUserId());
+    }
+
+    @PutMapping("/updateuser")
+    public void updateUser(@RequestBody UpdateUserRequest request){
+        authenticationService.updateUser(request);
     }
 
 }

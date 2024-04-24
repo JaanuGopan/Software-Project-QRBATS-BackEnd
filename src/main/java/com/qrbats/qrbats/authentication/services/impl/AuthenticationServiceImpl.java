@@ -1,12 +1,9 @@
 package com.qrbats.qrbats.authentication.services.impl;
 
-import com.qrbats.qrbats.authentication.dto.SigninRequest;
+import com.qrbats.qrbats.authentication.dto.*;
 import com.qrbats.qrbats.authentication.entities.user.Role;
 import com.qrbats.qrbats.authentication.entities.user.User;
 import com.qrbats.qrbats.authentication.entities.user.repository.UserRepository;
-import com.qrbats.qrbats.authentication.dto.JwtAuthenticationResponse;
-import com.qrbats.qrbats.authentication.dto.RefreshTokenRequest;
-import com.qrbats.qrbats.authentication.dto.SignUpRequest;
 import com.qrbats.qrbats.authentication.services.AuthenticationService;
 import com.qrbats.qrbats.authentication.services.JWTService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -98,12 +96,30 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public List<User> getAllStaffs() {
-        return userRepository.findAll();
+        List<User> userList = userRepository.findAll();
+        userList.removeIf(user -> user.getRole()==Role.ADMIN);
+        return userList;
     }
 
     @Override
     public void deleteByUserId(Integer userId) {
         userRepository.deleteById(userId);
+    }
+
+    @Override
+    public void updateUser(UpdateUserRequest request) {
+        Optional<User> user = userRepository.findById(request.getUserId());
+        if (user.isPresent()){
+            user.get().setUserName(request.getUserName());
+            user.get().setEmail(request.getEmail());
+            user.get().setFirstName(request.getFirstName());
+            user.get().setLastName(request.getLastName());
+            user.get().setDepartmentId(request.getDepartmentId());
+
+            userRepository.save(user.get());
+        }else {
+            throw new RuntimeException("User not found.");
+        }
     }
 
 

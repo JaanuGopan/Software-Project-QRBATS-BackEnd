@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/attendance")
 @AllArgsConstructor
-@CrossOrigin("http://localhost:3000/")
+@CrossOrigin("*")
 public class AttendanceMarkingController {
     private final AttendanceMarkingService attendanceMarkingService;
 

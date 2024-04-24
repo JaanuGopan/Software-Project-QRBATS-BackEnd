@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/module")
-@CrossOrigin("http://localhost:3000")
+@CrossOrigin("*")
 @RequiredArgsConstructor
 public class ModuleCreationController {
 

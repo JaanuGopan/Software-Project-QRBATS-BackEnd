@@ -1,10 +1,7 @@
 package com.qrbats.qrbats.authentication.services;
 
-import com.qrbats.qrbats.authentication.dto.SigninRequest;
+import com.qrbats.qrbats.authentication.dto.*;
 import com.qrbats.qrbats.authentication.entities.user.User;
-import com.qrbats.qrbats.authentication.dto.JwtAuthenticationResponse;
-import com.qrbats.qrbats.authentication.dto.RefreshTokenRequest;
-import com.qrbats.qrbats.authentication.dto.SignUpRequest;
 
 import java.util.List;
 
@@ -18,4 +15,5 @@ public interface AuthenticationService {
     List<User> getAllStaffs();
 
     void deleteByUserId(Integer userId);
+    void updateUser(UpdateUserRequest request);
 }

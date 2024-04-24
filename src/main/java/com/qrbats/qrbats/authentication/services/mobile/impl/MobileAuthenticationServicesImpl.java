@@ -2,8 +2,10 @@ package com.qrbats.qrbats.authentication.services.mobile.impl;
 
 import com.qrbats.qrbats.authentication.dto.JwtAuthenticationResponse;
 import com.qrbats.qrbats.authentication.dto.RefreshTokenRequest;
+import com.qrbats.qrbats.authentication.dto.SigninRequest;
 import com.qrbats.qrbats.authentication.dto.mobile.StudentSignUpRequest;
 import com.qrbats.qrbats.authentication.dto.mobile.StudentSigninRequest;
+import com.qrbats.qrbats.authentication.dto.mobile.StudentUpdateRequest;
 import com.qrbats.qrbats.authentication.entities.student.Student;
 import com.qrbats.qrbats.authentication.entities.student.StudentRole;
 import com.qrbats.qrbats.authentication.entities.student.repository.StudentRepository;
@@ -131,5 +133,25 @@ public class MobileAuthenticationServicesImpl implements MobileAuthenticationSer
     @Override
     public List<Student> getAllStudent() {
         return studentRepository.findAll();
+    }
+
+    @Override
+    public void updateStudentDetails(StudentUpdateRequest studentUpdateRequest) {
+        Optional<Student> student = studentRepository.findById(studentUpdateRequest.getId());
+        if (student.isPresent()){
+            if (studentUpdateRequest.getStudentEmail() != null) student.get().setStudentEmail(studentUpdateRequest.getStudentEmail());
+            if (studentUpdateRequest.getStudentName() != null) student.get().setStudentName(studentUpdateRequest.getStudentName());
+            if (studentUpdateRequest.getIndexNumber() != null) student.get().setIndexNumber(studentUpdateRequest.getIndexNumber());
+            if (studentUpdateRequest.getDepartmentId() != null) student.get().setDepartmentId(studentUpdateRequest.getDepartmentId());
+            if (studentUpdateRequest.getStudentRole() != null) student.get().setStudentRole(studentUpdateRequest.getStudentRole());
+            if (studentUpdateRequest.getCurrentSemester() != null) student.get().setCurrentSemester(studentUpdateRequest.getCurrentSemester());
+            if (studentUpdateRequest.getUserName() != null) student.get().setUserName(studentUpdateRequest.getUserName());
+            if (studentUpdateRequest.getPassword() != null) {
+                student.get().setPassword(passwordEncoder.encode(studentUpdateRequest.getPassword()));
+            }
+            studentRepository.save(student.get());
+        }else {
+            throw new RuntimeException("Student update failed.");
+        }
     }
 }

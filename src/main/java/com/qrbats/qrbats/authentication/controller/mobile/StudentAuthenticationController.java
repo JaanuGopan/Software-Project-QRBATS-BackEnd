@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/mobile")
 @RequiredArgsConstructor
-@CrossOrigin("http://localhost:3000")
+@CrossOrigin("*")
 public class StudentAuthenticationController {
 
     private final MobileAuthenticationService mobileAuthenticationService;
@@ -53,6 +53,11 @@ public class StudentAuthenticationController {
     @PostMapping("/checkstudentusername")
     public ResponseEntity<Boolean> checkStudentUserNameIsExist(@RequestBody StudentCheckUserNameRequest studentCheckUserNameRequest){
         return ResponseEntity.ok(mobileAuthenticationService.checkUserNameIsExist(studentCheckUserNameRequest.getStudentUserName()));
+    }
+
+    @PutMapping("/updatestudent")
+    public void updateStudent(@RequestBody StudentUpdateRequest studentUpdateRequest){
+        mobileAuthenticationService.updateStudentDetails(studentUpdateRequest);
     }
 
 
