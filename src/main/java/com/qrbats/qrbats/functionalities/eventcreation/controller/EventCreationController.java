@@ -3,6 +3,7 @@ package com.qrbats.qrbats.functionalities.eventcreation.controller;
 import com.qrbats.qrbats.entity.event.Event;
 import com.qrbats.qrbats.functionalities.eventcreation.dto.DeleteByIdRequest;
 import com.qrbats.qrbats.functionalities.eventcreation.dto.GetAllEventByModuleCodeRequest;
+import com.qrbats.qrbats.functionalities.eventcreation.dto.GetAllEventsByUserIdRequest;
 import com.qrbats.qrbats.functionalities.eventcreation.dto.RegisterEventRequest;
 import com.qrbats.qrbats.functionalities.eventcreation.services.impl.EventServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -43,5 +44,9 @@ public class EventCreationController {
         eventService.deleteEvent(request.getEventId());
     }
 
+    @GetMapping("geteventbyuserid/{userId}")
+    public ResponseEntity<List<Event>> findAllEventByUserId(@PathVariable String userId) {
+        return ResponseEntity.ok(eventService.getAllEventByUserId(Integer.parseInt(userId)));
+    }
 
 }

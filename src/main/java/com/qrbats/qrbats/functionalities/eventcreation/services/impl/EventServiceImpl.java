@@ -75,6 +75,16 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public List<Event> getAllEventByUserId(Integer userId) {
+        Optional<List<Event>> eventList = repository.findAllByEventAssignedUserId(userId);
+        if (eventList.isPresent()){
+            return eventList.get();
+        }else {
+            throw new RuntimeException("Fail to get event for given userId.");
+        }
+    }
+
+    @Override
     public void deleteEvent(Integer id) {
         Optional<Event> event = repository.findById(id);
         if (event.isPresent()){

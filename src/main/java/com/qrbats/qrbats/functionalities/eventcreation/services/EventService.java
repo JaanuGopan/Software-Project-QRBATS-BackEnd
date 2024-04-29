@@ -10,6 +10,8 @@ public interface EventService {
     List<Event> getAllEventByModuleCode(String moduleCode);
     List<Event> getAllEvent();
 
+    List<Event> getAllEventByUserId(Integer userId);
+
     void deleteEvent(Integer id);
 
 }
