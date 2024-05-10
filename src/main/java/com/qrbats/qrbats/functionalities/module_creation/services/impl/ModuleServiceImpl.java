@@ -27,7 +27,7 @@ public class ModuleServiceImpl implements ModuleService {
         module.setModuleName(moduleCreationRequest.getModuleName());
         module.setModuleEnrolmentKey(moduleCreationRequest.getModuleEnrolmentKey());
         module.setSemester(moduleCreationRequest.getSemester());
-        module.setLecturerId(moduleCreationRequest.getLectureId());
+        module.setLecturerId(moduleCreationRequest.getUserId());
         module.setDepartmentId(moduleCreationRequest.getDepartmentId());
         return moduleRepository.save(module);
 

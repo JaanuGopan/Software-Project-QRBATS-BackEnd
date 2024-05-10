@@ -21,5 +21,5 @@ public class ModuleCreationRequest {
 
     private Integer departmentId;
 
-    private Integer lectureId;
+    private Integer userId;
 }

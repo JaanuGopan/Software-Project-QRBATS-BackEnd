@@ -33,12 +33,12 @@ public class ModuleCreationController {
         moduleService.updateModule(moduleUpdateRequest);
     }
 
-    @GetMapping("getmodulebylecturerid")
+    @GetMapping("getmodulebylecturerid/{userId}")
     public ResponseEntity<List<Module>> getModuleByLecturerId(
-            @RequestBody GetModuleByLecturerIdRequest getModuleByLecturerIdRequest
+            @PathVariable String userId
     ){
         return ResponseEntity.ok(
-                moduleService.getModuleByLecturerId(getModuleByLecturerIdRequest.getLecturerId())
+                moduleService.getModuleByLecturerId(Integer.parseInt(userId))
         );
     }
 
