@@ -7,6 +7,7 @@ import com.qrbats.qrbats.functionalities.module_creation.dto.ModuleDeletionReque
 import com.qrbats.qrbats.functionalities.module_creation.dto.ModuleUpdateRequest;
 import com.qrbats.qrbats.functionalities.module_creation.services.ModuleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,7 +17,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ModuleServiceImpl implements ModuleService {
 
+    @Autowired
     private final ModuleRepository moduleRepository;
+
     @Override
     public Module createModule(ModuleCreationRequest moduleCreationRequest) {
 
@@ -35,21 +38,20 @@ public class ModuleServiceImpl implements ModuleService {
 
 
     @Override
-    public void deleteModule(ModuleDeletionRequest moduleDeletionRequest){
-        String deleteModuleCode = moduleDeletionRequest.getModuleCode();
-        Optional<Module> deleteModule = moduleRepository.findByModuleCode(deleteModuleCode);
-        if(deleteModule.isPresent()){
+    public void deleteModule(Integer moduleId) {
+        Integer deleteModuleId = moduleId;
+        Optional<Module> deleteModule = moduleRepository.findById(deleteModuleId);
+        if (deleteModule.isPresent()) {
             moduleRepository.delete(deleteModule.get());
-        }
-        else {
-            throw new RuntimeException("module not found.");
+        } else {
+            throw new RuntimeException("module not found for delete.");
         }
     }
 
     @Override
     public void updateModule(ModuleUpdateRequest moduleUpdateRequest) {
         Optional<Module> oldModule = moduleRepository.findByModuleCode(moduleUpdateRequest.getOldModuleCode());
-        if(oldModule.isPresent()){
+        if (oldModule.isPresent()) {
             oldModule.get().setModuleCode(moduleUpdateRequest.getModuleCode());
             oldModule.get().setModuleName(moduleUpdateRequest.getModuleName());
             oldModule.get().setModuleEnrolmentKey(moduleUpdateRequest.getModuleEnrolmentKey());
@@ -58,7 +60,7 @@ public class ModuleServiceImpl implements ModuleService {
             oldModule.get().setLecturerId(moduleUpdateRequest.getLectureId());
 
             moduleRepository.save(oldModule.get());
-        }else {
+        } else {
             throw new RuntimeException("Module Not Found");
         }
     }
@@ -66,20 +68,31 @@ public class ModuleServiceImpl implements ModuleService {
     @Override
     public List<Module> getModuleByLecturerId(Integer lecturerId) {
         Optional<List<Module>> lecturerModulesList = moduleRepository.findAllByLecturerId(lecturerId);
-        if(lecturerModulesList.isPresent()){
+        if (lecturerModulesList.isPresent()) {
             return lecturerModulesList.get();
-        }else {
+        } else {
             throw new RuntimeException("Module not found.");
         }
     }
 
     @Override
     public List<Module> getModuleBySemesterDepartment(Integer semesterId, Integer departmentId) {
-        Optional<List<Module>> moduleList = moduleRepository.findAllBySemesterAndDepartmentId(semesterId,departmentId);
-        if (moduleList.isPresent()){
+        Optional<List<Module>> moduleList = moduleRepository.findAllBySemesterAndDepartmentId(semesterId, departmentId);
+        if (moduleList.isPresent()) {
             return moduleList.get();
-        }else {
+        } else {
             throw new RuntimeException("Module not found");
+        }
+    }
+
+    @Override
+    public List<Module> getModuleByDepartmentId(Integer departmentId) {
+        Optional<List<Module>> modules = moduleRepository.findAllByDepartmentId(departmentId);
+        if (modules.isPresent()) {
+
+            return modules.get();
+        } else {
+            throw new RuntimeException("Modules Not Found.");
         }
     }
 

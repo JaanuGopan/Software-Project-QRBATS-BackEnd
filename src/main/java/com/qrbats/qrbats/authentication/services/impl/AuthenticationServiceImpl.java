@@ -58,6 +58,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         extraClaims.put("email",user.getEmail());
         extraClaims.put("role",user.getRole());
         extraClaims.put("userId",user.getUserId());
+        extraClaims.put("departmentId" , user.getDepartmentId());
 
         var jwt = jwtService.generateToken(user,extraClaims);
         var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
@@ -80,6 +81,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             extraClaims.put("email",user.getEmail());
             extraClaims.put("role",user.getRole());
             extraClaims.put("userId",user.getUserId());
+            extraClaims.put("departmentId" , user.getDepartmentId());
 
 
             var jwt = jwtService.generateToken(user,extraClaims);

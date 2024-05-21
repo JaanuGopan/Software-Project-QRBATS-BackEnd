@@ -22,10 +22,9 @@ public class ModuleCreationController {
         return moduleService.createModule(request);
     }
 
-    @DeleteMapping("deletemodule")
-    public String deleteModule(@RequestBody ModuleDeletionRequest moduleDeletionRequest){
-        moduleService.deleteModule(moduleDeletionRequest);
-        return "module deleted.";
+    @DeleteMapping("deletemodule/{moduleId}")
+    public void deleteModule(@PathVariable Integer  moduleId){
+        moduleService.deleteModule(moduleId);
     }
 
     @PutMapping("updatemodule")
@@ -49,6 +48,11 @@ public class ModuleCreationController {
       return ResponseEntity.ok(moduleService.getModuleBySemesterDepartment(
               request.getSemester(), request.getDepartmentId()
       ));
+    }
+
+    @GetMapping("/getallmodulebydepartmentid/{departmentId}")
+    public ResponseEntity<List<Module>> getAllModulesByDepartmentId(@PathVariable Integer departmentId){
+        return ResponseEntity.ok(moduleService.getModuleByDepartmentId(departmentId));
     }
 
 
