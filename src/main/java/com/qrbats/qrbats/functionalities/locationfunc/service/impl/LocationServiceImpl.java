@@ -79,7 +79,8 @@ public class LocationServiceImpl implements LocationService {
                 "50,6.078473748481698,80.19184438229699,DMME",
                 "50,6.0781203313993455,80.19141948746949,DCEE",
                 "50,6.077142619941645,80.19093951556941,Mechanical Workshop area",
-                "50,6.0787961303052525,80.19185914403491,Nuga Tree"
+                "50,6.0787961303052525,80.19185914403491,Nuga Tree",
+                "50,7.573874549824014, 81.7847930867964,MyHome"
         );
 
         for (String location : locations) {
