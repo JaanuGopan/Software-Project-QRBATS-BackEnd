@@ -16,13 +16,9 @@ import java.util.List;
 public class AttendanceMarkingController {
     private final AttendanceMarkingService attendanceMarkingService;
 
-
-
-
-
     @PostMapping("markattendance")
     public ResponseEntity<Attendance> markAttandance(
-            @RequestBody AttendaceMarkingRequest attendaceMarkingRequest
+            @RequestBody AttendanceMarkingRequest attendaceMarkingRequest
     ){
         return ResponseEntity.ok(attendanceMarkingService.markAttendance(attendaceMarkingRequest));
     }

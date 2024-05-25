@@ -41,6 +41,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/swagger-ui.html").permitAll()
                         .requestMatchers("/api/v1/location/**").permitAll()
                         .requestMatchers("/api/v1/otp/**").permitAll()
+                        .requestMatchers("api/v1/report/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(

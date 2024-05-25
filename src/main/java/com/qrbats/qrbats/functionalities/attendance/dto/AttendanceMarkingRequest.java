@@ -13,7 +13,7 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AttendaceMarkingRequest {
+public class AttendanceMarkingRequest {
     private Integer eventID;
     private Integer attendeeID;
     private LocalDate attendanceDate;

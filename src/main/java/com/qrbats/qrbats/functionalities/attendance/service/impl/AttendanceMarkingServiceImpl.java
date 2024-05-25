@@ -3,16 +3,18 @@ package com.qrbats.qrbats.functionalities.attendance.service.impl;
 import com.qrbats.qrbats.authentication.entities.student.Student;
 import com.qrbats.qrbats.authentication.entities.student.repository.StudentRepository;
 import com.qrbats.qrbats.entity.attendance.Attendance;
+import com.qrbats.qrbats.entity.attendance.AttendanceLectureService;
 import com.qrbats.qrbats.entity.attendance.AttendanceRepository;
 import com.qrbats.qrbats.entity.event.Event;
 import com.qrbats.qrbats.entity.event.EventRepository;
 import com.qrbats.qrbats.entity.location.Location;
 import com.qrbats.qrbats.entity.location.LocationRepository;
-import com.qrbats.qrbats.functionalities.attendance.dto.AttendaceMarkingRequest;
+import com.qrbats.qrbats.functionalities.attendance.dto.AttendanceMarkingRequest;
 import com.qrbats.qrbats.functionalities.attendance.dto.AttendanceListResponce;
 import com.qrbats.qrbats.functionalities.attendance.dto.AttendanceStudentHistoryResponse;
 import com.qrbats.qrbats.functionalities.attendance.service.AttendanceMarkingService;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -27,6 +29,8 @@ public class AttendanceMarkingServiceImpl implements AttendanceMarkingService {
     private final EventRepository eventRepository;
     private final LocationRepository locationRepository;
     private final StudentRepository studentRepository;
+    @Autowired
+    private final AttendanceLectureService attendanceLectureService;
 
 
     public boolean distanceCalculator(double lat1, double lon1, double lat2, double lon2) {
@@ -66,7 +70,7 @@ public class AttendanceMarkingServiceImpl implements AttendanceMarkingService {
     }
 
     @Override
-    public Attendance markAttendance(AttendaceMarkingRequest attendaceMarkingRequest){
+    public Attendance markAttendance(AttendanceMarkingRequest attendaceMarkingRequest){
 
         Optional<Student> student = studentRepository.findById(attendaceMarkingRequest.getAttendeeID());
         Optional<Event> event = eventRepository.findById(attendaceMarkingRequest.getEventID());
@@ -100,7 +104,9 @@ public class AttendanceMarkingServiceImpl implements AttendanceMarkingService {
                         );
                         if(isDistanceInRage){
                             Attendance attendance = getAttendance(attendaceMarkingRequest);
-                            return attendanceRepository.save(attendance);
+                            Attendance save = attendanceRepository.save(attendance);
+                            attendanceLectureService.saveAttendance(attendaceMarkingRequest.getEventID().toString(),attendance);
+                            return save;
                         }else {
                             throw new RuntimeException("The attendee in out of range.");
                         }
@@ -126,7 +132,7 @@ public class AttendanceMarkingServiceImpl implements AttendanceMarkingService {
 
     }
 
-    private static Attendance getAttendance(AttendaceMarkingRequest attendaceMarkingRequest) {
+    private static Attendance getAttendance(AttendanceMarkingRequest attendaceMarkingRequest) {
         Attendance attendance = new Attendance();
         attendance.setEventId(attendaceMarkingRequest.getEventID());
         attendance.setAttendeeId(attendaceMarkingRequest.getAttendeeID());

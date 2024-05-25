@@ -10,13 +10,12 @@ import com.qrbats.qrbats.entity.event.EventRepository;
 import com.qrbats.qrbats.entity.event.EventRole;
 import com.qrbats.qrbats.entity.location.Location;
 import com.qrbats.qrbats.entity.location.LocationRepository;
-import com.qrbats.qrbats.functionalities.attendance.dto.AttendaceMarkingRequest;
+import com.qrbats.qrbats.functionalities.attendance.dto.AttendanceMarkingRequest;
 import com.qrbats.qrbats.functionalities.attendance.service.AttendanceMarkingService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDate;
@@ -102,7 +101,7 @@ class AttendanceMarkingServiceImplTest {
     void testValidMarkAttendance() {
         // given
         Attendance sampleAttendance = getSampleAttendance();
-        AttendaceMarkingRequest attendaceMarkingRequest = new AttendaceMarkingRequest();
+        AttendanceMarkingRequest attendaceMarkingRequest = new AttendanceMarkingRequest();
         attendaceMarkingRequest.setAttendanceDate(sampleAttendance.getAttendanceDate());
         attendaceMarkingRequest.setAttendanceTime(sampleAttendance.getAttendanceTime());
         attendaceMarkingRequest.setLocationGPSLongitude(sampleAttendance.getLocationLongitude());
@@ -121,7 +120,7 @@ class AttendanceMarkingServiceImplTest {
     void testWithInvalidEventIdMarkAttendance() {
         // given
         Attendance sampleAttendance = getSampleAttendance();
-        AttendaceMarkingRequest attendaceMarkingRequest = new AttendaceMarkingRequest();
+        AttendanceMarkingRequest attendaceMarkingRequest = new AttendanceMarkingRequest();
         attendaceMarkingRequest.setAttendanceDate(sampleAttendance.getAttendanceDate());
         attendaceMarkingRequest.setAttendanceTime(sampleAttendance.getAttendanceTime());
         attendaceMarkingRequest.setLocationGPSLongitude(sampleAttendance.getLocationLongitude());
@@ -140,7 +139,7 @@ class AttendanceMarkingServiceImplTest {
     void testWithInvalidAttendeeIdMarkAttendance() {
         // given
         Attendance sampleAttendance = getSampleAttendance();
-        AttendaceMarkingRequest attendaceMarkingRequest = new AttendaceMarkingRequest();
+        AttendanceMarkingRequest attendaceMarkingRequest = new AttendanceMarkingRequest();
         attendaceMarkingRequest.setAttendanceDate(sampleAttendance.getAttendanceDate());
         attendaceMarkingRequest.setAttendanceTime(sampleAttendance.getAttendanceTime());
         attendaceMarkingRequest.setLocationGPSLongitude(sampleAttendance.getLocationLongitude());
@@ -159,7 +158,7 @@ class AttendanceMarkingServiceImplTest {
     void testWithInvalidDateMarkAttendance() {
         // given
         Attendance sampleAttendance = getSampleAttendance();
-        AttendaceMarkingRequest attendaceMarkingRequest = new AttendaceMarkingRequest();
+        AttendanceMarkingRequest attendaceMarkingRequest = new AttendanceMarkingRequest();
         attendaceMarkingRequest.setAttendanceDate(sampleAttendance.getAttendanceDate().plusDays(5));
         attendaceMarkingRequest.setAttendanceTime(sampleAttendance.getAttendanceTime());
         attendaceMarkingRequest.setLocationGPSLongitude(sampleAttendance.getLocationLongitude());
@@ -178,7 +177,7 @@ class AttendanceMarkingServiceImplTest {
     void testWithInvalidTimeMarkAttendance() {
         // given
         Attendance sampleAttendance = getSampleAttendance();
-        AttendaceMarkingRequest attendaceMarkingRequest = new AttendaceMarkingRequest();
+        AttendanceMarkingRequest attendaceMarkingRequest = new AttendanceMarkingRequest();
         attendaceMarkingRequest.setAttendanceDate(sampleAttendance.getAttendanceDate());
         attendaceMarkingRequest.setAttendanceTime(sampleAttendance.getAttendanceTime().plusHours(2));
         attendaceMarkingRequest.setLocationGPSLongitude(sampleAttendance.getLocationLongitude());
@@ -196,7 +195,7 @@ class AttendanceMarkingServiceImplTest {
     void testWithInvalidLocationsMarkAttendance() {
         // given
         Attendance sampleAttendance = getSampleAttendance();
-        AttendaceMarkingRequest attendaceMarkingRequest = new AttendaceMarkingRequest();
+        AttendanceMarkingRequest attendaceMarkingRequest = new AttendanceMarkingRequest();
         attendaceMarkingRequest.setAttendanceDate(sampleAttendance.getAttendanceDate());
         attendaceMarkingRequest.setAttendanceTime(sampleAttendance.getAttendanceTime());
         attendaceMarkingRequest.setLocationGPSLongitude(sampleAttendance.getLocationLongitude()+1.0);
