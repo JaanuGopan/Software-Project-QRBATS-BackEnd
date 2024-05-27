@@ -1,21 +1,18 @@
 package com.qrbats.qrbats.authentication.controller;
 
-import com.qrbats.qrbats.authentication.dto.JwtAuthenticationResponse;
-import com.qrbats.qrbats.authentication.dto.RefreshTokenRequest;
-import com.qrbats.qrbats.authentication.dto.SignUpRequest;
-import com.qrbats.qrbats.authentication.dto.SigninRequest;
+import com.qrbats.qrbats.authentication.dto.*;
 import com.qrbats.qrbats.authentication.entities.user.User;
 import com.qrbats.qrbats.authentication.services.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@CrossOrigin("*")
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
@@ -24,13 +21,33 @@ public class AuthenticationController {
         return ResponseEntity.ok(authenticationService.signup(signUpRequest));
     }
 
-    @PostMapping("/signin")
-    public ResponseEntity<JwtAuthenticationResponse> signin(@RequestBody SigninRequest signinRequest){
-        return ResponseEntity.ok(authenticationService.signin(signinRequest));
+    @GetMapping("/signin")
+    public ResponseEntity<JwtAuthenticationResponse> signin(@RequestParam String userName,@RequestParam String password){
+        return ResponseEntity.ok(authenticationService.signin(userName,password));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<JwtAuthenticationResponse> refresh(@RequestBody RefreshTokenRequest refreshTokenRequest){
         return ResponseEntity.ok(authenticationService.refreshToken(refreshTokenRequest));
+    }
+
+    @PostMapping("/getallstaffs")
+    public ResponseEntity<List<User>> getAllStaffs(){
+       return ResponseEntity.ok(authenticationService.getAllStaffs());
+    }
+
+    @PostMapping("/deleteuserbyuserid")
+    public void deleteUserById(@RequestBody DeleteUserByIdRequest deleteUserByIdRequest){
+        authenticationService.deleteByUserId(deleteUserByIdRequest.getUserId());
+    }
+
+    @PutMapping("/updateuser")
+    public void updateUser(@RequestBody UpdateUserRequest request){
+        authenticationService.updateUser(request);
+    }
+
+    @GetMapping("/verifypassword")
+    public ResponseEntity<Boolean> verifyPassword(@RequestParam String userName,@RequestParam String password){
+        return ResponseEntity.ok(authenticationService.passwordVerification(userName,password));
     }
 }

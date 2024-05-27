@@ -21,6 +21,12 @@ public class Location {
     @Column(name = "Location_name")
     private String locationName;
 
-    @Column(name = "Location_gps_coordinate")
-    private String locationGPSCoordinate;
+    @Column(name = "Location_gps_latitude")
+    private double locationGPSLatitude;
+
+    @Column(name = "Location_gps_longitude")
+    private double locationGPSLongitude;
+
+    @Column(name = "Location_allowable_radius")
+    private double allowableRadius;
 }

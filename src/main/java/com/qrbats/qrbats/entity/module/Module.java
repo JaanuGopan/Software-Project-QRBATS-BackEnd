@@ -30,7 +30,7 @@ public class Module {
     @Column(name = "Department_id")
     private Integer departmentId;
 
-    @Column(name = "Lecture_id")
-    private Integer lectureId;
+    @Column(name = "Lecturer_id")
+    private Integer lecturerId;
 
 }

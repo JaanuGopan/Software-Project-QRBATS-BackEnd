@@ -1,15 +1,21 @@
 package com.qrbats.qrbats.authentication.services;
 
-import com.qrbats.qrbats.authentication.dto.SigninRequest;
+import com.qrbats.qrbats.authentication.dto.*;
 import com.qrbats.qrbats.authentication.entities.user.User;
-import com.qrbats.qrbats.authentication.dto.JwtAuthenticationResponse;
-import com.qrbats.qrbats.authentication.dto.RefreshTokenRequest;
-import com.qrbats.qrbats.authentication.dto.SignUpRequest;
+
+import java.util.List;
 
 public interface AuthenticationService {
     User signup(SignUpRequest signUpRequest);
 
-    JwtAuthenticationResponse signin(SigninRequest signinRequest);
+    JwtAuthenticationResponse signin(String userName,String password);
 
     JwtAuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest);
+
+    List<User> getAllStaffs();
+
+    void deleteByUserId(Integer userId);
+    void updateUser(UpdateUserRequest request);
+
+    Boolean passwordVerification(String userName,String password);
 }

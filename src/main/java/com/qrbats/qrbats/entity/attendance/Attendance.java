@@ -22,7 +22,6 @@ public class Attendance {
     @Column(name = "Attendance_id")
     private Integer attendanceId;
 
-
     @JoinColumn(name = "Event_id")
     private Integer eventId;
 
@@ -36,10 +35,10 @@ public class Attendance {
     private LocalTime attendanceTime;
 
     @Column(name = "Attendance_locationX")
-    private double locationX;
+    private double locationLatitude;
 
     @Column(name = "Attendance_locationY")
-    private double locationY;
+    private double locationLongitude;
 
 
 }
