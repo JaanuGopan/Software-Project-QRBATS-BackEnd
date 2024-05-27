@@ -21,9 +21,9 @@ public class AuthenticationController {
         return ResponseEntity.ok(authenticationService.signup(signUpRequest));
     }
 
-    @PostMapping("/signin")
-    public ResponseEntity<JwtAuthenticationResponse> signin(@RequestBody SigninRequest signinRequest){
-        return ResponseEntity.ok(authenticationService.signin(signinRequest));
+    @GetMapping("/signin")
+    public ResponseEntity<JwtAuthenticationResponse> signin(@RequestParam String userName,@RequestParam String password){
+        return ResponseEntity.ok(authenticationService.signin(userName,password));
     }
 
     @PostMapping("/refresh")
@@ -46,4 +46,8 @@ public class AuthenticationController {
         authenticationService.updateUser(request);
     }
 
+    @GetMapping("/verifypassword")
+    public ResponseEntity<Boolean> verifyPassword(@RequestParam String userName,@RequestParam String password){
+        return ResponseEntity.ok(authenticationService.passwordVerification(userName,password));
+    }
 }

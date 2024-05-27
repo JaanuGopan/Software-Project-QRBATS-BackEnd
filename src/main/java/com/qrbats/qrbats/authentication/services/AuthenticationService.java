@@ -8,7 +8,7 @@ import java.util.List;
 public interface AuthenticationService {
     User signup(SignUpRequest signUpRequest);
 
-    JwtAuthenticationResponse signin(SigninRequest signinRequest);
+    JwtAuthenticationResponse signin(String userName,String password);
 
     JwtAuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest);
 
@@ -16,4 +16,6 @@ public interface AuthenticationService {
 
     void deleteByUserId(Integer userId);
     void updateUser(UpdateUserRequest request);
+
+    Boolean passwordVerification(String userName,String password);
 }

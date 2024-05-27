@@ -8,6 +8,7 @@ public class UpdateUserRequest {
     private String firstName;
     private String lastName;
     private String email;
-    private String userName;
     private Integer departmentId;
+    private String userName;
+    private String password;
 }

@@ -92,7 +92,7 @@ class AuthenticationServiceImplTest {
         signinRequest.setPassword(password);
 
         // when
-        JwtAuthenticationResponse expectedResponse = underTestAuthenticationService.signin(signinRequest);
+        JwtAuthenticationResponse expectedResponse = underTestAuthenticationService.signin(userName,password);
         deleteSampleUser(sampleUser);
 
         //then
@@ -120,7 +120,7 @@ class AuthenticationServiceImplTest {
 
         // then
         assertThrows(BadCredentialsException.class, () -> {
-            underTestAuthenticationService.signin(signinRequest);
+            underTestAuthenticationService.signin(userName,password);
         });
 
         deleteSampleUser(sampleUser);
@@ -138,7 +138,7 @@ class AuthenticationServiceImplTest {
 
         // then
         assertThrows(BadCredentialsException.class, () -> {
-            underTestAuthenticationService.signin(signinRequest);
+            underTestAuthenticationService.signin(userName,password);
         });
 
         deleteSampleUser(sampleUser);
@@ -156,7 +156,7 @@ class AuthenticationServiceImplTest {
 
         // then
         assertThrows(BadCredentialsException.class, () -> {
-            underTestAuthenticationService.signin(signinRequest);
+            underTestAuthenticationService.signin(userName,password);
         });
 
         deleteSampleUser(sampleUser);
@@ -174,7 +174,7 @@ class AuthenticationServiceImplTest {
 
         // then
         assertThrows(BadCredentialsException.class, () -> {
-            underTestAuthenticationService.signin(signinRequest);
+            underTestAuthenticationService.signin(userName,password);
         });
 
         deleteSampleUser(sampleUser);

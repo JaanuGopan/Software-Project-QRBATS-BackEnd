@@ -39,9 +39,9 @@ public class EventCreationController {
        return ResponseEntity.ok(eventService.getAllEvent());
     }
 
-    @PostMapping("deletebyid")
-    public void deleteById(@RequestBody DeleteByIdRequest request){
-        eventService.deleteEvent(request.getEventId());
+    @DeleteMapping("/deletebyid/{eventId}")
+    public void deleteById(@PathVariable Integer eventId){
+        eventService.deleteEvent(eventId);
     }
 
     @GetMapping("geteventbyuserid/{userId}")
