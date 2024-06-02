@@ -9,6 +9,7 @@ import com.qrbats.qrbats.functionalities.eventcreation.services.impl.EventServic
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -25,22 +26,19 @@ public class EventCreationController {
         return ResponseEntity.ok(eventService.createEvent(request));
     }
 
-    @PostMapping("/getalleventbymodulecode")
+    @GetMapping("/getalleventbymodulecode")
     public ResponseEntity<List<Event>> getAllEventByModuleCode(
-            @RequestBody GetAllEventByModuleCodeRequest getAllEventByModuleCodeRequest
-    ){
-        return ResponseEntity.ok(eventService.getAllEventByModuleCode(
-                getAllEventByModuleCodeRequest.getModuleCode()
-        ));
+            @RequestParam String moduleCode) {
+        return ResponseEntity.ok(eventService.getAllEventByModuleCode(moduleCode));
     }
 
     @PostMapping("/getallevents")
-    public ResponseEntity<List<Event>> findAllEvents(){
-       return ResponseEntity.ok(eventService.getAllEvent());
+    public ResponseEntity<List<Event>> findAllEvents() {
+        return ResponseEntity.ok(eventService.getAllEvent());
     }
 
     @DeleteMapping("/deletebyid/{eventId}")
-    public void deleteById(@PathVariable Integer eventId){
+    public void deleteById(@PathVariable Integer eventId) {
         eventService.deleteEvent(eventId);
     }
 
