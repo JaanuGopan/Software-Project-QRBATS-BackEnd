@@ -8,7 +8,7 @@ import com.qrbats.qrbats.functionalities.attendance.dto.AttendanceStudentHistory
 import java.util.List;
 
 public interface AttendanceMarkingService {
-    Attendance markAttendance(AttendanceMarkingRequest attendaceMarkingRequest);
+    Attendance markAttendance(AttendanceMarkingRequest attendanceMarkingRequest);
 
     List<AttendanceListResponce> getAllAttendanceByEventId(Integer eventId);
 

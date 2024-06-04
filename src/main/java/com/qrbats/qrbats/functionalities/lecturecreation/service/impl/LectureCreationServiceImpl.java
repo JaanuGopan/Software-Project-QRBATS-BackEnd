@@ -2,8 +2,7 @@ package com.qrbats.qrbats.functionalities.lecturecreation.service.impl;
 
 import com.qrbats.qrbats.authentication.entities.user.User;
 import com.qrbats.qrbats.authentication.entities.user.repository.UserRepository;
-import com.qrbats.qrbats.entity.attendance.AttendanceLecture;
-import com.qrbats.qrbats.entity.attendance.AttendanceLectureService;
+import com.qrbats.qrbats.entity.attendance.service.AttendanceLectureService;
 import com.qrbats.qrbats.entity.lecture.Lecture;
 import com.qrbats.qrbats.entity.lecture.LectureRepository;
 import com.qrbats.qrbats.entity.location.LocationRepository;
@@ -88,7 +87,7 @@ public class LectureCreationServiceImpl implements LectureCreationService {
 
                     Lecture savedLecture = lectureRepository.save(newLecture);
                     createdLectures.add(savedLecture);
-                    attendanceLectureService.createLectureAttendanceTable("lec_"+savedLecture.getLectureId().toString());
+                    attendanceLectureService.createLectureAttendanceTable(savedLecture.getLectureId().toString());
                 }
             }
         }

@@ -26,7 +26,7 @@ public class AttendanceReportController {
     }
 
     @GetMapping("/getallAttendancebylectureid")
-    public ResponseEntity<List<AttendanceLecture>> getAllAttendanceByLectureId(@RequestParam String lectureID){
+    public ResponseEntity<List<AttendanceLecture>> getAllAttendanceByLectureId(@RequestParam Integer lectureID){
 
         System.out.println("hello jaanu");
         return ResponseEntity.ok(attendanceReportService.getAllAttendanceByLectureId(lectureID));

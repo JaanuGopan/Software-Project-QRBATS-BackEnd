@@ -3,7 +3,7 @@ package com.qrbats.qrbats.functionalities.attendance.service.impl;
 import com.qrbats.qrbats.authentication.entities.student.Student;
 import com.qrbats.qrbats.authentication.entities.student.repository.StudentRepository;
 import com.qrbats.qrbats.entity.attendance.Attendance;
-import com.qrbats.qrbats.entity.attendance.AttendanceLectureService;
+import com.qrbats.qrbats.entity.attendance.service.AttendanceLectureService;
 import com.qrbats.qrbats.entity.attendance.AttendanceRepository;
 import com.qrbats.qrbats.entity.event.Event;
 import com.qrbats.qrbats.entity.event.EventRepository;
@@ -70,28 +70,28 @@ public class AttendanceMarkingServiceImpl implements AttendanceMarkingService {
     }
 
     @Override
-    public Attendance markAttendance(AttendanceMarkingRequest attendaceMarkingRequest){
+    public Attendance markAttendance(AttendanceMarkingRequest attendanceMarkingRequest){
 
-        Optional<Student> student = studentRepository.findById(attendaceMarkingRequest.getAttendeeID());
-        Optional<Event> event = eventRepository.findById(attendaceMarkingRequest.getEventID());
+        Optional<Student> student = studentRepository.findById(attendanceMarkingRequest.getAttendeeID());
+        Optional<Event> event = eventRepository.findById(attendanceMarkingRequest.getEventID());
         if (student.isPresent() && event.isPresent()) {
             if (
-                    (event.get().getEventDate().isEqual(attendaceMarkingRequest.getAttendanceDate()) ||
-                            event.get().getEventValidDate().isEqual(attendaceMarkingRequest.getAttendanceDate()) ||
-                            (event.get().getEventValidDate().isBefore(attendaceMarkingRequest.getAttendanceDate()) &&
-                                    event.get().getEventDate().isAfter(attendaceMarkingRequest.getAttendanceDate()))
+                    (event.get().getEventDate().isEqual(attendanceMarkingRequest.getAttendanceDate()) ||
+                            event.get().getEventValidDate().isEqual(attendanceMarkingRequest.getAttendanceDate()) ||
+                            (event.get().getEventValidDate().isBefore(attendanceMarkingRequest.getAttendanceDate()) &&
+                                    event.get().getEventDate().isAfter(attendanceMarkingRequest.getAttendanceDate()))
                     ) &&
-                    event.get().getEventEndTime().isAfter(attendaceMarkingRequest.getAttendanceTime())  &&
-                    event.get().getEventTime().isBefore(attendaceMarkingRequest.getAttendanceTime())
+                    event.get().getEventEndTime().isAfter(attendanceMarkingRequest.getAttendanceTime())  &&
+                    event.get().getEventTime().isBefore(attendanceMarkingRequest.getAttendanceTime())
             ) {
                 Optional<Attendance> markedAttendance = attendanceRepository.findByEventIdAndAttendeeId(
-                        attendaceMarkingRequest.getEventID(),
-                        attendaceMarkingRequest.getAttendeeID()
+                        attendanceMarkingRequest.getEventID(),
+                        attendanceMarkingRequest.getAttendeeID()
                 );
                 if (markedAttendance.isPresent()){
                     throw new RuntimeException("The Student already mark the attendance.");
                 }else {
-                    List<Double> locationCoordinate = findEventLocation(attendaceMarkingRequest.getEventID());
+                    List<Double> locationCoordinate = findEventLocation(attendanceMarkingRequest.getEventID());
                     if(!locationCoordinate.isEmpty()){
                         double locationGPSLatitude = locationCoordinate.get(0);
                         double locationGPSLongitude = locationCoordinate.get(1);
@@ -99,13 +99,13 @@ public class AttendanceMarkingServiceImpl implements AttendanceMarkingService {
                         boolean isDistanceInRage = distanceCalculator(
                                 locationGPSLatitude,
                                 locationGPSLongitude,
-                                attendaceMarkingRequest.getLocationGPSLatitude(),
-                                attendaceMarkingRequest.getLocationGPSLongitude()
+                                attendanceMarkingRequest.getLocationGPSLatitude(),
+                                attendanceMarkingRequest.getLocationGPSLongitude()
                         );
                         if(isDistanceInRage){
-                            Attendance attendance = getAttendance(attendaceMarkingRequest);
+                            Attendance attendance = getAttendance(attendanceMarkingRequest);
                             Attendance save = attendanceRepository.save(attendance);
-                            attendanceLectureService.saveAttendance(attendaceMarkingRequest.getEventID().toString(),attendance);
+                            attendanceLectureService.saveLectureAttendance(attendanceMarkingRequest.getEventID().toString(),attendance);
                             return save;
                         }else {
                             throw new RuntimeException("The attendee in out of range.");
@@ -117,8 +117,8 @@ public class AttendanceMarkingServiceImpl implements AttendanceMarkingService {
 
                 }
             }else if(
-                    event.get().getEventEndTime().isBefore(attendaceMarkingRequest.getAttendanceTime())  &&
-                            event.get().getEventTime().isAfter(attendaceMarkingRequest.getAttendanceTime())
+                    event.get().getEventEndTime().isBefore(attendanceMarkingRequest.getAttendanceTime())  &&
+                            event.get().getEventTime().isAfter(attendanceMarkingRequest.getAttendanceTime())
             ) {
                 throw new RuntimeException("Event Date not satisfied.");
             }else {
