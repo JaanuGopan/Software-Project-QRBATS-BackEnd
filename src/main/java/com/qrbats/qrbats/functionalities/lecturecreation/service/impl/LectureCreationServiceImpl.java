@@ -98,9 +98,9 @@ public class LectureCreationServiceImpl implements LectureCreationService {
     @Override
     public List<Lecture> getAllLectureByUserId(Integer userId) {
         Optional<List<Lecture>> lectures = lectureRepository.findAllByLectureAssignedUserId(userId);
-        if (lectures.isPresent()){
+        if (lectures.isPresent()) {
             return lectures.get();
-        }else {
+        } else {
             throw new RuntimeException("There are no any Lectures found for this userID.");
         }
     }
@@ -108,7 +108,7 @@ public class LectureCreationServiceImpl implements LectureCreationService {
     @Override
     public List<Lecture> getAllLectureByModuleCode(String moduleCode) {
         Optional<List<Lecture>> lectures = lectureRepository.findAllByLectureModuleCode(moduleCode);
-        if (lectures.isPresent()){
+        if (lectures.isPresent()) {
             return lectures.get();
         } else {
             throw new RuntimeException("There are no any lectures found for this moduleCode");
@@ -119,7 +119,7 @@ public class LectureCreationServiceImpl implements LectureCreationService {
     @Override
     public List<Lecture> getAllLecturesByVenue(String venue) {
         Optional<List<Lecture>> lectures = lectureRepository.findAllByLectureVenue(venue);
-        if (lectures.isPresent()){
+        if (lectures.isPresent()) {
             return lectures.get();
         } else {
             throw new RuntimeException("There are no any lectures found for this venue");
@@ -129,7 +129,7 @@ public class LectureCreationServiceImpl implements LectureCreationService {
     @Override
     public List<Lecture> getAllLecturesByDay(String day) {
         Optional<List<Lecture>> lectures = lectureRepository.findAllByLectureDay(day);
-        if (lectures.isPresent()){
+        if (lectures.isPresent()) {
             return lectures.get();
         } else {
             throw new RuntimeException("There are no any lectures found for this day");
@@ -171,18 +171,36 @@ public class LectureCreationServiceImpl implements LectureCreationService {
 
         Optional<List<Lecture>> lectureList = lectureRepository.findAllByLectureDayAndLectureVenue(
                 updateLecture.getLectureDay(), updateLecture.getLectureVenue());
-        if (lectureList.isPresent()) lectureList.get().remove(lecture);
+        if (lectureList.isPresent()) lectureList.get().remove(existingLecture.get());
+
+        for (Lecture checkLecture : lectureList.get()) {
+            if (
+                // Check if updateLecture starts during checkLecture
+                    (updateLecture.getLectureStartTime().before(checkLecture.getLectureEndTime()) &&
+                            updateLecture.getLectureStartTime().after(checkLecture.getLectureStartTime())) ||
+                            updateLecture.getLectureStartTime().equals(checkLecture.getLectureStartTime()) ||
+                            // Check if updateLecture ends during checkLecture
+                            (updateLecture.getLectureEndTime().after(checkLecture.getLectureStartTime()) &&
+                                    updateLecture.getLectureEndTime().before(checkLecture.getLectureEndTime())) ||
+                            updateLecture.getLectureEndTime().equals(checkLecture.getLectureEndTime()) ||
+                            // Check if updateLecture encompasses checkLecture
+                            (updateLecture.getLectureStartTime().before(checkLecture.getLectureStartTime()) &&
+                                    updateLecture.getLectureEndTime().after(checkLecture.getLectureEndTime()))
+            ) {
+                throw new RuntimeException("The updated time slot already exists");
+            }
+        }
 
 
-        for (Lecture checkLecture : lectureList.get()){
+        /*for (Lecture checkLecture : lectureList.get()) {
             boolean isTimeOverlapping = lectureList.isPresent() && lectureList.get().stream()
                     .anyMatch(existingLlecture -> !findTimeOverlappingLecture(updateLecture.getLectureStartTime().toString(), updateLecture.getLectureEndTime().toString(), checkLecture.getLectureId()).isEmpty());
 
-            if (!isTimeOverlapping){
+            if (!isTimeOverlapping) {
                 throw new RuntimeException("The updated time slot is already exist");
             }
 
-        }
+        }*/
 
         return lectureRepository.save(lecture);
 

@@ -27,22 +27,29 @@ public class LectureCreationController {
     ResponseEntity<List<Lecture>> getAllLecturesByUserId(@PathVariable Integer userId) {
         return ResponseEntity.ok(lectureCreationService.getAllLectureByUserId(userId));
     }
+
     @GetMapping("/getalllecturebymodulecode")
     ResponseEntity<List<Lecture>> getAllLecturesByUserId(@RequestParam String moduleCode) {
         return ResponseEntity.ok(lectureCreationService.getAllLectureByModuleCode(moduleCode));
     }
+
     @GetMapping("/getalllecturebyvenue")
     ResponseEntity<List<Lecture>> getAllLecturesByVenue(@RequestParam String venue) {
         return ResponseEntity.ok(lectureCreationService.getAllLecturesByVenue(venue));
     }
+
     @GetMapping("/getalllecturebyday")
     ResponseEntity<List<Lecture>> getAllLecturesByDay(@RequestParam String day) {
         return ResponseEntity.ok(lectureCreationService.getAllLecturesByDay(day));
     }
 
     @PutMapping("/updatelecture/{lectureId}")
-    ResponseEntity<Lecture> updateLecture(@PathVariable Integer lectureId, @RequestBody Lecture updateLecture) {
-        return ResponseEntity.ok(lectureCreationService.updateLecture(lectureId, updateLecture));
+    ResponseEntity<?> updateLecture(@PathVariable Integer lectureId, @RequestBody Lecture updateLecture) {
+        try {
+            return ResponseEntity.ok(lectureCreationService.updateLecture(lectureId, updateLecture));
+        } catch (RuntimeException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
     }
 
     @DeleteMapping("/deletelecture/{lectureId}")

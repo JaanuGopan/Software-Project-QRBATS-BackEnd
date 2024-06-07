@@ -1,5 +1,6 @@
 package com.qrbats.qrbats.authentication.services.mobile;
 
+import com.qrbats.qrbats.authentication.dto.mobile.AdminCreateStudentRequest;
 import com.qrbats.qrbats.authentication.dto.mobile.StudentSigninRequest;
 import com.qrbats.qrbats.authentication.dto.JwtAuthenticationResponse;
 import com.qrbats.qrbats.authentication.dto.RefreshTokenRequest;
@@ -14,12 +15,14 @@ public interface MobileAuthenticationService {
     boolean checkStudentIsExist(String email);
     boolean checkIndexNoIsExist(String indexNo);
     boolean checkUserNameIsExist(String userName);
-    JwtAuthenticationResponse signin(StudentSigninRequest studentSigninRequest);
+    JwtAuthenticationResponse signIn(StudentSigninRequest studentSigninRequest);
 
     JwtAuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest);
 
     List<Student> getAllStudent();
 
-    void updateStudentDetails(StudentUpdateRequest studentUpdateRequest);
+    Student updateStudentDetails(StudentUpdateRequest studentUpdateRequest);
+    Student adminCreateStudent(AdminCreateStudentRequest adminCreateStudentRequest);
+    Boolean deleteStudent(Integer studentID);
 
 }
