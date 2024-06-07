@@ -3,12 +3,11 @@ package com.qrbats.qrbats.functionalities.attendance.service.impl;
 import com.qrbats.qrbats.authentication.entities.student.Student;
 import com.qrbats.qrbats.authentication.entities.student.repository.StudentRepository;
 import com.qrbats.qrbats.entity.attendance.AttendanceLecture;
-import com.qrbats.qrbats.entity.attendance.AttendanceLectureService;
+import com.qrbats.qrbats.entity.attendance.service.AttendanceLectureService;
 import com.qrbats.qrbats.entity.event.Event;
 import com.qrbats.qrbats.entity.event.EventRepository;
 import com.qrbats.qrbats.functionalities.attendance.service.AttendanceReportService;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,8 +35,8 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
     }
 
     @Override
-    public List<AttendanceLecture> getAllAttendanceByLectureId(String lectureId) {
-        Optional<Event> event = eventRepository.findById(Integer.parseInt(lectureId));
+    public List<AttendanceLecture> getAllAttendanceByLectureId(Integer lectureId) {
+        Optional<Event> event = eventRepository.findById(lectureId);
 
         if (event.isPresent()) {
             List<AttendanceLecture> attendanceLectureList = attendanceLectureService.getAllAttendanceByLectureId(lectureId);

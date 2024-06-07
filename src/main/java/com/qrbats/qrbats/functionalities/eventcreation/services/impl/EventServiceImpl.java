@@ -1,13 +1,12 @@
 package com.qrbats.qrbats.functionalities.eventcreation.services.impl;
 
 import com.qrbats.qrbats.entity.attendance.Attendance;
-import com.qrbats.qrbats.entity.attendance.AttendanceLectureService;
+import com.qrbats.qrbats.entity.attendance.service.AttendanceLectureService;
 import com.qrbats.qrbats.entity.attendance.AttendanceRepository;
 import com.qrbats.qrbats.entity.event.Event;
 import com.qrbats.qrbats.entity.event.EventRepository;
 import com.qrbats.qrbats.entity.event.EventRole;
 import com.qrbats.qrbats.entity.module.ModuleRepository;
-import com.qrbats.qrbats.functionalities.attendance.service.AttendanceMarkingService;
 import com.qrbats.qrbats.functionalities.eventcreation.dto.RegisterEventRequest;
 import com.qrbats.qrbats.functionalities.eventcreation.services.EventService;
 import lombok.RequiredArgsConstructor;

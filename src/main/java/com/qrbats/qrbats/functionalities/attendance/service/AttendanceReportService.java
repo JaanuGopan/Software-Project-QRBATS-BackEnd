@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface AttendanceReportService {
     List<Student> getAllStudentsByDepartmentIdAndSemester(Integer deptID,Integer sem);
-    List<AttendanceLecture> getAllAttendanceByLectureId(String lectureId);
+    List<AttendanceLecture> getAllAttendanceByLectureId(Integer lectureId);
 }

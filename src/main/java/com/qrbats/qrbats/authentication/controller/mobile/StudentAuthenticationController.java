@@ -26,7 +26,7 @@ public class StudentAuthenticationController {
 
     @PostMapping("/signin")
     public ResponseEntity<JwtAuthenticationResponse> signin(@RequestBody StudentSigninRequest signinRequest){
-        return ResponseEntity.ok(mobileAuthenticationService.signin(signinRequest));
+        return ResponseEntity.ok(mobileAuthenticationService.signIn(signinRequest));
     }
 
     @PostMapping("/checkstudentemail")
@@ -56,10 +56,31 @@ public class StudentAuthenticationController {
     }
 
     @PutMapping("/updatestudent")
-    public void updateStudent(@RequestBody StudentUpdateRequest studentUpdateRequest){
-        mobileAuthenticationService.updateStudentDetails(studentUpdateRequest);
+    public ResponseEntity<?> updateStudent(@RequestBody StudentUpdateRequest studentUpdateRequest){
+        try {
+           return ResponseEntity.ok(mobileAuthenticationService.updateStudentDetails(studentUpdateRequest));
+        } catch (RuntimeException ex){
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
     }
 
+    @PostMapping("/createstudentbyadmin")
+    public ResponseEntity<?> createStudentByAdmin(@RequestBody AdminCreateStudentRequest request){
+        try {
+            return ResponseEntity.ok(mobileAuthenticationService.adminCreateStudent(request));
+        } catch (RuntimeException ex){
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
+
+    @DeleteMapping("/deletestudentbystudentid/{studentId}")
+    public ResponseEntity<?> deleteStudentByStudentId(@PathVariable Integer studentId){
+        try {
+            return ResponseEntity.ok(mobileAuthenticationService.deleteStudent(studentId));
+        }catch (RuntimeException ex){
+            return  ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
 
 
 }

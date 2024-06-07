@@ -3,6 +3,7 @@ package com.qrbats.qrbats.authentication.services.mobile.impl;
 import com.qrbats.qrbats.authentication.dto.JwtAuthenticationResponse;
 import com.qrbats.qrbats.authentication.dto.RefreshTokenRequest;
 import com.qrbats.qrbats.authentication.dto.SigninRequest;
+import com.qrbats.qrbats.authentication.dto.mobile.AdminCreateStudentRequest;
 import com.qrbats.qrbats.authentication.dto.mobile.StudentSignUpRequest;
 import com.qrbats.qrbats.authentication.dto.mobile.StudentSigninRequest;
 import com.qrbats.qrbats.authentication.dto.mobile.StudentUpdateRequest;
@@ -59,6 +60,7 @@ public class MobileAuthenticationServicesImpl implements MobileAuthenticationSer
     @Override
     public boolean checkIndexNoIsExist(String indexNo) {
         Optional<Student> oldStudent = studentRepository.findByIndexNumber(indexNo);
+
         return oldStudent.isPresent();
     }
 
@@ -69,7 +71,7 @@ public class MobileAuthenticationServicesImpl implements MobileAuthenticationSer
     }
 
     @Override
-    public JwtAuthenticationResponse signin(StudentSigninRequest studentSigninRequest) {
+    public JwtAuthenticationResponse signIn(StudentSigninRequest studentSigninRequest) {
         System.out.println("qwerty");
 
         Optional<Student> loginStudent = studentRepository.findByUserName(studentSigninRequest.getStudentUserName());
@@ -136,9 +138,24 @@ public class MobileAuthenticationServicesImpl implements MobileAuthenticationSer
     }
 
     @Override
-    public void updateStudentDetails(StudentUpdateRequest studentUpdateRequest) {
+    public Student updateStudentDetails(StudentUpdateRequest studentUpdateRequest) {
         Optional<Student> student = studentRepository.findById(studentUpdateRequest.getId());
         if (student.isPresent()){
+            List<Student> allStudent = studentRepository.findAll();
+            allStudent.remove(student.get());
+
+            for (Student checkStudent : allStudent){
+                if (checkStudent.getStudentEmail().equals(studentUpdateRequest.getStudentEmail())){
+                    throw new RuntimeException("The Student Email Address Already Exist.");
+                }
+                if (checkStudent.getIndexNumber().equals(studentUpdateRequest.getIndexNumber())){
+                    throw new RuntimeException("The Student IndexNo Already Exist.");
+                }
+                if (checkStudent.getUsername().equals(studentUpdateRequest.getUserName())){
+                    throw new RuntimeException("The Student UserName Already Exist.");
+                }
+            }
+
             if (studentUpdateRequest.getStudentEmail() != null) student.get().setStudentEmail(studentUpdateRequest.getStudentEmail());
             if (studentUpdateRequest.getStudentName() != null) student.get().setStudentName(studentUpdateRequest.getStudentName());
             if (studentUpdateRequest.getIndexNumber() != null) student.get().setIndexNumber(studentUpdateRequest.getIndexNumber());
@@ -149,9 +166,48 @@ public class MobileAuthenticationServicesImpl implements MobileAuthenticationSer
             if (studentUpdateRequest.getPassword() != null) {
                 student.get().setPassword(passwordEncoder.encode(studentUpdateRequest.getPassword()));
             }
-            studentRepository.save(student.get());
+            return studentRepository.save(student.get());
         }else {
-            throw new RuntimeException("Student update failed.");
+            throw new RuntimeException("Student Not Found.");
         }
+    }
+
+    @Override
+    public Student adminCreateStudent(AdminCreateStudentRequest adminCreateStudentRequest) {
+        Optional<Student> existStudent = studentRepository.findById(adminCreateStudentRequest.getStudentId());
+
+        Student checkStudentEmail = studentRepository.findByStudentEmail(adminCreateStudentRequest.getStudentEmail());
+        if (existStudent.isEmpty() && checkStudentEmail!=null){
+            throw new RuntimeException("The Student Email Address Already Exist.");
+        }
+        Optional<Student> checkStudentIndexNo = studentRepository.findByIndexNumber(adminCreateStudentRequest.getIndexNumber());
+        if (checkStudentIndexNo.isPresent() && existStudent.isEmpty()){
+            throw new RuntimeException("The Student IndexNo Already Exist.");
+        }
+        Optional<Student> checkStudentUserName = studentRepository.findByUserName(adminCreateStudentRequest.getUserName());
+        if (checkStudentUserName.isPresent() && existStudent.isEmpty()){
+            throw new RuntimeException("The Student UserName Already Exist.");
+        }
+
+        Student student=existStudent.orElseGet(Student::new);
+
+        student.setStudentRole(StudentRole.UORSTUDENT);
+        if (!adminCreateStudentRequest.getStudentEmail().isEmpty()) student.setStudentEmail(adminCreateStudentRequest.getStudentEmail());
+        if (!adminCreateStudentRequest.getStudentName().isEmpty()) student.setStudentName(adminCreateStudentRequest.getStudentName());
+        if (!adminCreateStudentRequest.getIndexNumber().isEmpty()) student.setIndexNumber(adminCreateStudentRequest.getIndexNumber());
+        if (adminCreateStudentRequest.getCurrentSemester() != null) student.setCurrentSemester(adminCreateStudentRequest.getCurrentSemester());
+        if (adminCreateStudentRequest.getDepartmentId() != null) student.setDepartmentId(adminCreateStudentRequest.getDepartmentId());
+        if (!adminCreateStudentRequest.getUserName().isEmpty()) student.setUserName(adminCreateStudentRequest.getUserName());
+        if (!adminCreateStudentRequest.getPassword().isEmpty()) student.setPassword(passwordEncoder.encode(adminCreateStudentRequest.getPassword()));
+
+        return studentRepository.save(student);
+    }
+
+    @Override
+    public Boolean deleteStudent(Integer studentID) {
+        Student student = studentRepository.findById(studentID)
+                .orElseThrow(()-> new RuntimeException("Student Not Found For This ID."));
+        studentRepository.delete(student);
+        return true;
     }
 }
