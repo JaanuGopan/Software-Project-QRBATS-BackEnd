@@ -215,4 +215,19 @@ public class LectureCreationServiceImpl implements LectureCreationService {
             throw new RuntimeException("Lecture not Found.");
         }
     }
+
+    @Override
+    public List<Lecture> getAllLecturesByDayAndVenue(String day, String venue) {
+        Optional<List<Lecture>> lectureList;
+        if (venue.isEmpty()){
+            lectureList = lectureRepository.findAllByLectureDay(day);
+        }else {
+            lectureList = lectureRepository.findAllByLectureDayAndLectureVenue(day,venue);
+        }
+        if (lectureList.isPresent()){
+            return lectureList.get();
+        }else {
+            throw new RuntimeException("There Are No Lectures Found.");
+        }
+    }
 }

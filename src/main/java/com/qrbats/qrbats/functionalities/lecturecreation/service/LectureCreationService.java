@@ -17,4 +17,6 @@ public interface LectureCreationService {
     Lecture updateLecture(Integer lectureId, Lecture updateLecture);
 
     void deleteLecture(Integer lectureId);
+
+    List<Lecture> getAllLecturesByDayAndVenue(String day,String venue);
 }

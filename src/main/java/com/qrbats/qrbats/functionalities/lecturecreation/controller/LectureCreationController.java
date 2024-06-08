@@ -57,4 +57,13 @@ public class LectureCreationController {
         lectureCreationService.deleteLecture(lectureId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/getalllecturesbydayandvenue")
+    ResponseEntity<?> getAllLecturesByDayANdVenue(@RequestParam String day,@RequestParam String venue){
+        try {
+            return ResponseEntity.ok(lectureCreationService.getAllLecturesByDayAndVenue(day,venue));
+        }catch (RuntimeException ex){
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
 }
