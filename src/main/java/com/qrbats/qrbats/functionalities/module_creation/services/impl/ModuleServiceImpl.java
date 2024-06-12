@@ -1,5 +1,7 @@
 package com.qrbats.qrbats.functionalities.module_creation.services.impl;
 
+import com.qrbats.qrbats.authentication.entities.student.Student;
+import com.qrbats.qrbats.authentication.entities.student.repository.StudentRepository;
 import com.qrbats.qrbats.entity.module.Module;
 import com.qrbats.qrbats.entity.module.ModuleRepository;
 import com.qrbats.qrbats.functionalities.module_creation.dto.ModuleCreationRequest;
@@ -19,6 +21,8 @@ public class ModuleServiceImpl implements ModuleService {
 
     @Autowired
     private final ModuleRepository moduleRepository;
+    @Autowired
+    private final StudentRepository studentRepository;
 
     @Override
     public Module createModule(ModuleCreationRequest moduleCreationRequest) {
@@ -94,6 +98,16 @@ public class ModuleServiceImpl implements ModuleService {
         } else {
             throw new RuntimeException("Modules Not Found.");
         }
+    }
+
+    @Override
+    public List<Module> getAllModulesByStudentId(Integer studentId) {
+        Optional<Student> student = studentRepository.findById(studentId);
+        if (!student.isPresent()) throw new RuntimeException("Student Not Found.");
+        Optional<List<Module>> moduleList = moduleRepository.findAllBySemesterAndDepartmentId(student.get().getCurrentSemester(),student.get().getDepartmentId());
+        if (!moduleList.isPresent()) throw new RuntimeException("Modules Not Found.");
+
+        return moduleList.get();
     }
 
 

@@ -2,7 +2,7 @@ package com.qrbats.qrbats.functionalities.lecturecreation.service.impl;
 
 import com.qrbats.qrbats.authentication.entities.user.User;
 import com.qrbats.qrbats.authentication.entities.user.repository.UserRepository;
-import com.qrbats.qrbats.entity.attendance.service.AttendanceLectureService;
+import com.qrbats.qrbats.functionalities.attendance.service.impl.AttendanceLectureService;
 import com.qrbats.qrbats.entity.lecture.Lecture;
 import com.qrbats.qrbats.entity.lecture.LectureRepository;
 import com.qrbats.qrbats.entity.location.LocationRepository;
@@ -122,7 +122,7 @@ public class LectureCreationServiceImpl implements LectureCreationService {
         if (lectures.isPresent()) {
             return lectures.get();
         } else {
-            throw new RuntimeException("There are no any lectures found for this venue");
+            throw new RuntimeException("There Are No Any Lectures Found For This Venue.");
         }
     }
 
@@ -211,6 +211,7 @@ public class LectureCreationServiceImpl implements LectureCreationService {
         Optional<Lecture> existingLecture = lectureRepository.findById(lectureId);
         if (existingLecture.isPresent()) {
             lectureRepository.delete(existingLecture.get());
+            attendanceLectureService.dropLectureAttendanceTable(lectureId);
         } else {
             throw new RuntimeException("Lecture not Found.");
         }

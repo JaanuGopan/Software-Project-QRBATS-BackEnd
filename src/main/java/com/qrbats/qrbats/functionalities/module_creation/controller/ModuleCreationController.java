@@ -55,9 +55,14 @@ public class ModuleCreationController {
         return ResponseEntity.ok(moduleService.getModuleByDepartmentId(departmentId));
     }
 
-
-
-
+    @GetMapping("/getenrolledmodulesbystudentid/{studentId}")
+    public ResponseEntity<?> getAllModulesByStudentId(@PathVariable Integer studentId){
+        try {
+            return ResponseEntity.ok(moduleService.getAllModulesByStudentId(studentId));
+        }catch (RuntimeException ex){
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
 
 
 }

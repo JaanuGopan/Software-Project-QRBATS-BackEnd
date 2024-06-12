@@ -1,12 +1,11 @@
 package com.qrbats.qrbats.functionalities.eventcreation.services.impl;
 
-import com.qrbats.qrbats.entity.attendance.Attendance;
-import com.qrbats.qrbats.entity.attendance.service.AttendanceLectureService;
-import com.qrbats.qrbats.entity.attendance.AttendanceRepository;
+import com.qrbats.qrbats.entity.attendance.AttendanceEvent;
 import com.qrbats.qrbats.entity.event.Event;
 import com.qrbats.qrbats.entity.event.EventRepository;
 import com.qrbats.qrbats.entity.event.EventRole;
 import com.qrbats.qrbats.entity.module.ModuleRepository;
+import com.qrbats.qrbats.functionalities.attendance.service.impl.AttendanceEventService;
 import com.qrbats.qrbats.functionalities.eventcreation.dto.RegisterEventRequest;
 import com.qrbats.qrbats.functionalities.eventcreation.services.EventService;
 import lombok.RequiredArgsConstructor;
@@ -20,23 +19,20 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
     @Autowired
-    private final EventRepository repository;
+    private final EventRepository eventRepository;
     @Autowired
     private final ModuleRepository moduleRepository;
     @Autowired
-    private final AttendanceRepository attendanceRepository;
-
-    @Autowired
-    private final AttendanceLectureService attendanceLectureService;
+    private final AttendanceEventService attendanceEventService;
 
     @Override
     public Event createEvent(RegisterEventRequest request) {
         Optional<Event> existEvent;
         Event event;
         if (request.getEventId() != null) {
-            existEvent = repository.findById(request.getEventId());
+            existEvent = eventRepository.findById(request.getEventId());
         } else {
-            existEvent = repository
+            existEvent = eventRepository
                     .findByEventNameAndEventDateAndEventTimeAndEventModuleCode(
                             request.getEventName(), request.getEventDate(), request.getEventTime(), request.getEventModuleName()
                     );
@@ -59,22 +55,21 @@ public class EventServiceImpl implements EventService {
         }
 
 
-        Event save = repository.save(event);
-        if(!existEvent.isPresent()){
-            attendanceLectureService.createLectureAttendanceTable(save.getEventId().toString());
-        }
+        Event save = eventRepository.save(event);
+        if (!eventRepository.findById(save.getEventId()).isPresent()) throw new RuntimeException("Event Saved Failed.");
+        attendanceEventService.createEventAttendanceTable(save.getEventId());
         return save;
     }
 
     public Optional<Event> findAlreadyExistEvent(RegisterEventRequest request) {
-        return repository.findByEventNameAndEventDateAndEventTimeAndEventModuleCode(
+        return eventRepository.findByEventNameAndEventDateAndEventTimeAndEventModuleCode(
                 request.getEventName(), request.getEventDate(), request.getEventTime(), request.getEventModuleName()
         );
     }
 
     @Override
     public List<Event> getAllEventByModuleCode(String moduleCode) {
-        Optional<List<Event>> eventList = repository.findAllByEventModuleCode(moduleCode);
+        Optional<List<Event>> eventList = eventRepository.findAllByEventModuleCode(moduleCode);
         if (eventList.isPresent()) {
             return eventList.get();
         } else {
@@ -84,12 +79,12 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<Event> getAllEvent() {
-        return repository.findAll();
+        return eventRepository.findAll();
     }
 
     @Override
     public List<Event> getAllEventByUserId(Integer userId) {
-        Optional<List<Event>> eventList = repository.findAllByEventAssignedUserId(userId);
+        Optional<List<Event>> eventList = eventRepository.findAllByEventAssignedUserId(userId);
         if (eventList.isPresent()) {
             return eventList.get();
         } else {
@@ -99,19 +94,15 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public void deleteEvent(Integer id) {
-        Optional<Event> event = repository.findById(id);
-        if (event.isPresent()) {
-            Optional<List<Attendance>> attendanceList = attendanceRepository.findAllByEventId(id);
-            if (attendanceList.isPresent()) {
-                attendanceLectureService.dropLectureAttendanceTable(id.toString());
-                for (Attendance attendance : attendanceList.get()) {
-                    attendanceRepository.delete(attendance);
-                }
-            }
-            repository.deleteById(id);
-        } else {
-            throw new RuntimeException("The event not found for given eventId");
+        Optional<Event> event = eventRepository.findById(id);
+        if (!event.isPresent()) throw new RuntimeException("The event not found for given eventId");
+        try{
+            attendanceEventService.dropEventAttendanceTable(id);
+            eventRepository.deleteById(id);
+        }catch (Exception ex){
+            throw new RuntimeException("Error deleteEvent. ",ex);
         }
+
     }
 
 }

@@ -14,8 +14,8 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @Builder
 public class AttendanceMarkingRequest {
-    private Integer eventID;
-    private Integer attendeeID;
+    private Integer eventId;
+    private Integer attendeeId;
     private LocalDate attendanceDate;
     private LocalTime attendanceTime;
     private double locationGPSLatitude;

@@ -1,6 +1,6 @@
-package com.qrbats.qrbats.entity.attendance.service;
+package com.qrbats.qrbats.functionalities.attendance.service.impl;
 
-import com.qrbats.qrbats.entity.attendance.Attendance;
+import com.qrbats.qrbats.entity.attendance.AttendanceEvent;
 import com.qrbats.qrbats.entity.attendance.AttendanceLecture;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -31,33 +30,40 @@ public class AttendanceLectureService {
                 "Attendance_date DATE, " +
                 "Attendance_time TIME, " +
                 "Attendance_status BOOL)";
-        entityManager.createNativeQuery(createTableQuery).executeUpdate();
+        try {
+            entityManager.createNativeQuery(createTableQuery).executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
-
     @Transactional
-    public void saveLectureAttendance(String lectureId, Attendance attendance) {
+    public void saveLectureAttendance(String lectureId, AttendanceEvent attendanceEvent) {
         String tableName = "Attendance_lec_" + lectureId;
         String insertQuery = "INSERT INTO " + tableName + " (Lecture_id, Attendee_id, Attendance_date, Attendance_time, Attendance_status) VALUES (?, ?, ?, ?, ?)";
-        entityManager.createNativeQuery(insertQuery)
-                .setParameter(1, attendance.getEventId())
-                .setParameter(2, attendance.getAttendeeId())
-                .setParameter(3, attendance.getAttendanceDate())
-                .setParameter(4, attendance.getAttendanceTime())
-                .setParameter(5, true)
-                .executeUpdate();
+        try {
+            entityManager.createNativeQuery(insertQuery)
+                    .setParameter(1, attendanceEvent.getEventId())
+                    .setParameter(2, attendanceEvent.getAttendeeId())
+                    .setParameter(3, attendanceEvent.getAttendanceDate())
+                    .setParameter(4, attendanceEvent.getAttendanceTime())
+                    .setParameter(5, true)
+                    .executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException("Error In Saving Attendance. ",e);
+        }
     }
-
     @Transactional
     public List<AttendanceLecture> getAttendanceByLectureIdAndStudentIdAndDate(Integer lectureId, Integer studentId, Date date){
         String tableName = "Attendance_lec_" + lectureId.toString();
         String selectQuery = "SELECT * FROM " + tableName + " WHERE Lecture_id="+lectureId.toString()
                 +" AND Attendee_id="+studentId.toString()+" And Attendance_date="+"'"+date+"'";
-        Query query = entityManager.createNativeQuery(selectQuery, AttendanceLecture.class);
-        return query.getResultList();
+        try {
+            Query query = entityManager.createNativeQuery(selectQuery, AttendanceLecture.class);
+            return query.getResultList();
+        } catch (Exception e) {
+            throw new RuntimeException("Error In Getting Attendance. ",e);
+        }
     }
-
-
-
     @Transactional
     public void deleteLectureAttendance(String lectureId, Integer attendanceId) {
         String tableName = "Attendance_lec_" + lectureId;
@@ -67,17 +73,25 @@ public class AttendanceLectureService {
                 .executeUpdate();
     }
     @Transactional
-    public void dropLectureAttendanceTable(String lectureId) {
-        String tableName = "Attendance_lec_" + lectureId;
-        String dropTableQuery = "DROP TABLE " + tableName;
-        entityManager.createNativeQuery(dropTableQuery).executeUpdate();
+    public void dropLectureAttendanceTable(Integer lectureId) {
+        String tableName = "Attendance_lec_" + lectureId.toString();
+        String dropTableQuery = "DROP TABLE IF EXISTS " + tableName;
+        try {
+            entityManager.createNativeQuery(dropTableQuery).executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException("Error dropping table " + tableName, e);
+        }
     }
 
     @Transactional
     public List<AttendanceLecture> getAllAttendanceByLectureId(Integer lectureId){
         String tableName = "Attendance_lec_" + lectureId.toString();
         String selectQuery = "SELECT * FROM " + tableName;
-        Query query = entityManager.createNativeQuery(selectQuery, AttendanceLecture.class);
-        return query.getResultList();
+        try {
+            Query query = entityManager.createNativeQuery(selectQuery, AttendanceLecture.class);
+            return query.getResultList();
+        } catch (Exception e) {
+            throw new RuntimeException("Error In Getting All Attendance For This Module. ",e);
+        }
     }
 }

@@ -2,9 +2,8 @@ package com.qrbats.qrbats.functionalities.attendance.service.impl;
 
 import com.qrbats.qrbats.authentication.entities.student.Student;
 import com.qrbats.qrbats.authentication.entities.student.repository.StudentRepository;
-import com.qrbats.qrbats.entity.attendance.Attendance;
+import com.qrbats.qrbats.entity.attendance.AttendanceEvent;
 import com.qrbats.qrbats.entity.attendance.AttendanceLecture;
-import com.qrbats.qrbats.entity.attendance.service.AttendanceLectureService;
 import com.qrbats.qrbats.entity.lecture.Lecture;
 import com.qrbats.qrbats.entity.lecture.LectureRepository;
 import com.qrbats.qrbats.entity.location.Location;
@@ -88,15 +87,14 @@ public class LectureAttendanceMarkingServiceImpl implements LectureAttendanceMar
                     throw new RuntimeException("The Attendance Already Marked For "+request.getAttendedDate()+" .");
                 }
 
-                Attendance attendance = new Attendance();
-                attendance.setEventId(lecture.getLectureId());
-                attendance.setAttendanceTime(request.getAttendedTime().toLocalTime());
-                attendance.setAttendanceDate(request.getAttendedDate().toLocalDate());
-                attendance.setLocationLatitude(request.getLatitude());
-                attendance.setLocationLongitude(request.getLongitude());
-                attendance.setAttendeeId(request.getStudentId());
+                AttendanceEvent attendanceEvent = new AttendanceEvent();
+                attendanceEvent.setEventId(lecture.getLectureId());
+                attendanceEvent.setAttendanceTime(request.getAttendedTime());
+                attendanceEvent.setAttendanceDate(request.getAttendedDate());
+                attendanceEvent.setAttendeeId(request.getStudentId());
+                attendanceEvent.setAttendanceStatus(true);
 
-                attendanceLectureService.saveLectureAttendance(lecture.getLectureId().toString(), attendance);
+                attendanceLectureService.saveLectureAttendance(lecture.getLectureId().toString(), attendanceEvent);
 
                 return attendanceLectureService.getAttendanceByLectureIdAndStudentIdAndDate(lecture.getLectureId(), request.getStudentId(),request.getAttendedDate()).get(0);
             }
@@ -112,9 +110,12 @@ public class LectureAttendanceMarkingServiceImpl implements LectureAttendanceMar
 
     @Override
     public List<LectureAttendanceResponse> getAllAttendanceByLectureId(Integer lectureId) {
-        Lecture lecture = lectureRepository.findById(lectureId).orElseThrow(() ->  new RuntimeException("Lecture Not Found."));
+        Lecture lecture = lectureRepository.findById(lectureId)
+                .orElseThrow(() ->  new RuntimeException("Lecture Not Found."));
 
-        List<AttendanceLecture> allAttendanceByLectureId = attendanceLectureService.getAllAttendanceByLectureId(lectureId);
+        List<AttendanceLecture> allAttendanceByLectureId =
+                attendanceLectureService.getAllAttendanceByLectureId(lectureId);
+
         List<LectureAttendanceResponse> lectureAttendanceResponseList = new ArrayList<>();
         for (AttendanceLecture attendanceLecture: allAttendanceByLectureId){
             Optional<Student> student = studentRepository.findById(attendanceLecture.getAttendeeId());

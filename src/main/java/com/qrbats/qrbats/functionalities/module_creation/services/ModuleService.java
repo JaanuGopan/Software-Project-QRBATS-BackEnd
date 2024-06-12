@@ -18,4 +18,5 @@ public interface ModuleService {
     List<Module> getModuleBySemesterDepartment(Integer semesterId,Integer departmentId);
 
     List<Module> getModuleByDepartmentId(Integer departmentId);
+    List<Module> getAllModulesByStudentId(Integer studentId);
 }
