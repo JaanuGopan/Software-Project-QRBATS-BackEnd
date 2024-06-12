@@ -3,7 +3,6 @@ package com.qrbats.qrbats.functionalities.attendance.service.impl;
 import com.qrbats.qrbats.authentication.entities.student.Student;
 import com.qrbats.qrbats.authentication.entities.student.repository.StudentRepository;
 import com.qrbats.qrbats.entity.attendance.AttendanceLecture;
-import com.qrbats.qrbats.entity.attendance.service.AttendanceLectureService;
 import com.qrbats.qrbats.entity.event.Event;
 import com.qrbats.qrbats.entity.event.EventRepository;
 import com.qrbats.qrbats.functionalities.attendance.service.AttendanceReportService;

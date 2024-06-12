@@ -19,8 +19,12 @@ public class LectureCreationController {
     private final LectureCreationService lectureCreationService;
 
     @PostMapping("/createlecture")
-    ResponseEntity<List<Lecture>> createLecture(@RequestBody CreateLectureRequest createLectureRequest) {
-        return ResponseEntity.ok(lectureCreationService.createLecture(createLectureRequest));
+    ResponseEntity<?> createLecture(@RequestBody CreateLectureRequest createLectureRequest) {
+        try {
+            return ResponseEntity.ok(lectureCreationService.createLecture(createLectureRequest));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/getalllecturebyuserid/{userId}")
