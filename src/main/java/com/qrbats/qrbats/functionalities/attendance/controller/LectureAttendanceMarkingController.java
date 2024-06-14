@@ -1,11 +1,9 @@
 package com.qrbats.qrbats.functionalities.attendance.controller;
 
-import com.qrbats.qrbats.entity.attendance.AttendanceLecture;
 import com.qrbats.qrbats.functionalities.attendance.dto.LectureAttendanceMarkingRequest;
 import com.qrbats.qrbats.functionalities.attendance.service.LectureAttendanceMarkingService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +30,24 @@ public class LectureAttendanceMarkingController {
             return ResponseEntity.ok(lectureAttendanceMarkingService.getAllAttendanceByLectureId(lectureId));
         }catch (RuntimeException ex){
             return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
+
+    @GetMapping("/getallAttendancebymodulecode")
+    public ResponseEntity<?> getAllAttendanceByModuleCode(@RequestParam String moduleCode){
+        try {
+            return ResponseEntity.ok(lectureAttendanceMarkingService.getAllAttendanceByModuleCode(moduleCode));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/getattendancebystudentid/{studentId}")
+    public ResponseEntity<?> getAllAttendanceByStudentId(@PathVariable Integer studentId){
+        try {
+            return ResponseEntity.ok(lectureAttendanceMarkingService.getAllAttendanceByStudentId(studentId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }

@@ -13,4 +13,5 @@ public class AttendanceListResponse {
     private String indexNumber;
     private Date attendedDate;
     private Time attendedTime;
+    private boolean attendanceStatus;
 }

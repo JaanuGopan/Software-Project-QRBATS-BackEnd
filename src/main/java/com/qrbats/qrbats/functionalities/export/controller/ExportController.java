@@ -36,7 +36,7 @@ public class ExportController {
     @GetMapping("/geteventreport/{eventId}")
     public ResponseEntity<?> getEventAttendanceReport(@PathVariable Integer eventId) throws IOException {
         try {
-            ByteArrayInputStream in = exportService.exportLectureAttendance(eventId);
+            ByteArrayInputStream in = exportService.exportEventAttendance(eventId);
             HttpHeaders headers = new HttpHeaders();
             headers.add("Content-Disposition", "attachment; filename=event_"+eventId.toString()+".csv");
             return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(new InputStreamResource(in));

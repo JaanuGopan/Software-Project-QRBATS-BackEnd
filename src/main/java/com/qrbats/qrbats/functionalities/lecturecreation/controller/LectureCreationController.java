@@ -33,7 +33,7 @@ public class LectureCreationController {
     }
 
     @GetMapping("/getalllecturebymodulecode")
-    ResponseEntity<List<Lecture>> getAllLecturesByUserId(@RequestParam String moduleCode) {
+    ResponseEntity<List<Lecture>> getAllLecturesByModuleCode(@RequestParam String moduleCode) {
         return ResponseEntity.ok(lectureCreationService.getAllLectureByModuleCode(moduleCode));
     }
 
@@ -57,9 +57,13 @@ public class LectureCreationController {
     }
 
     @DeleteMapping("/deletelecture/{lectureId}")
-    ResponseEntity<Void> deleteLecture(@PathVariable Integer lectureId) {
-        lectureCreationService.deleteLecture(lectureId);
-        return ResponseEntity.noContent().build();
+    ResponseEntity<?> deleteLecture(@PathVariable Integer lectureId) {
+        try {
+            lectureCreationService.deleteLecture(lectureId);
+            return ResponseEntity.status(200).body(true);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/getalllecturesbydayandvenue")
