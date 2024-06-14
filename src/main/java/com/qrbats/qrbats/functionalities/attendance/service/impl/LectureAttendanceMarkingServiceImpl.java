@@ -10,6 +10,7 @@ import com.qrbats.qrbats.entity.location.Location;
 import com.qrbats.qrbats.entity.location.LocationRepository;
 import com.qrbats.qrbats.entity.module.Module;
 import com.qrbats.qrbats.entity.module.ModuleRepository;
+import com.qrbats.qrbats.functionalities.attendance.dto.AttendanceListResponse;
 import com.qrbats.qrbats.functionalities.attendance.dto.LectureAttendanceMarkingRequest;
 import com.qrbats.qrbats.functionalities.attendance.dto.LectureAttendanceResponse;
 import com.qrbats.qrbats.functionalities.attendance.service.LectureAttendanceMarkingService;
@@ -104,8 +105,36 @@ public class LectureAttendanceMarkingServiceImpl implements LectureAttendanceMar
     }
 
     @Override
-    public List<AttendanceLecture> getAllAttendanceByModuleCode(String moduleCode) {
-        return null;
+    public List<LectureAttendanceResponse> getAllAttendanceByModuleCode(String moduleCode) {
+        Optional<Module> module = moduleRepository.findByModuleCode(moduleCode);
+        if (!module.isPresent()) throw new RuntimeException(
+                "There Is No Any Module Found For This "+moduleCode+" ModuleCode.");
+
+        Optional<List<Lecture>> lectureList = lectureRepository.findAllByLectureModuleCode(moduleCode);
+        if (!lectureList.isPresent()) throw new RuntimeException("There Is No Any Lectures For This ModuleCode.");
+
+        List<LectureAttendanceResponse> lectureAttendanceResponseList = new ArrayList<>();
+        for (Lecture lecture : lectureList.get()){
+            List<AttendanceLecture> attendanceLectures = attendanceLectureService.getAllAttendanceByLectureId(
+                    lecture.getLectureId());
+            if (!attendanceLectures.isEmpty()) {
+                for (AttendanceLecture attendanceLecture : attendanceLectures){
+                    Optional<Student> student = studentRepository.findById(attendanceLecture.getAttendeeId());
+                    if (student.isPresent()) {
+                        LectureAttendanceResponse lectureAttendanceResponse = new LectureAttendanceResponse();
+                        lectureAttendanceResponse.setStudentId(student.get().getStudentId());
+                        lectureAttendanceResponse.setStudentName(student.get().getStudentName());
+                        lectureAttendanceResponse.setStudentIndexNumber(student.get().getIndexNumber());
+                        lectureAttendanceResponse.setAttendanceStatus(attendanceLecture.getAttendanceStatus());
+                        lectureAttendanceResponse.setAttendedDate(attendanceLecture.getAttendanceDate());
+                        lectureAttendanceResponse.setAttendedTime(attendanceLecture.getAttendanceTime());
+
+                        lectureAttendanceResponseList.add(lectureAttendanceResponse);
+                    }
+                }
+            }
+        }
+        return lectureAttendanceResponseList;
     }
 
     @Override
@@ -138,5 +167,23 @@ public class LectureAttendanceMarkingServiceImpl implements LectureAttendanceMar
     @Override
     public List<AttendanceLecture> getAllAttendanceForOneLecture(String moduleCode, Date day) {
         return null;
+    }
+
+    @Override
+    public List<LectureAttendanceResponse> getAllAttendanceByStudentId(Integer studentId) {
+        Optional<Student> student = studentRepository.findById(studentId);
+        if (!student.isPresent()) throw new RuntimeException("There Is No Student Found For This Id.");
+        Optional<List<Module>> moduleList = moduleRepository.findAllByDepartmentId(student.get().getDepartmentId());
+        if (!moduleList.isPresent()) throw new RuntimeException("There Are No Any Modules For The Student.");
+        List<LectureAttendanceResponse> returnAttendanceList = new ArrayList<>();
+        for (Module module : moduleList.get()){
+            List<LectureAttendanceResponse> attendanceListResponseList = getAllAttendanceByModuleCode(module.getModuleCode());
+            if (!attendanceListResponseList.isEmpty()){
+                for (LectureAttendanceResponse attendanceResponse : attendanceListResponseList){
+                    returnAttendanceList.add(attendanceResponse);
+                }
+            }
+        }
+        return returnAttendanceList;
     }
 }

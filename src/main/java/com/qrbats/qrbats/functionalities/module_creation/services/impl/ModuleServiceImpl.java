@@ -1,5 +1,6 @@
 package com.qrbats.qrbats.functionalities.module_creation.services.impl;
 
+import ch.qos.logback.core.joran.conditional.IfAction;
 import com.qrbats.qrbats.authentication.entities.student.Student;
 import com.qrbats.qrbats.authentication.entities.student.repository.StudentRepository;
 import com.qrbats.qrbats.entity.module.Module;
@@ -12,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -24,19 +27,29 @@ public class ModuleServiceImpl implements ModuleService {
     @Autowired
     private final StudentRepository studentRepository;
 
+    @Autowired
+    private final ModuleEnrollmentService moduleEnrollmentService;
+
     @Override
     public Module createModule(ModuleCreationRequest moduleCreationRequest) {
 
-        Optional<Module> oldModule = moduleRepository.findByModuleCode(moduleCreationRequest.getModuleCode());
-        Module module;
-        module = oldModule.orElseGet(Module::new);
+        Optional<Module> checkModuleCode = moduleRepository.findByModuleCode(moduleCreationRequest.getModuleCode());
+        if (checkModuleCode.isPresent())
+            throw new RuntimeException("The ModuleCode " + moduleCreationRequest.getModuleCode()
+                    + " Already Created.");
+
+        Module module = new Module();
         module.setModuleCode(moduleCreationRequest.getModuleCode());
         module.setModuleName(moduleCreationRequest.getModuleName());
         module.setModuleEnrolmentKey(moduleCreationRequest.getModuleEnrolmentKey());
         module.setSemester(moduleCreationRequest.getSemester());
         module.setLecturerId(moduleCreationRequest.getUserId());
         module.setDepartmentId(moduleCreationRequest.getDepartmentId());
-        return moduleRepository.save(module);
+
+
+        Module save = moduleRepository.save(module);
+        moduleEnrollmentService.createModuleEnrollmentTable(save.getModuleId());
+        return save;
 
     }
 
@@ -47,14 +60,24 @@ public class ModuleServiceImpl implements ModuleService {
         Optional<Module> deleteModule = moduleRepository.findById(deleteModuleId);
         if (deleteModule.isPresent()) {
             moduleRepository.delete(deleteModule.get());
+            moduleEnrollmentService.deleteModuleEnrollmentTable(moduleId);
         } else {
             throw new RuntimeException("module not found for delete.");
         }
     }
 
     @Override
-    public void updateModule(ModuleUpdateRequest moduleUpdateRequest) {
-        Optional<Module> oldModule = moduleRepository.findByModuleCode(moduleUpdateRequest.getOldModuleCode());
+    public Module updateModule(ModuleUpdateRequest moduleUpdateRequest) {
+        Optional<Module> oldModule = moduleRepository.findById(moduleUpdateRequest.getModuleId());
+        if (!oldModule.isPresent()) throw new RuntimeException("There Is No Module For This Id");
+
+        Optional<Module> checkModuleCode = moduleRepository.findByModuleCode(moduleUpdateRequest.getModuleCode());
+        if (checkModuleCode.isPresent()) {
+            if (oldModule.get().getModuleCode() != checkModuleCode.get().getModuleCode()) {
+                throw new RuntimeException("The Updated ModuleCode " + moduleUpdateRequest.getModuleCode() + " Already Exist.");
+            }
+        }
+
         if (oldModule.isPresent()) {
             oldModule.get().setModuleCode(moduleUpdateRequest.getModuleCode());
             oldModule.get().setModuleName(moduleUpdateRequest.getModuleName());
@@ -63,9 +86,9 @@ public class ModuleServiceImpl implements ModuleService {
             oldModule.get().setDepartmentId(moduleUpdateRequest.getDepartmentId());
             oldModule.get().setLecturerId(moduleUpdateRequest.getLectureId());
 
-            moduleRepository.save(oldModule.get());
+            return moduleRepository.save(oldModule.get());
         } else {
-            throw new RuntimeException("Module Not Found");
+            throw new RuntimeException(moduleUpdateRequest.getModuleCode() + " Module Not Found.");
         }
     }
 
@@ -104,10 +127,63 @@ public class ModuleServiceImpl implements ModuleService {
     public List<Module> getAllModulesByStudentId(Integer studentId) {
         Optional<Student> student = studentRepository.findById(studentId);
         if (!student.isPresent()) throw new RuntimeException("Student Not Found.");
-        Optional<List<Module>> moduleList = moduleRepository.findAllBySemesterAndDepartmentId(student.get().getCurrentSemester(),student.get().getDepartmentId());
+        Optional<List<Module>> moduleList = moduleRepository.findAllBySemesterAndDepartmentId(student.get().getCurrentSemester(), student.get().getDepartmentId());
         if (!moduleList.isPresent()) throw new RuntimeException("Modules Not Found.");
 
         return moduleList.get();
+    }
+
+    @Override
+    public boolean moduleEnrollment(Integer moduleId, Integer studentId, String enrollmentKey) {
+        Optional<Student> student = studentRepository.findById(studentId);
+        if (!student.isPresent()) throw new RuntimeException("Student Not Found.");
+
+        Optional<Module> module = moduleRepository.findById(moduleId);
+        if (!module.isPresent()) throw new RuntimeException("There Is No Module For This Id");
+
+        if (Objects.equals(module.get().getModuleEnrolmentKey(), enrollmentKey)) {
+            boolean enrollmentStatus = moduleEnrollmentService.studentModuleEnrollment(moduleId, studentId);
+            return enrollmentStatus;
+        } else {
+            throw new RuntimeException("The Enrolment Key Is Not Match.");
+        }
+    }
+
+    public boolean moduleUnEnrollment(Integer moduleId, Integer studentId){
+        Optional<Student> student = studentRepository.findById(studentId);
+        if (!student.isPresent()) throw new RuntimeException("Student Not Found.");
+
+        Optional<Module> module = moduleRepository.findById(moduleId);
+        if (!module.isPresent()) throw new RuntimeException("There Is No Module For This Id");
+
+        boolean moduleUnEnrollment = moduleEnrollmentService.moduleUnEnrollment(moduleId,studentId);
+        if (moduleUnEnrollment){
+            return true;
+        }else {
+            throw new RuntimeException("Error In Module UnEnrollment.");
+        }
+
+    }
+
+    @Override
+    public List<Module> getAllEnrolledModules(Integer studentId) {
+        Optional<Student> student = studentRepository.findById(studentId);
+        if (!student.isPresent()) throw new RuntimeException("Student Not Found For This Id.");
+
+        Integer studentDepartmentId = student.get().getDepartmentId();
+        Integer studentSemester = student.get().getCurrentSemester();
+
+        Optional<List<Module>> allModules = moduleRepository.findAllBySemesterAndDepartmentId(studentSemester, studentDepartmentId);
+        if (!allModules.isPresent()) throw new RuntimeException("There Are No Any Modules For You.");
+
+        List<Module> enrolledModuleList = new ArrayList<>();
+        for (Module module : allModules.get()){
+            boolean isEnrolled = moduleEnrollmentService.checkStudentEnrollment(module.getModuleId(),studentId);
+            if (isEnrolled){
+                enrolledModuleList.add(module);
+            }
+        }
+        return enrolledModuleList;
     }
 
 

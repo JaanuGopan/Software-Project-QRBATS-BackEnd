@@ -10,10 +10,12 @@ import java.util.List;
 
 public interface LectureAttendanceMarkingService {
     AttendanceLecture markLectureAttendance(LectureAttendanceMarkingRequest request);
-    List<AttendanceLecture> getAllAttendanceByModuleCode(String moduleCode);
+    List<LectureAttendanceResponse> getAllAttendanceByModuleCode(String moduleCode);
 
     List<LectureAttendanceResponse> getAllAttendanceByLectureId(Integer lectureId);
     List<AttendanceLecture> getAllAttendanceForOneLecture(String moduleCode , Date day);
+
+    List<LectureAttendanceResponse> getAllAttendanceByStudentId(Integer studentId);
 
 
 }

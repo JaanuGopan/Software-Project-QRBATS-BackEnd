@@ -134,7 +134,7 @@ public class EventEventAttendanceMarkingServiceImpl implements EventAttendanceMa
                 attendanceListResponse.setAttendedTime(attendanceEvent.getAttendanceTime());
                 attendanceListResponse.setAttendedDate(attendanceEvent.getAttendanceDate());
                 attendanceListResponse.setIndexNumber(student.get().getIndexNumber());
-
+                attendanceListResponse.setAttendanceStatus(attendanceEvent.getAttendanceStatus());
                 attendanceListResponseList.add(attendanceListResponse);
             }
         }

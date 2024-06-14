@@ -12,11 +12,15 @@ public interface ModuleService {
 
     Module createModule(ModuleCreationRequest moduleCreationResponse);
     void deleteModule(Integer  moduleCode);
-    void updateModule(ModuleUpdateRequest moduleUpdateRequest);
+    Module updateModule(ModuleUpdateRequest moduleUpdateRequest);
     List<Module> getModuleByLecturerId(Integer lecturerId);
 
     List<Module> getModuleBySemesterDepartment(Integer semesterId,Integer departmentId);
 
     List<Module> getModuleByDepartmentId(Integer departmentId);
     List<Module> getAllModulesByStudentId(Integer studentId);
+
+    boolean moduleEnrollment(Integer moduleId, Integer studentId, String enrolmentKey);
+
+    List<Module> getAllEnrolledModules(Integer studentId);
 }

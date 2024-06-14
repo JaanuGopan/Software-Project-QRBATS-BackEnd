@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class ModuleUpdateRequest {
-    private String oldModuleCode;
+    private Integer moduleId;
     private String moduleCode;
     private String moduleName;
     private String moduleEnrolmentKey;
