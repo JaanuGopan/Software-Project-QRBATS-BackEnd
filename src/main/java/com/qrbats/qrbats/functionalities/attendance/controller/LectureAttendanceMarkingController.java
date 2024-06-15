@@ -50,4 +50,13 @@ public class LectureAttendanceMarkingController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/getallattendancehistorybystudentid/{studentId}")
+    public ResponseEntity<?> getAllAttendanceHistoryByStudentId(@PathVariable Integer studentId){
+        try {
+            return ResponseEntity.ok(lectureAttendanceMarkingService.getAllAttendanceHistoryByStudentId(studentId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

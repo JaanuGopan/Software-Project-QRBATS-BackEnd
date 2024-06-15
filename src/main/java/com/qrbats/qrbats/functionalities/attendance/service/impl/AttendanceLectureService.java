@@ -68,6 +68,18 @@ public class AttendanceLectureService {
         }
     }
     @Transactional
+    public List<AttendanceLecture> getAttendanceByLectureIdAndStudentId(Integer lectureId, Integer studentId){
+        String tableName = "Attendance_lec_" + lectureId.toString();
+        String selectQuery = "SELECT * FROM " + tableName + " WHERE Lecture_id="+lectureId.toString()
+                +" AND Attendee_id="+studentId.toString();
+        try {
+            Query query = entityManager.createNativeQuery(selectQuery, AttendanceLecture.class);
+            return query.getResultList();
+        } catch (Exception e) {
+            throw new RuntimeException("Error In Getting Attendance. ",e);
+        }
+    }
+    @Transactional
     public void deleteLectureAttendance(String lectureId, Integer attendanceId) {
         String tableName = "Attendance_lec_" + lectureId;
         String deleteQuery = "DELETE FROM " + tableName + " WHERE Attendance_id = ?";
