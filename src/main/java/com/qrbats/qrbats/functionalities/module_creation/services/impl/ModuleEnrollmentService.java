@@ -96,4 +96,17 @@ public class ModuleEnrollmentService {
         }
     }
 
+    @Transactional
+    public List<ModuleEnrolment> getModuleEnrolmentListByModuleId(Integer moduleId){
+        String tableName = "ModuleEnrollment_" + moduleId;
+        String selectQuery = "Select * FROM " + tableName;
+
+        try {
+            Query query = entityManager.createNativeQuery(selectQuery, ModuleEnrolment.class);
+            List<ModuleEnrolment> moduleEnrolments = query.getResultList();
+            return moduleEnrolments;
+        }catch (Exception e){
+            throw new RuntimeException("Error In Getting Enrolled Students.");
+        }
+    }
 }
