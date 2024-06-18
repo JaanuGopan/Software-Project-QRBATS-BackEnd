@@ -1,5 +1,6 @@
 package com.qrbats.qrbats.functionalities.attendance.controller;
 
+import com.qrbats.qrbats.functionalities.attendance.dto.LectureAttendanceMarkingByLectureIdRequest;
 import com.qrbats.qrbats.functionalities.attendance.dto.LectureAttendanceMarkingRequest;
 import com.qrbats.qrbats.functionalities.attendance.service.LectureAttendanceMarkingService;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,15 @@ public class LectureAttendanceMarkingController {
     public ResponseEntity<?> markLectureAttendance(@RequestBody LectureAttendanceMarkingRequest lectureAttendanceMarkingRequest){
         try {
             return ResponseEntity.ok(lectureAttendanceMarkingService.markLectureAttendance(lectureAttendanceMarkingRequest));
+        } catch (RuntimeException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
+
+    @PostMapping("/markattendancebylectureid")
+    public ResponseEntity<?> markLectureAttendanceByLectureId(@RequestBody LectureAttendanceMarkingByLectureIdRequest request){
+        try {
+            return ResponseEntity.ok(lectureAttendanceMarkingService.markLectureAttendanceByLectureId(request));
         } catch (RuntimeException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }

@@ -5,6 +5,7 @@ import com.qrbats.qrbats.authentication.entities.student.Student;
 import com.qrbats.qrbats.authentication.entities.student.repository.StudentRepository;
 import com.qrbats.qrbats.entity.module.Module;
 import com.qrbats.qrbats.entity.module.ModuleRepository;
+import com.qrbats.qrbats.entity.moduleenrolment.ModuleEnrolment;
 import com.qrbats.qrbats.functionalities.module_creation.dto.ModuleCreationRequest;
 import com.qrbats.qrbats.functionalities.module_creation.dto.ModuleDeletionRequest;
 import com.qrbats.qrbats.functionalities.module_creation.dto.ModuleUpdateRequest;
@@ -29,6 +30,13 @@ public class ModuleServiceImpl implements ModuleService {
 
     @Autowired
     private final ModuleEnrollmentService moduleEnrollmentService;
+
+    @Override
+    public Module getModuleByModuleCode(String moduleCode) {
+        Optional<Module> module = moduleRepository.findByModuleCode(moduleCode);
+        if (!module.isPresent()) throw new RuntimeException("There Is No Module For This ModuleCode "+ moduleCode);
+        return module.get();
+    }
 
     @Override
     public Module createModule(ModuleCreationRequest moduleCreationRequest) {
@@ -184,6 +192,22 @@ public class ModuleServiceImpl implements ModuleService {
             }
         }
         return enrolledModuleList;
+    }
+
+    @Override
+    public List<Student> getAllEnrolledStudentByModuleCode(String moduleCode) {
+        Optional<Module> module = moduleRepository.findByModuleCode(moduleCode);
+        if (!module.isPresent()) throw new RuntimeException("No Module Found For This Module Code "+ moduleCode);
+        List<ModuleEnrolment> moduleEnrolmentList = moduleEnrollmentService.getModuleEnrolmentListByModuleId(
+                module.get().getModuleId());
+        List<Student> studentList = new ArrayList<>();
+        for (ModuleEnrolment moduleEnrolment : moduleEnrolmentList){
+            Optional<Student> student = studentRepository.findById(moduleEnrolment.getStudentId());
+            if (student.isPresent()){
+                studentList.add(student.get());
+            }
+        }
+        return studentList;
     }
 
 

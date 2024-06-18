@@ -10,17 +10,19 @@ import com.qrbats.qrbats.entity.location.Location;
 import com.qrbats.qrbats.entity.location.LocationRepository;
 import com.qrbats.qrbats.entity.module.Module;
 import com.qrbats.qrbats.entity.module.ModuleRepository;
-import com.qrbats.qrbats.functionalities.attendance.dto.AttendanceLectureHistoryResponse;
-import com.qrbats.qrbats.functionalities.attendance.dto.AttendanceListResponse;
-import com.qrbats.qrbats.functionalities.attendance.dto.LectureAttendanceMarkingRequest;
-import com.qrbats.qrbats.functionalities.attendance.dto.LectureAttendanceResponse;
+import com.qrbats.qrbats.entity.moduleenrolment.ModuleEnrolment;
+import com.qrbats.qrbats.functionalities.attendance.dto.*;
 import com.qrbats.qrbats.functionalities.attendance.service.LectureAttendanceMarkingService;
+import com.qrbats.qrbats.functionalities.module_creation.services.ModuleService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
+import java.sql.Time;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +40,8 @@ public class LectureAttendanceMarkingServiceImpl implements LectureAttendanceMar
     private final LocationRepository locationRepository;
     @Autowired
     private final AttendanceLectureService attendanceLectureService;
+    @Autowired
+    private final ModuleService moduleService;
 
     public boolean checkValidLocation(double lat1, double lon1, double lat2, double lon2) {
         final double R = 6371.0; // Radius of the Earth in kilometers
@@ -96,6 +100,48 @@ public class LectureAttendanceMarkingServiceImpl implements LectureAttendanceMar
     }
 
     @Override
+    public AttendanceLecture markLectureAttendanceByLectureId(LectureAttendanceMarkingByLectureIdRequest request) {
+        Optional<Lecture> attendLecture = lectureRepository.findById(request.getLectureId());
+        if (!attendLecture.isPresent()) throw new RuntimeException("There Is No Lecture For This Id");
+
+        Module module = moduleRepository.findByModuleCode(attendLecture.get().getLectureModuleCode()).orElseThrow(() -> new RuntimeException("Module Not Found."));
+        Student student = studentRepository.findById(request.getStudentId()).orElseThrow(() -> new RuntimeException("Student Not Found"));
+
+        if (!module.getDepartmentId().equals(student.getDepartmentId()) || !module.getSemester().equals(student.getCurrentSemester())) {
+            throw new RuntimeException("Student Not Suit For This Module.");
+        }
+
+
+        Lecture lecture = attendLecture.get();
+        if (lecture.getLectureStartTime().before(request.getAttendedTime()) && lecture.getLectureEndTime().after(request.getAttendedTime())) {
+
+            Location location = locationRepository.findByLocationName(lecture.getLectureVenue()).orElseThrow(() -> new RuntimeException("Location Not Found"));
+
+            boolean isValidLocation = checkValidLocation(location.getLocationGPSLatitude(), location.getLocationGPSLongitude(), request.getLatitude(), request.getLongitude());
+            if (!isValidLocation) {
+                throw new RuntimeException("Student Location Is Not In The " + lecture.getLectureVenue() + ".");
+            }
+
+            if (!attendanceLectureService.getAttendanceByLectureIdAndStudentIdAndDate(lecture.getLectureId(), request.getStudentId(), request.getAttendedDate()).isEmpty()) {
+                throw new RuntimeException("The Attendance Already Marked For " + request.getAttendedDate() + " .");
+            }
+
+            AttendanceEvent attendanceEvent = new AttendanceEvent();
+            attendanceEvent.setEventId(lecture.getLectureId());
+            attendanceEvent.setAttendanceTime(request.getAttendedTime());
+            attendanceEvent.setAttendanceDate(request.getAttendedDate());
+            attendanceEvent.setAttendeeId(request.getStudentId());
+            attendanceEvent.setAttendanceStatus(true);
+
+            attendanceLectureService.saveLectureAttendance(lecture.getLectureId().toString(), attendanceEvent);
+
+            return attendanceLectureService.getAttendanceByLectureIdAndStudentIdAndDate(lecture.getLectureId(), request.getStudentId(), request.getAttendedDate()).get(0);
+        }
+
+        throw new RuntimeException("There Are No Any Lectures For The Module For This Time.");
+    }
+
+    @Override
     public List<LectureAttendanceResponse> getAllAttendanceByModuleCode(String moduleCode) {
         Optional<Module> module = moduleRepository.findByModuleCode(moduleCode);
         if (!module.isPresent())
@@ -131,9 +177,28 @@ public class LectureAttendanceMarkingServiceImpl implements LectureAttendanceMar
     public List<LectureAttendanceResponse> getAllAttendanceByLectureId(Integer lectureId) {
         Lecture lecture = lectureRepository.findById(lectureId).orElseThrow(() -> new RuntimeException("Lecture Not Found."));
 
+        List<Student> enrolledStudentsList = moduleService.getAllEnrolledStudentByModuleCode(lecture.getLectureModuleCode());
         List<AttendanceLecture> allAttendanceByLectureId = attendanceLectureService.getAllAttendanceByLectureId(lectureId);
 
         List<LectureAttendanceResponse> lectureAttendanceResponseList = new ArrayList<>();
+
+        for (Student enrolledStudent : enrolledStudentsList){
+            boolean isAddNotAttendedStudent = true;
+            for (AttendanceLecture attendanceLecture : allAttendanceByLectureId){
+                if (attendanceLecture.getAttendeeId().equals(enrolledStudent.getStudentId())){
+                   isAddNotAttendedStudent = false;
+                }
+            }
+            if (isAddNotAttendedStudent) {
+                LectureAttendanceResponse lectureAttendanceResponse = new LectureAttendanceResponse();
+                lectureAttendanceResponse.setStudentName(enrolledStudent.getStudentName());
+                lectureAttendanceResponse.setStudentIndexNumber(enrolledStudent.getIndexNumber());
+                lectureAttendanceResponse.setStudentId(enrolledStudent.getStudentId());
+                lectureAttendanceResponse.setAttendanceStatus(false);
+                lectureAttendanceResponseList.add(lectureAttendanceResponse);
+            }
+        }
+
         for (AttendanceLecture attendanceLecture : allAttendanceByLectureId) {
             Optional<Student> student = studentRepository.findById(attendanceLecture.getAttendeeId());
             if (student.isPresent()) {
@@ -148,6 +213,9 @@ public class LectureAttendanceMarkingServiceImpl implements LectureAttendanceMar
             }
 
         }
+
+
+
         return lectureAttendanceResponseList;
     }
 

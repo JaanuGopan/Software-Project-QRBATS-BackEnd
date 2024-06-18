@@ -17,6 +17,15 @@ public class ModuleCreationController {
 
     private final ModuleServiceImpl moduleService;
 
+
+    @GetMapping("getmodulebymodulecode")
+    public  ResponseEntity<?> getModuleByModuleCode(@RequestParam String moduleCode){
+        try {
+            return ResponseEntity.ok(moduleService.getModuleByModuleCode(moduleCode));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
     @PostMapping("/createmodule")
     public ResponseEntity<?> createModule(@RequestBody ModuleCreationRequest request){
         try {

@@ -22,8 +22,12 @@ public class AuthenticationController {
     }
 
     @GetMapping("/signin")
-    public ResponseEntity<JwtAuthenticationResponse> signin(@RequestParam String userName,@RequestParam String password){
-        return ResponseEntity.ok(authenticationService.signin(userName,password));
+    public ResponseEntity<?> signIn(@RequestParam String userName,@RequestParam String password){
+        try {
+            return ResponseEntity.ok(authenticationService.signin(userName,password));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PostMapping("/refresh")
