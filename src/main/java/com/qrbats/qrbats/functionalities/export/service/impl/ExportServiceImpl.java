@@ -11,6 +11,7 @@ import com.qrbats.qrbats.entity.event.EventRepository;
 import com.qrbats.qrbats.entity.lecture.Lecture;
 import com.qrbats.qrbats.entity.lecture.LectureRepository;
 import com.qrbats.qrbats.functionalities.export.service.ExportService;
+import com.qrbats.qrbats.functionalities.module_creation.services.ModuleService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,12 +36,12 @@ public class ExportServiceImpl implements ExportService {
     private final LectureRepository lectureRepository;
     @Autowired
     private final StudentRepository studentRepository;
+    @Autowired
+    private final ModuleService moduleService;
 
 
     @Autowired
     final EventRepository eventRepository;
-
-
 
 
     @Override
@@ -59,21 +60,38 @@ public class ExportServiceImpl implements ExportService {
         // Write CSV headers
         String[] lectureName = {"Lecture Name : ", lecture.get().getLectureName().toString()};
         writer.writeNext(lectureName);
-        String[] header = {"No", "Student Name", "Index Number", "Attended Date", "Attended Time","Attendance Status"};
+        String[] header = {"No", "Student Name", "Index Number", "Attended Date", "Attended Time", "Attendance Status"};
         writer.writeNext(header);
         Integer number = 1;
         for (AttendanceLecture attendanceLecture : attendanceLectureList) {
             Optional<Student> student = studentRepository.findById(attendanceLecture.getAttendeeId());
             if (student.isPresent()) {
-                String[] row = {number.toString(),student.get().getStudentName(), student.get().getIndexNumber(),
+                String[] row = {number.toString(), student.get().getStudentName(), student.get().getIndexNumber(),
                         attendanceLecture.getAttendanceDate().toString(),
                         attendanceLecture.getAttendanceTime().toString(),
-                        attendanceLecture.getAttendanceStatus() ?"Attended":"Not Attended"};
+                        attendanceLecture.getAttendanceStatus() ? "Attended" : "Not Attended"};
                 writer.writeNext(row);
                 number++;
             }
 
         }
+        List<Student> enrolledStudentList = moduleService.getAllEnrolledStudentByModuleCode(lecture.get().getLectureModuleCode());
+        for (Student student : enrolledStudentList) {
+            boolean isAddNotAttendedStudent = true;
+            for (AttendanceLecture attendanceLecture : attendanceLectureList) {
+                if (attendanceLecture.getAttendeeId().equals(student.getStudentId())) {
+                    isAddNotAttendedStudent = false;
+                }
+            }
+            if (isAddNotAttendedStudent) {
+                String[] row = {number.toString(), student.getStudentName(), student.getIndexNumber(), "-", "-", "Not Attended"};
+                writer.writeNext(row);
+                number++;
+            }
+
+        }
+
+
         writer.close();
         return new ByteArrayInputStream(out.toByteArray());
     }
@@ -82,12 +100,12 @@ public class ExportServiceImpl implements ExportService {
     public ByteArrayInputStream exportEventAttendance(Integer eventId) throws IOException {
 
 
-
         Optional<Event> event = eventRepository.findById(eventId);
         if (!event.isPresent()) throw new RuntimeException("There is No Any Lecture or Event for This Id.");
 
         List<AttendanceEvent> attendanceList = attendanceEventService.getAllAttendanceByEventId(eventId);
-        if (attendanceList ==null) throw new RuntimeException("There Are No Any Attendance For This Lecture or Event.");
+        if (attendanceList == null)
+            throw new RuntimeException("There Are No Any Attendance For This Lecture or Event.");
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CSVWriter writer = new CSVWriter(new OutputStreamWriter(out));
@@ -95,13 +113,13 @@ public class ExportServiceImpl implements ExportService {
         // Write CSV headers
         String[] eventName = {"EventName Name : ", event.get().getEventName().toString()};
         writer.writeNext(eventName);
-        String[] header = {"No", "Student Name", "Index Number", "Attended Date", "Attended Time","Attendance Status"};
+        String[] header = {"No", "Student Name", "Index Number", "Attended Date", "Attended Time", "Attendance Status"};
         writer.writeNext(header);
         Integer number = 1;
         for (AttendanceEvent attendanceEvent : attendanceList) {
             Optional<Student> student = studentRepository.findById(attendanceEvent.getAttendeeId());
             if (student.isPresent()) {
-                String[] row = {number.toString(),student.get().getStudentName(), student.get().getIndexNumber(),
+                String[] row = {number.toString(), student.get().getStudentName(), student.get().getIndexNumber(),
                         attendanceEvent.getAttendanceDate().toString(), attendanceEvent.getAttendanceTime().toString(),
                         "Attended"};
                 writer.writeNext(row);

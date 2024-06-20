@@ -146,6 +146,9 @@ public class MobileAuthenticationServicesImpl implements MobileAuthenticationSer
             allStudent.remove(student.get());
 
             for (Student checkStudent : allStudent){
+                if (checkStudent.getStudentId().equals(student.get().getStudentId())){
+                    continue;
+                }
                 if (checkStudent.getStudentEmail().equals(studentUpdateRequest.getStudentEmail())){
                     throw new RuntimeException("The Student Email Address Already Exist.");
                 }
