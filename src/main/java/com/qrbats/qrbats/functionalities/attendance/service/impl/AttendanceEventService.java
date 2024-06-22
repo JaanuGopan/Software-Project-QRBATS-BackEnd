@@ -54,9 +54,23 @@ public class AttendanceEventService {
         String selectQuery = "SELECT * FROM " + tableName + " WHERE Attendee_id = " + studentId;
         try{
             Query query = entityManager.createNativeQuery(selectQuery, AttendanceEvent.class);
-            return (AttendanceEvent) query.getSingleResult();
+            AttendanceEvent singleResult = (AttendanceEvent) query.getSingleResult();
+            return singleResult;
         } catch (Exception ex){
             throw new RuntimeException("Failed To Find Attendance For This Event ",ex);
+        }
+    }
+
+    @Transactional
+    public AttendanceEvent getStudentAttendanceByEventIdAndStudentId(Integer eventId, Integer studentId){
+        String tableName = "Attendance_eve_" + eventId.toString();
+        String selectQuery = "SELECT * FROM " + tableName + " WHERE Attendee_id = " + studentId;
+        try{
+            Query query = entityManager.createNativeQuery(selectQuery, AttendanceEvent.class);
+            AttendanceEvent singleResult = (AttendanceEvent) query.getSingleResult();
+            return singleResult;
+        } catch (Exception ex){
+            return null;
         }
     }
     @Transactional
@@ -97,4 +111,5 @@ public class AttendanceEventService {
             throw new RuntimeException("Error In Get All Attendance.",e);
         }
     }
+
 }

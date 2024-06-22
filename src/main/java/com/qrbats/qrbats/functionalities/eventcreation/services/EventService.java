@@ -13,5 +13,6 @@ public interface EventService {
     List<Event> getAllEventByUserId(Integer userId);
 
     void deleteEvent(Integer id);
+    Event getEventByEventId(Integer eventId);
 
 }

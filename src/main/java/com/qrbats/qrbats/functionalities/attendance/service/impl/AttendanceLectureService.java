@@ -1,5 +1,6 @@
 package com.qrbats.qrbats.functionalities.attendance.service.impl;
 
+import com.qrbats.qrbats.authentication.entities.student.Student;
 import com.qrbats.qrbats.entity.attendance.AttendanceEvent;
 import com.qrbats.qrbats.entity.attendance.AttendanceLecture;
 import com.qrbats.qrbats.entity.lecture.Lecture;
@@ -109,4 +110,5 @@ public class AttendanceLectureService {
             throw new RuntimeException("Error In Getting All Attendance For This Module. ",e);
         }
     }
+
 }

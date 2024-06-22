@@ -37,9 +37,13 @@ public class EventAttendanceMarkingController {
         }
     }
 
-    @PostMapping("getallattendancebystudentid")
-    public ResponseEntity<List<AttendanceStudentHistoryResponse>> getAllAttendanceByStudentId(@RequestBody AttendanceStudentHistoryRequest request){
-        return ResponseEntity.ok(eventAttendanceMarkingService.getAllAttendanceByStudentId(request.getStudentId()));
+    @GetMapping("getallattendancebystudentid/{studentId}")
+    public ResponseEntity<?> getAllAttendanceByStudentId(@PathVariable Integer studentId){
+        try {
+            return ResponseEntity.ok(eventAttendanceMarkingService.getAllAttendanceHistoryByStudentId(studentId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
 }

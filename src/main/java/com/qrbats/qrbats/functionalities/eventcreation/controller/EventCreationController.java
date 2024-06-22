@@ -47,4 +47,13 @@ public class EventCreationController {
         return ResponseEntity.ok(eventService.getAllEventByUserId(Integer.parseInt(userId)));
     }
 
+    @GetMapping("/geteventbyeventid/{eventId}")
+    public ResponseEntity<?> findEventByEventId(@PathVariable Integer eventId){
+        try {
+            return ResponseEntity.ok(eventService.getEventByEventId(eventId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }

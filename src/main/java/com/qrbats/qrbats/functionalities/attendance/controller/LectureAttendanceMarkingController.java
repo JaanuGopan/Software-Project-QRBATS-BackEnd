@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.rmi.server.RemoteServer;
+
 @RestController
 @RequestMapping("/api/v1/lectureattendance")
 @AllArgsConstructor
@@ -68,5 +70,15 @@ public class LectureAttendanceMarkingController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @GetMapping("/getallstudentattendancebymoduleId/{moduleId}")
+    public ResponseEntity<?> getAllStudentsAttendanceReportByModuleId(@PathVariable Integer moduleId){
+        try {
+            return ResponseEntity.ok(lectureAttendanceMarkingService.getAllStudentsAttendanceReportByModuleId(moduleId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
     }
 }

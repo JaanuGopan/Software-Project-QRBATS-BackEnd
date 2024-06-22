@@ -15,6 +15,7 @@ import com.qrbats.qrbats.functionalities.attendance.dto.*;
 import com.qrbats.qrbats.functionalities.attendance.service.LectureAttendanceMarkingService;
 import com.qrbats.qrbats.functionalities.module_creation.services.ModuleService;
 import com.qrbats.qrbats.functionalities.module_creation.services.impl.ModuleEnrollmentService;
+import jdk.jfr.Percentage;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -294,5 +295,45 @@ public class LectureAttendanceMarkingServiceImpl implements LectureAttendanceMar
 
         return attendanceLectureHistoryResponseList;
     }
+
+    @Override
+    public List<StudentOverallAttendanceResponse> getAllStudentsAttendanceReportByModuleId(Integer moduleId) {
+        Optional<Module> module = moduleRepository.findById(moduleId);
+        if (!module.isPresent()) throw new RuntimeException("Module Not Found For This Id.");
+
+        Optional<List<Lecture>> allLectureList = lectureRepository.findAllByLectureModuleCode(module.get().getModuleCode());
+        if (allLectureList.isEmpty()) throw new RuntimeException("There Is No Lecture For This Module");
+        List<ModuleEnrolment> moduleEnrolmentList = moduleEnrollmentService.getModuleEnrolmentListByModuleId(moduleId);
+        if (moduleEnrolmentList.isEmpty()) throw new RuntimeException("No One Enroll This Module");
+
+        List<StudentOverallAttendanceResponse> responseList = new ArrayList<>();
+
+        for (ModuleEnrolment enrolment : moduleEnrolmentList){
+            Optional<Student> student = studentRepository.findById(enrolment.getStudentId());
+            if (student.isPresent()){
+                StudentOverallAttendanceResponse response = new StudentOverallAttendanceResponse();
+                response.setStudentId(student.get().getStudentId());
+                response.setStudentName(student.get().getStudentName());
+                response.setIndexNumber(student.get().getIndexNumber());
+
+                Integer attendedLecture = 0;
+                for (Lecture lecture : allLectureList.get()){
+                    List<AttendanceLecture> attendanceLecture = attendanceLectureService.getAttendanceByLectureIdAndStudentId(lecture.getLectureId(),student.get().getStudentId());
+                    if (!attendanceLecture.isEmpty()){
+                        attendedLecture++;
+                    }
+                }
+                response.setAttendedLectureCount(attendedLecture);
+                response.setMissedLectureCount(allLectureList.get().size() - attendedLecture);
+                Double percentage = (double) attendedLecture / allLectureList.get().size() * 100;
+                response.setAttendancePercentage(percentage);
+
+                responseList.add(response);
+            }
+        }
+
+        return responseList;
+    }
+
 
 }

@@ -7,9 +7,7 @@ import com.qrbats.qrbats.entity.event.Event;
 import com.qrbats.qrbats.entity.event.EventRepository;
 import com.qrbats.qrbats.entity.location.Location;
 import com.qrbats.qrbats.entity.location.LocationRepository;
-import com.qrbats.qrbats.functionalities.attendance.dto.AttendanceMarkingRequest;
-import com.qrbats.qrbats.functionalities.attendance.dto.AttendanceListResponse;
-import com.qrbats.qrbats.functionalities.attendance.dto.AttendanceStudentHistoryResponse;
+import com.qrbats.qrbats.functionalities.attendance.dto.*;
 import com.qrbats.qrbats.functionalities.attendance.service.EventAttendanceMarkingService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +47,7 @@ public class EventEventAttendanceMarkingServiceImpl implements EventAttendanceMa
         // Calculate the distance
         double distance = R * c * 1000;
         System.out.println("The distance is : "+ distance);
-        return distance <= 30.0;
+        return distance <= 50.0;
     }
 
     public List<Double> findEventLocation(int eventId){
@@ -144,40 +142,36 @@ public class EventEventAttendanceMarkingServiceImpl implements EventAttendanceMa
     }
 
     @Override
-    public List<AttendanceStudentHistoryResponse> getAllAttendanceByStudentId(Integer studentId) {
+    public List<AttendanceEventHistoryResponse> getAllAttendanceHistoryByStudentId(Integer studentId) {
 
         Optional<Student> student = studentRepository.findById(studentId);
         if (!student.isPresent()) throw new RuntimeException("Student Not Found For This Id");
 
-        
+        List<Event> eventList = eventRepository.findAll();
 
+        List<AttendanceEvent> attendanceEventList = new ArrayList<>();
+        List<AttendanceEventHistoryResponse> attendanceEventHistoryResponses = new ArrayList<>();
 
-        /*Optional<Student> student = studentRepository.findById(studentId);
-        if (student.isPresent()){
-            Optional<List<AttendanceEvent>> attendanceList = attendanceRepository.findAllByAttendeeId(studentId);
-            if (attendanceList.isPresent()){
+        for (Event event : eventList){
+            AttendanceEvent attendance = attendanceEventService.getStudentAttendanceByEventIdAndStudentId(event.getEventId(),studentId);
+            attendanceEventList.add(attendance);
 
-                List<AttendanceStudentHistoryResponse> attendanceStudentHistoryResponsesList = new ArrayList<>();
-                for (AttendanceEvent attendanceEvent : attendanceList.get()){
-                    AttendanceStudentHistoryResponse response = new AttendanceStudentHistoryResponse();
-                    Optional<Event> event = eventRepository.findById(attendanceEvent.getEventId());
-                    if (event.isPresent()){
-                        response.setEventName(event.get().getEventName());
-                        response.setAttendedTime(attendanceEvent.getAttendanceTime());
-                        response.setAttendedDate(attendanceEvent.getAttendanceDate());
-                        attendanceStudentHistoryResponsesList.add(response);
-                    }else {
-                        throw new RuntimeException("Event not found.");
-                    }
-                }
-                return attendanceStudentHistoryResponsesList;
-            }else {
-                throw new RuntimeException("No any attendance found for the student Id");
+            if (attendance != null){
+                AttendanceEventHistoryResponse response = new AttendanceEventHistoryResponse();
+                response.setAttendanceStatus(attendance.getAttendanceStatus());
+                response.setAttendedDate((Date) attendance.getAttendanceDate());
+                response.setAttendedTime(attendance.getAttendanceTime());
+                response.setEventName(event.getEventName());
+                response.setEventModuleCode(event.getEventModuleCode());
+                response.setEventModuleName(event.getEventModuleCode());
+
+                attendanceEventHistoryResponses.add(response);
             }
-        }else {
-            throw new RuntimeException("There is no any student for given student id");
-        }*/
-        return null;
+        }
+
+
+
+        return attendanceEventHistoryResponses;
     }
 
 
