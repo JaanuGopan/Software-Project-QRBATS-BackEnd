@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.rmi.server.RemoteServer;
+import java.sql.Date;
+
 @RestController
 @RequestMapping("/api/v1/lectureattendance")
 @AllArgsConstructor
@@ -67,6 +70,34 @@ public class LectureAttendanceMarkingController {
             return ResponseEntity.ok(lectureAttendanceMarkingService.getAllAttendanceHistoryByStudentId(studentId));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/getallstudentattendancebymoduleId/{moduleId}")
+    public ResponseEntity<?> getAllStudentsAttendanceReportByModuleId(@PathVariable Integer moduleId){
+        try {
+            return ResponseEntity.ok(lectureAttendanceMarkingService.getAllStudentsAttendanceReportByModuleId(moduleId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
+
+    @GetMapping("/getalllecturewithdatefordaylecture/{lectureId}")
+    public ResponseEntity<?> getAllLectureWithDateForDayLecture(@PathVariable Integer lectureId){
+        try {
+            return ResponseEntity.ok(lectureAttendanceMarkingService.getAllLectureWithDateForDayLecture(lectureId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/getallattendancebylectureidanddate")
+    public ResponseEntity<?> getAllAttendanceByLectureIdAndDate(@RequestParam Integer lectureId, @RequestParam Date date){
+        try {
+            return ResponseEntity.ok(lectureAttendanceMarkingService.getAllAttendanceForLectureWithDate(lectureId,date));
+        }catch (RuntimeException ex){
+            return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
 }

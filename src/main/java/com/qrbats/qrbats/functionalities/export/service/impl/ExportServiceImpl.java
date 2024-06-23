@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,6 +60,58 @@ public class ExportServiceImpl implements ExportService {
 
         // Write CSV headers
         String[] lectureName = {"Lecture Name : ", lecture.get().getLectureName().toString()};
+        writer.writeNext(lectureName);
+        String[] header = {"No", "Student Name", "Index Number", "Attended Date", "Attended Time", "Attendance Status"};
+        writer.writeNext(header);
+        Integer number = 1;
+        for (AttendanceLecture attendanceLecture : attendanceLectureList) {
+            Optional<Student> student = studentRepository.findById(attendanceLecture.getAttendeeId());
+            if (student.isPresent()) {
+                String[] row = {number.toString(), student.get().getStudentName(), student.get().getIndexNumber(),
+                        attendanceLecture.getAttendanceDate().toString(),
+                        attendanceLecture.getAttendanceTime().toString(),
+                        attendanceLecture.getAttendanceStatus() ? "Attended" : "Not Attended"};
+                writer.writeNext(row);
+                number++;
+            }
+
+        }
+        List<Student> enrolledStudentList = moduleService.getAllEnrolledStudentByModuleCode(lecture.get().getLectureModuleCode());
+        for (Student student : enrolledStudentList) {
+            boolean isAddNotAttendedStudent = true;
+            for (AttendanceLecture attendanceLecture : attendanceLectureList) {
+                if (attendanceLecture.getAttendeeId().equals(student.getStudentId())) {
+                    isAddNotAttendedStudent = false;
+                }
+            }
+            if (isAddNotAttendedStudent) {
+                String[] row = {number.toString(), student.getStudentName(), student.getIndexNumber(), "-", "-", "Not Attended"};
+                writer.writeNext(row);
+                number++;
+            }
+
+        }
+
+
+        writer.close();
+        return new ByteArrayInputStream(out.toByteArray());
+    }
+
+    @Override
+    public ByteArrayInputStream exportLectureAttendanceByLectureIdAndDate(Integer lectureId, Date date) throws IOException {
+        Optional<Lecture> lecture = lectureRepository.findById(lectureId);
+        if (!lecture.isPresent()) throw new RuntimeException("Lecture Not Found For This Id.");
+
+        List<AttendanceLecture> attendanceLectureList = attendanceLectureService
+                .getAttendanceByLectureIdAndDate(lectureId,date);
+        if (attendanceLectureList.isEmpty()) throw new RuntimeException(
+                "There Are No Any Attendance Marked For This Lecture.");
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CSVWriter writer = new CSVWriter(new OutputStreamWriter(out));
+
+        // Write CSV headers
+        String[] lectureName = {"Lecture Name : ", lecture.get().getLectureModuleCode()+"_"+date.toString()};
         writer.writeNext(lectureName);
         String[] header = {"No", "Student Name", "Index Number", "Attended Date", "Attended Time", "Attendance Status"};
         writer.writeNext(header);

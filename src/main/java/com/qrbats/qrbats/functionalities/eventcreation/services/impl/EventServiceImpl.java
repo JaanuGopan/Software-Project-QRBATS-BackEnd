@@ -105,4 +105,11 @@ public class EventServiceImpl implements EventService {
 
     }
 
+    @Override
+    public Event getEventByEventId(Integer eventId) {
+        Optional<Event> event = eventRepository.findById(eventId);
+        if (!event.isPresent()) throw new RuntimeException("No Event Found For This Event Id.");
+        return event.get();
+    }
+
 }
