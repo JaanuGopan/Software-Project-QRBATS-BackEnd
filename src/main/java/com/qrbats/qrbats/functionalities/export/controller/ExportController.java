@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.sql.Date;
 
 @RestController
 @RequestMapping("api/v1/export")
@@ -33,6 +34,18 @@ public class ExportController {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
+    @GetMapping("/donwloadattendancebylectureidanddate")
+    public ResponseEntity<?> downloadAttendanceReportByLectureIdAndDate(@RequestParam Integer lectureId, @RequestParam Date date) throws IOException {
+        try {
+            ByteArrayInputStream in = exportService.exportLectureAttendanceByLectureIdAndDate(lectureId,date);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition", "attachment; filename=lecture_"+lectureId.toString()+"_"+date.toString()+".csv");
+            return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(new InputStreamResource(in));
+        } catch (RuntimeException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
+
     @GetMapping("/geteventreport/{eventId}")
     public ResponseEntity<?> getEventAttendanceReport(@PathVariable Integer eventId) throws IOException {
         try {

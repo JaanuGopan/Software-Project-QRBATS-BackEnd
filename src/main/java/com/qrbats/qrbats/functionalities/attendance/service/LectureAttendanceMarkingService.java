@@ -20,4 +20,9 @@ public interface LectureAttendanceMarkingService {
     List<AttendanceLectureHistoryResponse> getAllAttendanceHistoryByStudentId(Integer studentId);
 
     List<StudentOverallAttendanceResponse> getAllStudentsAttendanceReportByModuleId(Integer moduleId);
+
+    List<LectureWithDateResponse> getAllLectureWithDateForDayLecture(Integer lectureId);
+    List<LectureAttendanceResponse> getAllAttendanceForLectureWithDate(Integer lectureId,Date date);
+
+
 }

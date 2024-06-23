@@ -317,15 +317,18 @@ public class LectureAttendanceMarkingServiceImpl implements LectureAttendanceMar
                 response.setIndexNumber(student.get().getIndexNumber());
 
                 Integer attendedLecture = 0;
+                Integer totalLecture = 0;
                 for (Lecture lecture : allLectureList.get()){
                     List<AttendanceLecture> attendanceLecture = attendanceLectureService.getAttendanceByLectureIdAndStudentId(lecture.getLectureId(),student.get().getStudentId());
                     if (!attendanceLecture.isEmpty()){
                         attendedLecture++;
                     }
+                    totalLecture = totalLecture + attendanceLectureService.getLectureCountByLectureId(lecture.getLectureId());
                 }
+
                 response.setAttendedLectureCount(attendedLecture);
-                response.setMissedLectureCount(allLectureList.get().size() - attendedLecture);
-                Double percentage = (double) attendedLecture / allLectureList.get().size() * 100;
+                response.setMissedLectureCount(totalLecture - attendedLecture);
+                Double percentage = (double) attendedLecture / totalLecture * 100;
                 response.setAttendancePercentage(percentage);
 
                 responseList.add(response);
@@ -333,6 +336,85 @@ public class LectureAttendanceMarkingServiceImpl implements LectureAttendanceMar
         }
 
         return responseList;
+    }
+
+
+    //======================================
+    @Override
+    public List<LectureWithDateResponse> getAllLectureWithDateForDayLecture(Integer lectureId) {
+        Optional<Lecture> lecture = lectureRepository.findById(lectureId);
+        if (!lecture.isPresent()) throw new RuntimeException("No Lecture Found For This Lecture Id.");
+
+        List<Date> lectureDateList = attendanceLectureService.getLecturesByLectureId(lectureId);
+        if (lectureDateList.isEmpty()) throw new RuntimeException("There Is No Any Attendance For This Lecture.");
+
+        List<LectureWithDateResponse> responseList = new ArrayList<>();
+        for (Date date : lectureDateList){
+            LectureWithDateResponse response = new LectureWithDateResponse();
+
+            response.setLectureDate(date);
+            response.setLectureId(lectureId);
+            response.setLectureStartTime(lecture.get().getLectureStartTime());
+            response.setLectureEndTime(lecture.get().getLectureEndTime());
+            response.setLectureModuleCode(lecture.get().getLectureModuleCode());
+            response.setLectureVenue(lecture.get().getLectureVenue());
+            response.setLectureName(lecture.get().getLectureName());
+
+            responseList.add(response);
+        }
+
+        return responseList;
+    }
+
+    @Override
+    public List<LectureAttendanceResponse> getAllAttendanceForLectureWithDate(Integer lectureId, Date lectureDate) {
+        Optional<Lecture> lecture = lectureRepository.findById(lectureId);
+        if (!lecture.isPresent()) throw new RuntimeException("No Lecture Found For This Lecture Id.");
+
+        List<Date> lectureDateList = attendanceLectureService.getLecturesByLectureId(lectureId);
+        if (lectureDateList.isEmpty()) throw new RuntimeException("There Is No Any Attendance For This Lecture.");
+        if (!lectureDateList.contains(lectureDate)) throw new RuntimeException("The Date Is Not Valid.");
+
+        List<AttendanceLecture> attendanceLectureList = attendanceLectureService.getAttendanceByLectureIdAndDate(lectureId,lectureDate);
+
+        List<Student> enrolledStudentsList = moduleService.getAllEnrolledStudentByModuleCode(lecture.get().getLectureModuleCode());
+
+        List<LectureAttendanceResponse> lectureAttendanceResponseList = new ArrayList<>();
+
+        for (AttendanceLecture attendanceLecture : attendanceLectureList) {
+            Optional<Student> student = studentRepository.findById(attendanceLecture.getAttendeeId());
+            if (student.isPresent()) {
+                LectureAttendanceResponse lectureAttendanceResponse = new LectureAttendanceResponse();
+                lectureAttendanceResponse.setStudentId(attendanceLecture.getAttendeeId());
+                lectureAttendanceResponse.setAttendedDate(attendanceLecture.getAttendanceDate());
+                lectureAttendanceResponse.setAttendedTime(attendanceLecture.getAttendanceTime());
+                lectureAttendanceResponse.setAttendanceStatus(attendanceLecture.getAttendanceStatus());
+                lectureAttendanceResponse.setStudentName(student.get().getStudentName());
+                lectureAttendanceResponse.setStudentIndexNumber(student.get().getIndexNumber());
+                lectureAttendanceResponseList.add(lectureAttendanceResponse);
+            }
+
+        }
+
+        for (Student enrolledStudent : enrolledStudentsList){
+            boolean isAddNotAttendedStudent = true;
+            for (AttendanceLecture attendanceLecture : attendanceLectureList){
+                if (attendanceLecture.getAttendeeId().equals(enrolledStudent.getStudentId())){
+                    isAddNotAttendedStudent = false;
+                }
+            }
+            if (isAddNotAttendedStudent) {
+                LectureAttendanceResponse lectureAttendanceResponse = new LectureAttendanceResponse();
+                lectureAttendanceResponse.setStudentName(enrolledStudent.getStudentName());
+                lectureAttendanceResponse.setStudentIndexNumber(enrolledStudent.getIndexNumber());
+                lectureAttendanceResponse.setStudentId(enrolledStudent.getStudentId());
+                lectureAttendanceResponse.setAttendanceStatus(false);
+                lectureAttendanceResponseList.add(lectureAttendanceResponse);
+            }
+        }
+
+        return lectureAttendanceResponseList;
+
     }
 
 

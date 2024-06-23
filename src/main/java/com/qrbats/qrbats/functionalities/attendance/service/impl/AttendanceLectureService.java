@@ -111,4 +111,50 @@ public class AttendanceLectureService {
         }
     }
 
+    @Transactional
+    public Integer getLectureCountByLectureId(Integer lectureId) {
+        String tableName = "Attendance_lec_" + lectureId.toString();
+        String selectQuery = "SELECT COUNT(DISTINCT Attendance_date) AS lecture_count FROM " + tableName;
+        try {
+            Query query = entityManager.createNativeQuery(selectQuery);
+            Number result = (Number) query.getSingleResult();
+            return result.intValue();
+        } catch (Exception e) {
+            throw new RuntimeException("Error Getting Lecture Count.", e);
+        }
+    }
+
+    @Transactional
+    public List<Date> getLecturesByLectureId(Integer lectureId) {
+        String tableName = "Attendance_lec_" + lectureId.toString();
+        String selectQuery = "SELECT DISTINCT Attendance_date FROM " + tableName;
+        try {
+            Query query = entityManager.createNativeQuery(selectQuery);
+            return (List<Date>) query.getResultList();
+        } catch (Exception e) {
+            throw new RuntimeException("Error In Getting Date List.", e);
+        }
+    }
+
+
+    @Transactional
+    public List<AttendanceLecture> getAttendanceByLectureIdAndDate(Integer lectureId, Date date){
+        String tableName = "Attendance_lec_" + lectureId.toString();
+        String selectQuery = "SELECT * FROM " + tableName + " WHERE Lecture_id="+lectureId.toString()
+                +" And Attendance_date="+"'"+date+"'";
+        try {
+            Query query = entityManager.createNativeQuery(selectQuery, AttendanceLecture.class);
+            return query.getResultList();
+        } catch (Exception e) {
+            throw new RuntimeException("Error In Getting Attendance. ",e);
+        }
+    }
+
+
+
+
+
+
+
+
 }
