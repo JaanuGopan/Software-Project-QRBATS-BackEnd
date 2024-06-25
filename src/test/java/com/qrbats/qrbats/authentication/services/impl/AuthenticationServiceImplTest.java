@@ -226,6 +226,7 @@ class AuthenticationServiceImplTest {
         updateUserRequest.setFirstName(updatedUser.getFirstName());
         updateUserRequest.setLastName(updatedUser.getLastName());
         updateUserRequest.setDepartmentId(updatedUser.getDepartmentId());
+        updateUserRequest.setPassword("");
 
 
         // when
