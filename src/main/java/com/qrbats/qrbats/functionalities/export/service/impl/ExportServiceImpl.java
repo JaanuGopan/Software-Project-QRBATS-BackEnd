@@ -4,6 +4,12 @@ import com.qrbats.qrbats.authentication.entities.student.Student;
 import com.qrbats.qrbats.authentication.entities.student.repository.StudentRepository;
 import com.qrbats.qrbats.entity.attendance.AttendanceEvent;
 import com.qrbats.qrbats.entity.attendance.AttendanceLecture;
+import com.qrbats.qrbats.entity.module.Module;
+import com.qrbats.qrbats.entity.module.ModuleRepository;
+import com.qrbats.qrbats.functionalities.attendance.dto.AttendanceLectureHistoryResponse;
+import com.qrbats.qrbats.functionalities.attendance.dto.LectureAttendanceResponse;
+import com.qrbats.qrbats.functionalities.attendance.dto.StudentOverallAttendanceResponse;
+import com.qrbats.qrbats.functionalities.attendance.service.LectureAttendanceMarkingService;
 import com.qrbats.qrbats.functionalities.attendance.service.impl.AttendanceEventService;
 import com.qrbats.qrbats.functionalities.attendance.service.impl.AttendanceLectureService;
 import com.qrbats.qrbats.entity.event.Event;
@@ -39,6 +45,10 @@ public class ExportServiceImpl implements ExportService {
     private final StudentRepository studentRepository;
     @Autowired
     private final ModuleService moduleService;
+    @Autowired
+    private final ModuleRepository moduleRepository;
+    @Autowired
+    private final LectureAttendanceMarkingService lectureAttendanceMarkingService;
 
 
     @Autowired
@@ -175,6 +185,40 @@ public class ExportServiceImpl implements ExportService {
                 String[] row = {number.toString(), student.get().getStudentName(), student.get().getIndexNumber(),
                         attendanceEvent.getAttendanceDate().toString(), attendanceEvent.getAttendanceTime().toString(),
                         "Attended"};
+                writer.writeNext(row);
+                number++;
+            }
+
+        }
+        writer.close();
+        return new ByteArrayInputStream(out.toByteArray());
+
+    }
+
+    @Override
+    public ByteArrayInputStream exportOverallStudentAttendance(Integer moduleId) throws IOException {
+        Optional<Module> module = moduleRepository.findById(moduleId);
+        if (!module.isPresent()) throw new RuntimeException("There is No Any Module for This Id.");
+
+
+        List<StudentOverallAttendanceResponse> responses = lectureAttendanceMarkingService.getAllStudentsAttendanceReportByModuleId(moduleId);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CSVWriter writer = new CSVWriter(new OutputStreamWriter(out));
+
+        // Write CSV headers
+        String[] moduleName = {"Module : ", module.get().getModuleCode().toString()+" - "+module.get().getModuleName()};
+        writer.writeNext(moduleName);
+        String[] header = {"No", "Student Name", "Index Number", "Attended Lectures", "Total Lectures", "Attendance Percentage"};
+        writer.writeNext(header);
+        Integer number = 1;
+        for (StudentOverallAttendanceResponse response : responses) {
+            Optional<Student> student = studentRepository.findById(response.getStudentId());
+            if (student.isPresent()) {
+                int totalLectureCount = response.getAttendedLectureCount() + response.getMissedLectureCount();
+                String[] row = {number.toString(), student.get().getStudentName(), student.get().getIndexNumber(),
+                        response.getAttendedLectureCount().toString(), String.valueOf(totalLectureCount),
+                        String.format("%.2f", response.getAttendancePercentage()) +" %"};
                 writer.writeNext(row);
                 number++;
             }

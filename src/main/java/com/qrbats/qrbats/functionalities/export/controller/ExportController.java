@@ -57,4 +57,15 @@ public class ExportController {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
+    @GetMapping("/getstudentsoverallreport/{moduleId}")
+    public ResponseEntity<?> getStudentOverallAttendanceReport(@PathVariable Integer moduleId) throws IOException {
+        try {
+            ByteArrayInputStream in = exportService.exportOverallStudentAttendance(moduleId);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition", "attachment; filename=module_"+moduleId.toString()+"_students_report.csv");
+            return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(new InputStreamResource(in));
+        } catch (RuntimeException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
 }
