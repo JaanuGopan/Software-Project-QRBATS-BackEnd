@@ -1,6 +1,5 @@
 package com.qrbats.qrbats.functionalities.eventcreation.services.impl;
 
-import com.qrbats.qrbats.entity.attendance.AttendanceEvent;
 import com.qrbats.qrbats.entity.event.Event;
 import com.qrbats.qrbats.entity.event.EventRepository;
 import com.qrbats.qrbats.entity.event.EventRole;

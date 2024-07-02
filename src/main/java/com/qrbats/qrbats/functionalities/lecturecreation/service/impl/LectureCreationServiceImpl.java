@@ -2,6 +2,8 @@ package com.qrbats.qrbats.functionalities.lecturecreation.service.impl;
 
 import com.qrbats.qrbats.authentication.entities.user.User;
 import com.qrbats.qrbats.authentication.entities.user.repository.UserRepository;
+import com.qrbats.qrbats.entity.event.Event;
+import com.qrbats.qrbats.entity.event.EventRepository;
 import com.qrbats.qrbats.functionalities.attendance.service.impl.AttendanceLectureService;
 import com.qrbats.qrbats.entity.lecture.Lecture;
 import com.qrbats.qrbats.entity.lecture.LectureRepository;
@@ -20,10 +22,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Time;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -38,6 +42,8 @@ public class LectureCreationServiceImpl implements LectureCreationService {
     private final LocationRepository locationRepository;
     @Autowired
     private final AttendanceLectureService attendanceLectureService;
+    @Autowired
+    private final EventRepository eventRepository;
 
     @Autowired
     @PersistenceContext
@@ -71,24 +77,96 @@ public class LectureCreationServiceImpl implements LectureCreationService {
                     throw new RuntimeException("Venue " + venue + " not Found.");
                 }
 
+                // For Same Venue Same Day Same Time Lecture.
                 Optional<List<Lecture>> existingLectures = lectureRepository.findAllByLectureDayAndLectureVenue(day, venue);
-                boolean isTimeOverlapping = existingLectures.isPresent() && existingLectures.get().stream()
-                        .anyMatch(existingLecture -> !findTimeOverlappingLecture(startTime, endTime, existingLecture.getLectureId()).isEmpty());
+                for (Lecture lectureWithSameDayAndVenue : existingLectures.get()){
+                    LocalTime lectureWithSameDayAndVenueStartTime = lectureWithSameDayAndVenue.getLectureStartTime().toLocalTime();
+                    LocalTime lectureWithSameDayAndVenueEndTime = lectureWithSameDayAndVenue.getLectureEndTime().toLocalTime();
+                    LocalTime lectureStartTime = LocalTime.parse(startTime);
+                    LocalTime lectureEndTime = LocalTime.parse(endTime);
 
-                if (!isTimeOverlapping) {
-                    Lecture newLecture = new Lecture();
-                    newLecture.setLectureDay(day);
-                    newLecture.setLectureName(createLectureRequest.getModuleCode() + "_" + day + "_" + startTime + "_Lecture");
-                    newLecture.setLectureAssignedUserId(createLectureRequest.getLectureAssignedUserId());
-                    newLecture.setLectureModuleCode(createLectureRequest.getModuleCode());
-                    newLecture.setLectureVenue(venue);
-                    newLecture.setLectureStartTime(Time.valueOf(startTime));
-                    newLecture.setLectureEndTime(Time.valueOf(endTime));
-
-                    Lecture savedLecture = lectureRepository.save(newLecture);
-                    createdLectures.add(savedLecture);
-                    attendanceLectureService.createLectureAttendanceTable(savedLecture.getLectureId().toString());
+                    boolean isLectureStartAndEndTimesEqualsToLectureWithSameDayAndVenueStartAndEndTimes =
+                            lectureStartTime.equals(lectureWithSameDayAndVenueStartTime) || lectureStartTime.equals(lectureWithSameDayAndVenueEndTime)
+                                    || lectureEndTime.equals(lectureWithSameDayAndVenueStartTime) || lectureEndTime.equals(lectureWithSameDayAndVenueEndTime);
+                    boolean isLectureStartTimeInLectureWithSameDayAndVenueTimeDuration = lectureStartTime.isAfter(lectureWithSameDayAndVenueStartTime) && lectureStartTime.isBefore(lectureWithSameDayAndVenueEndTime);
+                    boolean isLectureEndTimeInLectureWithSameDayAndVenueTimeDuration = lectureEndTime.isAfter(lectureWithSameDayAndVenueStartTime) && lectureEndTime.isBefore(lectureWithSameDayAndVenueEndTime);
+                    boolean isLectureWithSameDayAndVenueTimeDurationInLectureTimeDuration = lectureStartTime.isBefore(lectureWithSameDayAndVenueStartTime) && lectureEndTime.isAfter(lectureWithSameDayAndVenueEndTime);
+                    if (isLectureStartAndEndTimesEqualsToLectureWithSameDayAndVenueStartAndEndTimes || isLectureStartTimeInLectureWithSameDayAndVenueTimeDuration || isLectureEndTimeInLectureWithSameDayAndVenueTimeDuration || isLectureWithSameDayAndVenueTimeDurationInLectureTimeDuration){
+                        throw new RuntimeException("There is Another Lecture For The Venue-"+venue+" At The Same Time.");
+                    }
                 }
+
+
+                // For OtherModuleLecturesAtSameTime For Students
+                Optional<List<Module>> moduleList = moduleRepository.findAllBySemesterAndDepartmentId(module.get().getSemester(),module.get().getDepartmentId());
+                List<Lecture> otherModuleLecturesAtSameTime = new ArrayList<>();
+                for (Module  module1: moduleList.get()){
+                    Optional<List<Lecture>> lectureList = lectureRepository.findAllByLectureModuleCode(module1.getModuleCode());
+                    for (Lecture otherLecturesForStudent : lectureList.get()){
+                        otherModuleLecturesAtSameTime.add(otherLecturesForStudent);
+                    }
+                }
+                if (!otherModuleLecturesAtSameTime.isEmpty()){
+                    for (Lecture otherModuleLecture : otherModuleLecturesAtSameTime){
+                        String otherLectureDay = otherModuleLecture.getLectureDay();
+                        LocalTime otherLectureStartTime = otherModuleLecture.getLectureStartTime().toLocalTime();
+                        LocalTime otherLectureEndTime = otherModuleLecture.getLectureEndTime().toLocalTime();
+                        LocalTime lectureStartTime = LocalTime.parse(startTime);
+                        LocalTime lectureEndTime = LocalTime.parse(endTime);
+
+                        boolean isSameDay = otherLectureDay.equals(day);
+                        boolean isLectureStartAndEndTimesEqualsToOtherLectureStartAndEndTimes =
+                                lectureStartTime.equals(otherLectureStartTime) || lectureStartTime.equals(otherLectureEndTime)
+                                        || lectureEndTime.equals(otherLectureStartTime) || lectureEndTime.equals(otherLectureEndTime);
+                        boolean isLectureStartTimeInOtherModuleLectureTimeDuration = lectureStartTime.isAfter(otherLectureStartTime) && lectureStartTime.isBefore(otherLectureEndTime);
+                        boolean isLectureEndTimeInOtherModuleLectureTimeDuration = lectureEndTime.isAfter(otherLectureStartTime) && lectureEndTime.isBefore(otherLectureEndTime);
+                        boolean isOtherModuleLectureTimeDurationInLectureTimeDuration = lectureStartTime.isBefore(otherLectureStartTime) && lectureEndTime.isAfter(otherLectureEndTime);
+                        if (isSameDay) {
+                            if (isLectureStartAndEndTimesEqualsToOtherLectureStartAndEndTimes || isLectureStartTimeInOtherModuleLectureTimeDuration || isLectureEndTimeInOtherModuleLectureTimeDuration || isOtherModuleLectureTimeDurationInLectureTimeDuration){
+                                String[] departmentList = {"DEIE","DCOM","DMME","DCEE","DMENA","DIS"};
+                                throw new RuntimeException("There Is Another Lecture For The Semester-"+module.get().getSemester()+" Department-"+departmentList[module.get().getDepartmentId()-1]+" Students.");
+                            }
+                        }
+                    }
+                }
+
+                // For Solve Event Overlapping
+                Optional<List<Event>> eventListByVenue = eventRepository.findAllByEventVenue(venue);
+                List<Event> eventListByVenueAndDay = eventListByVenue.get().stream()
+                        .filter(event -> event.getEventDate().getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.ENGLISH).equals(day))
+                        .collect(Collectors.toList());
+                for (Event eventByVenueAndDay : eventListByVenueAndDay){
+                    LocalTime eventStartTime = eventByVenueAndDay.getEventTime();
+                    LocalTime eventEndTime = eventByVenueAndDay.getEventEndTime();
+                    LocalTime lectureStartTime = LocalTime.parse(startTime);
+                    LocalTime lectureEndTime = LocalTime.parse(endTime);
+
+                    boolean isLectureStartAndEndTimesEqualsToEventStartAndEndTimes =
+                            lectureStartTime.equals(eventStartTime) || lectureStartTime.equals(eventEndTime)
+                                    || lectureEndTime.equals(eventStartTime) || lectureEndTime.equals(eventEndTime);
+                    boolean isLectureStartTimeInEventTimeDuration = lectureStartTime.isAfter(eventStartTime) && lectureStartTime.isBefore(eventEndTime);
+                    boolean isLectureEndTimeInEventTimeDuration = lectureEndTime.isAfter(eventStartTime) && lectureEndTime.isBefore(eventEndTime);
+                    boolean isLectureEventTimeDurationInLectureTimeDuration = lectureStartTime.isBefore(eventStartTime) && lectureEndTime.isAfter(eventEndTime);
+                    if (isLectureStartAndEndTimesEqualsToEventStartAndEndTimes ||isLectureStartTimeInEventTimeDuration || isLectureEndTimeInEventTimeDuration || isLectureEventTimeDurationInLectureTimeDuration){
+                        throw new RuntimeException("The Lecture On "+venue+" At "+startTime+" Is Overlapping Another Event: "+eventByVenueAndDay.getEventName());
+                    }
+
+                }
+
+
+                Lecture newLecture = new Lecture();
+                newLecture.setLectureDay(day);
+                newLecture.setLectureName(module.get().getModuleName()+" ("+createLectureRequest.getModuleCode() +") "+ "_" + day + "_" + LocalTime.parse(startTime).format(DateTimeFormatter.ofPattern("hh:mm a")).toString());
+                newLecture.setLectureAssignedUserId(createLectureRequest.getLectureAssignedUserId());
+                newLecture.setLectureModuleCode(createLectureRequest.getModuleCode());
+                newLecture.setLectureVenue(venue);
+                newLecture.setLectureStartTime(Time.valueOf(startTime));
+                newLecture.setLectureEndTime(Time.valueOf(endTime));
+
+                Lecture savedLecture = lectureRepository.save(newLecture);
+                createdLectures.add(savedLecture);
+                attendanceLectureService.createLectureAttendanceTable(savedLecture.getLectureId().toString());
+
             }
         }
 
@@ -137,22 +215,7 @@ public class LectureCreationServiceImpl implements LectureCreationService {
     }
 
 
-    @Transactional
-    public List<Lecture> findTimeOverlappingLecture(String startTime, String endTime, Integer lectureId) {
-        String query = "SELECT * FROM Lecture WHERE " +
-                "(lecture_id = ?) AND " +
-                "((lecture_start_time <= ? AND lecture_end_time > ?) " +
-                "OR (lecture_start_time < ? AND lecture_end_time >= ?))";
 
-        Query resultQuery = entityManager.createNativeQuery(query, Lecture.class)
-                .setParameter(1, lectureId)
-                .setParameter(2, startTime)
-                .setParameter(3, startTime)
-                .setParameter(4, endTime)
-                .setParameter(5, endTime);
-
-        return resultQuery.getResultList();
-    }
 
     @Override
     public Lecture updateLecture(Integer lectureId, Lecture updateLecture) {

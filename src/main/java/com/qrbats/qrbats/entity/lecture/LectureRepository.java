@@ -15,5 +15,4 @@ public interface LectureRepository extends JpaRepository<Lecture,Integer> {
     Optional<List<Lecture>> findAllByLectureDayAndLectureVenueAndLectureModuleCode(
             String day,String venue, String moduleCode);
 
-
 }

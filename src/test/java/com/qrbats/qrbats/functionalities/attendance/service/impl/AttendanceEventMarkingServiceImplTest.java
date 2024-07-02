@@ -18,10 +18,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.sql.Date;
+import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.DATE;
 import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class AttendanceEventMarkingServiceImplTest {
@@ -80,12 +83,11 @@ class AttendanceEventMarkingServiceImplTest {
 
         // attendance
         AttendanceEvent attendanceEvent = new AttendanceEvent();
-        attendanceEvent.setAttendanceDate(LocalDate.now());
-        attendanceEvent.setAttendanceTime(LocalTime.parse("08:35:00"));
-        attendanceEvent.setLocationLongitude(10.10);
-        attendanceEvent.setLocationLatitude(10.20);
+        attendanceEvent.setAttendanceDate(Date.valueOf(LocalDate.now()));
+        attendanceEvent.setAttendanceTime(Time.valueOf("08:35:00"));
         attendanceEvent.setAttendeeId(savedStudent.getStudentId());
         attendanceEvent.setEventId(savedEvent.getEventId());
+        attendanceEvent.setAttendanceStatus(true);
 
         return attendanceEvent;
     }
@@ -224,4 +226,5 @@ class AttendanceEventMarkingServiceImplTest {
     @Test
     void getAllAttendanceByStudentId() {
     }
-}*/
+}
+*/

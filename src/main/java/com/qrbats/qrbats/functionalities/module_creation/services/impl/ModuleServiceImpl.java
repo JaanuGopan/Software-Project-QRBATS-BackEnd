@@ -45,6 +45,10 @@ public class ModuleServiceImpl implements ModuleService {
         if (checkModuleCode.isPresent())
             throw new RuntimeException("The ModuleCode " + moduleCreationRequest.getModuleCode()
                     + " Already Created.");
+        Optional<Module> checkModuleName = moduleRepository.findByModuleName(moduleCreationRequest.getModuleName());
+        if (checkModuleName.isPresent()){
+            throw new RuntimeException("The Module Name '"+moduleCreationRequest.getModuleName()+"' Already Exist.");
+        }
 
         Module module = new Module();
         module.setModuleCode(moduleCreationRequest.getModuleCode());
