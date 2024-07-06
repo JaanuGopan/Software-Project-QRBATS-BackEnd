@@ -5,6 +5,7 @@ import com.qrbats.qrbats.authentication.entities.otp.OTP;
 import com.qrbats.qrbats.authentication.entities.otp.otpverification.service.OTPVerificationService;
 import com.qrbats.qrbats.authentication.entities.otp.repository.OTPRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -43,13 +44,17 @@ public class OTPVerificationServiceImpl implements OTPVerificationService {
 
     @Override
     public void sendEmail(String toEmail, String subject, String body) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("sjanugopanstudy@gmail.com");
-        message.setTo(toEmail);
-        message.setText(body);
-        message.setSubject(subject);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("sjanugopanstudy@gmail.com");
+            message.setTo(toEmail);
+            message.setText(body);
+            message.setSubject(subject);
 
-        mailSender.send(message);
+            mailSender.send(message);
+        } catch (MailException e) {
+            throw new RuntimeException("Failed To Send An Email To "+toEmail+".");
+        }
     }
 
     @Override
@@ -66,7 +71,22 @@ public class OTPVerificationServiceImpl implements OTPVerificationService {
     @Override
     public boolean otpVerification(String studentEmail, String otp) {
         Optional<OTP> existStudentOTP = otpRepository.findByEmail(studentEmail);
-        return existStudentOTP.filter(value -> Objects.equals(otp, value.getOtp())).isPresent();
+        if (!existStudentOTP.isPresent()){
+            throw new RuntimeException("The Email "+studentEmail+" Is Not Valid.");
+        }
+        if (existStudentOTP.get().getOtp() == null){
+            throw new RuntimeException("There Is No Any OTP Found For This Email "+studentEmail);
+        }
+        boolean isOtpValid = existStudentOTP.filter(value -> Objects.equals(otp, value.getOtp())).isPresent();
+        if (!isOtpValid){
+            throw new RuntimeException("The OTP Is Not Match.");
+        }
+        if (isOtpValid && !existStudentOTP.get().getCreationTime().isAfter(LocalDateTime.now().minusMinutes(5))){
+            throw new RuntimeException("The OTP Is Expired.");
+        }
+        existStudentOTP.get().setOtp(null);
+        otpRepository.save(existStudentOTP.get());
+        return isOtpValid;
     }
     @Override
     @Scheduled(fixedRate = 60000) // Runs every minute

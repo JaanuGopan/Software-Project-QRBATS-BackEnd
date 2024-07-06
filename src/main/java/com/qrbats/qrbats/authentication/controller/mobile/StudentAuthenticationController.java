@@ -82,5 +82,30 @@ public class StudentAuthenticationController {
         }
     }
 
+    @PostMapping("/forgotpasswordsendotp")
+    public ResponseEntity<?> sendOTPForForgotPassword(@RequestParam String email){
+        try {
+            return ResponseEntity.ok(mobileAuthenticationService.generateOTPForForgotPassword(email));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
+    @PostMapping("/forgotpasswordverifyotp")
+    public ResponseEntity<?> verifyOTPForForgotPassword(@RequestParam String email,@RequestParam String otp){
+        try {
+            return ResponseEntity.ok(mobileAuthenticationService.verifyOTPForForgotPassword(email,otp));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @PostMapping("/resetPassword")
+    public ResponseEntity<?> resetPassword(@RequestParam String email,@RequestParam String password){
+        try {
+            return ResponseEntity.ok(mobileAuthenticationService.resetPassword(email,password));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
 }
