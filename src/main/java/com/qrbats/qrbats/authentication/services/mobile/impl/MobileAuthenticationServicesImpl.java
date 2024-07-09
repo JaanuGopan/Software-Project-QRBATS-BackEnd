@@ -2,19 +2,17 @@ package com.qrbats.qrbats.authentication.services.mobile.impl;
 
 import com.qrbats.qrbats.authentication.dto.JwtAuthenticationResponse;
 import com.qrbats.qrbats.authentication.dto.RefreshTokenRequest;
-import com.qrbats.qrbats.authentication.dto.SigninRequest;
 import com.qrbats.qrbats.authentication.dto.mobile.AdminCreateStudentRequest;
 import com.qrbats.qrbats.authentication.dto.mobile.StudentSignUpRequest;
 import com.qrbats.qrbats.authentication.dto.mobile.StudentSigninRequest;
 import com.qrbats.qrbats.authentication.dto.mobile.StudentUpdateRequest;
+import com.qrbats.qrbats.authentication.entities.otp.otpverification.service.OTPVerificationService;
 import com.qrbats.qrbats.authentication.entities.student.Student;
 import com.qrbats.qrbats.authentication.entities.student.StudentRole;
 import com.qrbats.qrbats.authentication.entities.student.repository.StudentRepository;
 import com.qrbats.qrbats.authentication.services.JWTService;
 import com.qrbats.qrbats.authentication.services.mobile.MobileAuthenticationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +29,8 @@ public class MobileAuthenticationServicesImpl implements MobileAuthenticationSer
     private final PasswordEncoder passwordEncoder;
 
     private final JWTService jwtService;
+
+    private final OTPVerificationService otpService;
     @Override
     public Student signup(StudentSignUpRequest studentSignUpRequest) {
         if(!checkStudentIsExist(studentSignUpRequest.getStudentEmail())){
@@ -54,14 +54,12 @@ public class MobileAuthenticationServicesImpl implements MobileAuthenticationSer
     @Override
     public boolean checkStudentIsExist(String email) {
         Student oldStudent = studentRepository.findByStudentEmail(email);
-        System.out.println(oldStudent);
         return oldStudent != null;
     }
 
     @Override
     public boolean checkIndexNoIsExist(String indexNo) {
         Optional<Student> oldStudent = studentRepository.findByIndexNumber(indexNo);
-
         return oldStudent.isPresent();
     }
 
@@ -212,6 +210,40 @@ public class MobileAuthenticationServicesImpl implements MobileAuthenticationSer
         Student student = studentRepository.findById(studentID)
                 .orElseThrow(()-> new RuntimeException("Student Not Found For This ID."));
         studentRepository.delete(student);
+        return true;
+    }
+
+    @Override
+    public boolean generateOTPForForgotPassword(String email) {
+        Student student = studentRepository.findByStudentEmail(email);
+        if (student==null){
+            throw new RuntimeException("There Is No Account For This Email "+email);
+        }
+        boolean isOtpSend = otpService.sendOTP(email);
+        return isOtpSend;
+    }
+
+    @Override
+    public boolean verifyOTPForForgotPassword(String email, String otp) {
+        Student student = studentRepository.findByStudentEmail(email);
+        if (student==null){
+            throw new RuntimeException("There Is No Account For This Email "+email);
+        }
+        boolean isOTPCorrect = otpService.otpVerification(email,otp);
+        return isOTPCorrect;
+    }
+
+    @Override
+    public boolean resetPassword(String email, String password) {
+        Student student = studentRepository.findByStudentEmail(email);
+        if (student==null){
+            throw new RuntimeException("There Is No Account For This Email "+email);
+        }
+        if (password.isEmpty()){
+            throw new RuntimeException("The Password Is Not Valid, Please Enter Valid Password.");
+        }
+        student.setPassword(passwordEncoder.encode(password));
+        studentRepository.save(student);
         return true;
     }
 }

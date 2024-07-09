@@ -24,5 +24,8 @@ public interface MobileAuthenticationService {
     Student updateStudentDetails(StudentUpdateRequest studentUpdateRequest);
     Student adminCreateStudent(AdminCreateStudentRequest adminCreateStudentRequest);
     Boolean deleteStudent(Integer studentID);
+    boolean generateOTPForForgotPassword(String email);
+    boolean verifyOTPForForgotPassword(String email,String otp);
+    boolean resetPassword(String email,String password);
 
 }

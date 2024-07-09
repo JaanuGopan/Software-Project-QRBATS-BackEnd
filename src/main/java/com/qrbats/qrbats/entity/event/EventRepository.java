@@ -15,6 +15,7 @@ public interface EventRepository extends JpaRepository<Event,Integer> {
     Optional<Event> findByEventNameAndEventDateAndEventTimeAndEventModuleCode(
             String eventName, LocalDate eventDate, LocalTime eventTime, String eventModuleCode
     );
+    Optional<List<Event>> findAllByEventVenueAndEventDate(String venue,LocalDate date);
     Optional<List<Event>> findAllByEventAssignedUserId(Integer userId);
 
     Optional<List<Event>> findAllByEventVenue(String venue);

@@ -18,7 +18,6 @@ public class RegisterEventRequest {
     private Integer eventId;
     private String eventName;
     private LocalDate eventDate;
-    private LocalDate eventValidDate;
     private LocalTime eventTime;
     private LocalTime eventEndTime;
     private String eventVenue;

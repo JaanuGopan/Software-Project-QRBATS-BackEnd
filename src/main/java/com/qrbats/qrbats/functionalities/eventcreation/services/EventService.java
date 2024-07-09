@@ -7,12 +7,13 @@ import java.util.List;
 
 public interface EventService {
     Event createEvent(RegisterEventRequest request);
+    Event updateEvent(RegisterEventRequest request);
     List<Event> getAllEventByModuleCode(String moduleCode);
     List<Event> getAllEvent();
 
     List<Event> getAllEventByUserId(Integer userId);
 
-    void deleteEvent(Integer id);
+    boolean deleteEvent(Integer id);
     Event getEventByEventId(Integer eventId);
 
 }
