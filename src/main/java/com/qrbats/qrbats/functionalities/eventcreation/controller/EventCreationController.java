@@ -51,8 +51,12 @@ public class EventCreationController {
     }
 
     @DeleteMapping("/deletebyid/{eventId}")
-    public void deleteById(@PathVariable Integer eventId) {
-        eventService.deleteEvent(eventId);
+    public ResponseEntity<?> deleteById(@PathVariable Integer eventId) {
+        try {
+            return ResponseEntity.ok(eventService.deleteEvent(eventId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("geteventbyuserid/{userId}")

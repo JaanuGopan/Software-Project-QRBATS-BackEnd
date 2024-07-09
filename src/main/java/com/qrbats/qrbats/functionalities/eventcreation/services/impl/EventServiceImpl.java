@@ -209,12 +209,13 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public void deleteEvent(Integer id) {
+    public boolean deleteEvent(Integer id) {
         Optional<Event> event = eventRepository.findById(id);
         if (!event.isPresent()) throw new RuntimeException("The event not found for given eventId");
         try{
             attendanceEventService.dropEventAttendanceTable(id);
             eventRepository.deleteById(id);
+            return true;
         }catch (Exception ex){
             throw new RuntimeException("Error deleteEvent. ",ex);
         }
