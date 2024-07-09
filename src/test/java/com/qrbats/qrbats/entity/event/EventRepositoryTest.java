@@ -57,7 +57,6 @@ class EventRepositoryTest {
         event1.setEventEndTime(LocalTime.now().plusHours(2));
         event1.setEventVenue("NCC");
         event1.setEventAssignedUserId(2);
-        event1.setEventValidDate(LocalDate.now().plusDays(1));
         underTest.save(event1);
 
         Event event2 = new Event();
@@ -69,7 +68,6 @@ class EventRepositoryTest {
         event2.setEventEndTime(LocalTime.now().plusHours(2));
         event2.setEventVenue("NCC");
         event2.setEventAssignedUserId(2);
-        event2.setEventValidDate(LocalDate.now().plusDays(1));
         underTest.save(event2);
     }
 

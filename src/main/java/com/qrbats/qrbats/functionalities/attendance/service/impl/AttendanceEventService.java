@@ -29,7 +29,12 @@ public class AttendanceEventService {
                 "Attendance_date DATE, " +
                 "Attendance_time TIME, " +
                 "Attendance_status BOOL)";
-        entityManager.createNativeQuery(createTableQuery).executeUpdate();
+
+        try {
+            entityManager.createNativeQuery(createTableQuery).executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
     @Transactional
     public void saveEventAttendance(Integer eventId, AttendanceEvent attendanceEvent) {

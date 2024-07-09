@@ -38,7 +38,6 @@ class EventServiceImplTest {
         event1.setEventEndTime(LocalTime.parse("08:30:00").plusHours(2));
         event1.setEventVenue("NCC");
         event1.setEventAssignedUserId(2);
-        event1.setEventValidDate(LocalDate.now().plusDays(1));
         return event1;
     }
 
@@ -55,7 +54,6 @@ class EventServiceImplTest {
         request.setEventAssignedUserId(sampleEvent.getEventAssignedUserId());
         request.setEventEndTime(sampleEvent.getEventEndTime());
         request.setEventModuleName(sampleEvent.getEventName());
-        request.setEventValidDate(sampleEvent.getEventValidDate());
 
         // when
         Event expectedEvent = underTestEventService.createEvent(request);
@@ -79,7 +77,6 @@ class EventServiceImplTest {
         request.setEventAssignedUserId(sampleEvent.getEventAssignedUserId());
         request.setEventEndTime(sampleEvent.getEventEndTime());
         request.setEventModuleName(sampleEvent.getEventName());
-        request.setEventValidDate(sampleEvent.getEventValidDate());
 
         // when
         Event expectedEvent = underTestEventService.createEvent(request);

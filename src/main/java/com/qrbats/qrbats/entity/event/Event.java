@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-@Data // lombok Data to add setters and getters and more automatically (reduce the boilerplate)
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,8 +28,6 @@ public class Event {
     @Column(name = "Event_date")
     private LocalDate eventDate;
 
-    @Column(name = "Event_valid_date")
-    private LocalDate eventValidDate;
 
     @Column(name = "Event_venue")
     private String eventVenue;

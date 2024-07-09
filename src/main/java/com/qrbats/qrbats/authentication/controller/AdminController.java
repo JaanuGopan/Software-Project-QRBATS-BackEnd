@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin("*")
 public class AdminController {
 
-    @GetMapping
+    @GetMapping("/admin")
     public ResponseEntity<String> sayHello(){
         return ResponseEntity.ok("Hi Admin");
     }

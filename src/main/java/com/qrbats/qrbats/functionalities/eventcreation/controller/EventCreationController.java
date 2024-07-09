@@ -22,8 +22,21 @@ public class EventCreationController {
 
 
     @PostMapping("/create")
-    public ResponseEntity<Event> createEvent(@RequestBody RegisterEventRequest request) {
-        return ResponseEntity.ok(eventService.createEvent(request));
+    public ResponseEntity<?> createEvent(@RequestBody RegisterEventRequest request) {
+        try {
+            return ResponseEntity.ok(eventService.createEvent(request));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<?> updateEvent(@RequestBody RegisterEventRequest request) {
+        try {
+            return ResponseEntity.ok(eventService.updateEvent(request));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/getalleventbymodulecode")
