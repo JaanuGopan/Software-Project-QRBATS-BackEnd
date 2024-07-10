@@ -30,7 +30,6 @@ class EventServiceImplTest {
 
     private Event addSampleEvent(){
         Event event1 = new Event();
-        event1.setEventModuleCode("EE5300");
         event1.setEventRole(EventRole.LECTURE);
         event1.setEventName("Test Lecture 1");
         event1.setEventDate(LocalDate.now());
@@ -53,7 +52,6 @@ class EventServiceImplTest {
         request.setEventTime(sampleEvent.getEventTime());
         request.setEventAssignedUserId(sampleEvent.getEventAssignedUserId());
         request.setEventEndTime(sampleEvent.getEventEndTime());
-        request.setEventModuleName(sampleEvent.getEventName());
 
         // when
         Event expectedEvent = underTestEventService.createEvent(request);
@@ -76,7 +74,6 @@ class EventServiceImplTest {
         request.setEventTime(sampleEvent.getEventTime());
         request.setEventAssignedUserId(sampleEvent.getEventAssignedUserId());
         request.setEventEndTime(sampleEvent.getEventEndTime());
-        request.setEventModuleName(sampleEvent.getEventName());
 
         // when
         Event expectedEvent = underTestEventService.createEvent(request);

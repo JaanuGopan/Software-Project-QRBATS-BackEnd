@@ -28,7 +28,6 @@ public class Event {
     @Column(name = "Event_date")
     private LocalDate eventDate;
 
-
     @Column(name = "Event_venue")
     private String eventVenue;
 
@@ -41,10 +40,6 @@ public class Event {
     @Column(name = "Event_assigned_user_id")
     private Integer eventAssignedUserId;
 
-    @Column(name = "Event_module_code")
-    private String eventModuleCode;
-
     private EventRole eventRole;
-
 
 }

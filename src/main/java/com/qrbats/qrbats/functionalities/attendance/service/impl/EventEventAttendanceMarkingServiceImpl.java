@@ -162,8 +162,6 @@ public class EventEventAttendanceMarkingServiceImpl implements EventAttendanceMa
                 response.setAttendedDate((Date) attendance.getAttendanceDate());
                 response.setAttendedTime(attendance.getAttendanceTime());
                 response.setEventName(event.getEventName());
-                response.setEventModuleCode(event.getEventModuleCode());
-                response.setEventModuleName(event.getEventModuleCode());
 
                 attendanceEventHistoryResponses.add(response);
             }

@@ -109,16 +109,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public void updateUser(UpdateUserRequest request) {
+    public boolean updateUser(UpdateUserRequest request) {
         Optional<User> user = userRepository.findById(request.getUserId());
         if (user.isPresent()) {
-            user.get().setUserName(request.getUserName());
-            user.get().setEmail(request.getEmail());
-            user.get().setFirstName(request.getFirstName());
-            user.get().setLastName(request.getLastName());
-            user.get().setDepartmentId(request.getDepartmentId());
+            if (!request.getUserName().isEmpty()) user.get().setUserName(request.getUserName());
+            if (!request.getEmail().isEmpty()) user.get().setEmail(request.getEmail());
+            if (!request.getFirstName().isEmpty()) user.get().setFirstName(request.getFirstName());
+            if (!request.getLastName().isEmpty()) user.get().setLastName(request.getLastName());
+            if (!request.getDepartmentId().toString().isEmpty()) user.get().setDepartmentId(request.getDepartmentId());
             if (!request.getPassword().isEmpty()) user.get().setPassword(passwordEncoder.encode(request.getPassword()));
             userRepository.save(user.get());
+            return true;
         } else {
             throw new RuntimeException("User not found.");
         }
