@@ -8,7 +8,6 @@ import java.util.List;
 public interface EventService {
     Event createEvent(RegisterEventRequest request);
     Event updateEvent(RegisterEventRequest request);
-    List<Event> getAllEventByModuleCode(String moduleCode);
     List<Event> getAllEvent();
 
     List<Event> getAllEventByUserId(Integer userId);

@@ -25,21 +25,7 @@ class EventRepositoryTest {
         underTest.deleteAll();
     }*/
 
-    @Test
-    void findAllByEventModuleCode_ReturnsListOfEvents_WhenEventsExistWithGivenModuleCode() {
-        // given
-        String moduleCode = "EE5300";
-        addSampleEvent();
 
-        // when
-        Optional<List<Event>> expected = underTest.findAllByEventModuleCode(moduleCode);
-
-        // then
-        assertThat(expected.isPresent()).isTrue();
-        //assertThat(expected.get()).containsExactlyInAnyOrderElementsOf(List.of(event1, event2));
-
-        deleteSampleEvent(expected);
-    }
 
     private void deleteSampleEvent(Optional<List<Event>> expected) {
         for(Event event : expected.get()){
@@ -49,7 +35,6 @@ class EventRepositoryTest {
 
     private void addSampleEvent() {
         Event event1 = new Event();
-        event1.setEventModuleCode("EE5300");
         event1.setEventRole(EventRole.LECTURE);
         event1.setEventName("Test Lecture 1");
         event1.setEventDate(LocalDate.now());
@@ -60,7 +45,6 @@ class EventRepositoryTest {
         underTest.save(event1);
 
         Event event2 = new Event();
-        event2.setEventModuleCode("EE5300");
         event2.setEventRole(EventRole.LECTURE);
         event2.setEventName("Test Lecture 2");
         event2.setEventDate(LocalDate.now());

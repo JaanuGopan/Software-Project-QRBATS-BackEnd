@@ -46,8 +46,12 @@ public class AuthenticationController {
     }
 
     @PutMapping("/updateuser")
-    public void updateUser(@RequestBody UpdateUserRequest request){
-        authenticationService.updateUser(request);
+    public ResponseEntity<?> updateUser(@RequestBody UpdateUserRequest request){
+        try {
+             return ResponseEntity.ok(authenticationService.updateUser(request));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/verifypassword")

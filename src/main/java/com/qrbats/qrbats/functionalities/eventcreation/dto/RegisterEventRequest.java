@@ -21,7 +21,6 @@ public class RegisterEventRequest {
     private LocalTime eventTime;
     private LocalTime eventEndTime;
     private String eventVenue;
-    private String eventModuleName;
     private String eventRole;
     private Integer eventAssignedUserId;
 }

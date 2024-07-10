@@ -35,8 +35,8 @@ public class EventServiceImpl implements EventService {
     @Override
     public Event createEvent(RegisterEventRequest request) {
 
-        Optional<Event> existEvent = eventRepository.findByEventNameAndEventDateAndEventTimeAndEventModuleCode(
-                request.getEventName(),request.getEventDate(),request.getEventTime(),request.getEventModuleName()
+        Optional<Event> existEvent = eventRepository.findByEventNameAndEventDateAndEventTime(
+                request.getEventName(),request.getEventDate(),request.getEventTime()
         );
         if (existEvent.isPresent()){
             throw new RuntimeException("The Event Already Exist.");
@@ -95,11 +95,7 @@ public class EventServiceImpl implements EventService {
         event.setEventVenue(request.getEventVenue());
         event.setEventRole(EventRole.valueOf(request.getEventRole()));
         event.setEventAssignedUserId(request.getEventAssignedUserId());
-        if (request.getEventModuleName() != null) {
-            event.setEventModuleCode(request.getEventModuleName());
-        } else {
-            event.setEventModuleCode(null);
-        }
+
 
         Event save = eventRepository.save(event);
         if (!eventRepository.findById(save.getEventId()).isPresent()) throw new RuntimeException("Event Saved Failed.");
@@ -164,11 +160,7 @@ public class EventServiceImpl implements EventService {
         if(event.getEventVenue() != null) event.setEventVenue(request.getEventVenue());
         //if(event.getEventRole() != null) event.setEventRole(EventRole.valueOf(request.getEventRole()));
         //if(event.getEventAssignedUserId() != null) event.setEventAssignedUserId(request.getEventAssignedUserId());
-        if (request.getEventModuleName() != null) {
-            event.setEventModuleCode(request.getEventModuleName());
-        } else {
-            event.setEventModuleCode(null);
-        }
+
 
         Event save = eventRepository.save(event);
         if (!eventRepository.findById(save.getEventId()).isPresent()) throw new RuntimeException("Event Saved Failed.");
@@ -178,20 +170,12 @@ public class EventServiceImpl implements EventService {
 
 
     public Optional<Event> findAlreadyExistEvent(RegisterEventRequest request) {
-        return eventRepository.findByEventNameAndEventDateAndEventTimeAndEventModuleCode(
-                request.getEventName(), request.getEventDate(), request.getEventTime(), request.getEventModuleName()
+        return eventRepository.findByEventNameAndEventDateAndEventTime(
+                request.getEventName(), request.getEventDate(), request.getEventTime()
         );
     }
 
-    @Override
-    public List<Event> getAllEventByModuleCode(String moduleCode) {
-        Optional<List<Event>> eventList = eventRepository.findAllByEventModuleCode(moduleCode);
-        if (eventList.isPresent()) {
-            return eventList.get();
-        } else {
-            throw new RuntimeException("Given module code has no events.");
-        }
-    }
+
 
     @Override
     public List<Event> getAllEvent() {

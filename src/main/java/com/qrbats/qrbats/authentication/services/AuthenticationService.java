@@ -15,7 +15,7 @@ public interface AuthenticationService {
     List<User> getAllStaffs();
 
     void deleteByUserId(Integer userId);
-    void updateUser(UpdateUserRequest request);
+    boolean updateUser(UpdateUserRequest request);
 
     Boolean passwordVerification(String userName,String password);
 }

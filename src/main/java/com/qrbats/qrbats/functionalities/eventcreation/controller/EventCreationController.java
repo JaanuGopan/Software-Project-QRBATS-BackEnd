@@ -39,11 +39,7 @@ public class EventCreationController {
         }
     }
 
-    @GetMapping("/getalleventbymodulecode")
-    public ResponseEntity<List<Event>> getAllEventByModuleCode(
-            @RequestParam String moduleCode) {
-        return ResponseEntity.ok(eventService.getAllEventByModuleCode(moduleCode));
-    }
+
 
     @PostMapping("/getallevents")
     public ResponseEntity<List<Event>> findAllEvents() {
