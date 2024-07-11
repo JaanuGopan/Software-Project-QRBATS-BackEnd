@@ -28,6 +28,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final JWTService jwtService;
 
     public User signup(SignUpRequest signUpRequest) {
+
+        Optional<User> existUserByUserName = userRepository.findByUserName(signUpRequest.getUserName());
+        if (existUserByUserName.isPresent()) throw new RuntimeException("The UserName Already Exist.");
+        Optional<User> existUserByEmail = userRepository.findByEmail(signUpRequest.getEmail());
+        if (existUserByEmail.isPresent()) throw new RuntimeException("The Email Already Exist.");
+
+
         User user = new User();
 
         user.setFirstName(signUpRequest.getFirstName());
@@ -111,18 +118,28 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public boolean updateUser(UpdateUserRequest request) {
         Optional<User> user = userRepository.findById(request.getUserId());
-        if (user.isPresent()) {
-            if (!request.getUserName().isEmpty()) user.get().setUserName(request.getUserName());
-            if (!request.getEmail().isEmpty()) user.get().setEmail(request.getEmail());
-            if (!request.getFirstName().isEmpty()) user.get().setFirstName(request.getFirstName());
-            if (!request.getLastName().isEmpty()) user.get().setLastName(request.getLastName());
-            if (!request.getDepartmentId().toString().isEmpty()) user.get().setDepartmentId(request.getDepartmentId());
-            if (!request.getPassword().isEmpty()) user.get().setPassword(passwordEncoder.encode(request.getPassword()));
-            userRepository.save(user.get());
-            return true;
-        } else {
-            throw new RuntimeException("User not found.");
+        if (!user.isPresent()) {
+            throw new RuntimeException("User not found for this id.");
         }
+
+        if (!request.getEmail().equals(user.get().getEmail())){
+            Optional<User> existUserByEmail = userRepository.findByEmail(request.getEmail());
+            if (existUserByEmail.isPresent()) throw new RuntimeException("The Email Address Already Exist.");
+        }
+
+        if (!request.getUserName().equals(user.get().getUsername())){
+            Optional<User> existUserByUserName = userRepository.findByUserName(request.getUserName());
+            if (existUserByUserName.isPresent()) throw new RuntimeException("User Name Already Exist.");
+        }
+
+        if (!request.getUserName().isEmpty()) user.get().setUserName(request.getUserName());
+        if (!request.getEmail().isEmpty()) user.get().setEmail(request.getEmail());
+        if (!request.getFirstName().isEmpty()) user.get().setFirstName(request.getFirstName());
+        if (!request.getLastName().isEmpty()) user.get().setLastName(request.getLastName());
+        if (request.getDepartmentId() != null) user.get().setDepartmentId(request.getDepartmentId());
+        if (!request.getPassword().isEmpty()) user.get().setPassword(passwordEncoder.encode(request.getPassword()));
+        userRepository.save(user.get());
+        return true;
     }
 
     @Override
