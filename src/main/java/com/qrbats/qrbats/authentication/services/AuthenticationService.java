@@ -18,4 +18,8 @@ public interface AuthenticationService {
     boolean updateUser(UpdateUserRequest request);
 
     Boolean passwordVerification(String userName,String password);
+
+    Boolean forgotPasswordSendEmail(String email);
+    Boolean forgotPasswordOtpVerification(String email , String otp);
+    Boolean forgotPasswordResetPassword(String email, String password , String userName);
 }

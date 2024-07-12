@@ -1,12 +1,14 @@
 package com.qrbats.qrbats.authentication.services.impl;
 
 import com.qrbats.qrbats.authentication.dto.*;
+import com.qrbats.qrbats.authentication.entities.otp.otpverification.service.OTPVerificationService;
 import com.qrbats.qrbats.authentication.entities.user.Role;
 import com.qrbats.qrbats.authentication.entities.user.User;
 import com.qrbats.qrbats.authentication.entities.user.repository.UserRepository;
 import com.qrbats.qrbats.authentication.services.AuthenticationService;
 import com.qrbats.qrbats.authentication.services.JWTService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,11 +23,17 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
 
+    @Autowired
     private final UserRepository userRepository;
+    @Autowired
     private final PasswordEncoder passwordEncoder;
-
+    @Autowired
     private final AuthenticationManager authenticationManager;
+    @Autowired
     private final JWTService jwtService;
+
+    @Autowired
+    private final OTPVerificationService otpVerificationService;
 
     public User signup(SignUpRequest signUpRequest) {
 
@@ -122,12 +130,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new RuntimeException("User not found for this id.");
         }
 
-        if (!request.getEmail().equals(user.get().getEmail())){
+        if (!request.getEmail().equals(user.get().getEmail())) {
             Optional<User> existUserByEmail = userRepository.findByEmail(request.getEmail());
             if (existUserByEmail.isPresent()) throw new RuntimeException("The Email Address Already Exist.");
         }
 
-        if (!request.getUserName().equals(user.get().getUsername())){
+        if (!request.getUserName().equals(user.get().getUsername())) {
             Optional<User> existUserByUserName = userRepository.findByUserName(request.getUserName());
             if (existUserByUserName.isPresent()) throw new RuntimeException("User Name Already Exist.");
         }
@@ -151,4 +159,37 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new RuntimeException("Requested UserName has not exist.");
         }
     }
+
+    @Override
+    public Boolean forgotPasswordSendEmail(String email) {
+        Optional<User> existUser = userRepository.findByEmail(email);
+        if (!existUser.isPresent()) throw new RuntimeException("No User Found For This Email " + email);
+        Boolean isSendOtp = otpVerificationService.sendOTP(email);
+
+        return isSendOtp;
+
+    }
+
+    @Override
+    public Boolean forgotPasswordOtpVerification(String email, String otp) {
+        Optional<User> existUser = userRepository.findByEmail(email);
+        if (!existUser.isPresent()) throw new RuntimeException("No User Found For This Email " + email);
+
+        Boolean isVerified = otpVerificationService.otpVerification(email,otp);
+
+        return isVerified;
+    }
+
+    @Override
+    public Boolean forgotPasswordResetPassword(String email, String password, String userName) {
+        Optional<User> existUser = userRepository.findByEmail(email);
+        if (!existUser.isPresent()) throw new RuntimeException("No User Found For This Email " + email);
+
+        existUser.get().setUserName(userName);
+        existUser.get().setPassword(passwordEncoder.encode(password));
+        userRepository.save(existUser.get());
+        return true;
+    }
+
+
 }
