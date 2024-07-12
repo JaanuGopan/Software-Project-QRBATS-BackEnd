@@ -62,4 +62,35 @@ public class AuthenticationController {
     public ResponseEntity<Boolean> verifyPassword(@RequestParam String userName,@RequestParam String password){
         return ResponseEntity.ok(authenticationService.passwordVerification(userName,password));
     }
+
+    @PostMapping("/forgotpasswordsendotp")
+    public ResponseEntity<?> forgotPasswordSendEmail(@RequestParam String email){
+        try {
+            return ResponseEntity.ok(authenticationService.forgotPasswordSendEmail(email));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/forgotpasswordverifyotp")
+    public ResponseEntity<?> forgotPasswordOtpVerification(@RequestParam String email ,@RequestParam String otp){
+        try {
+            return ResponseEntity.ok(authenticationService.forgotPasswordOtpVerification(email,otp));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/forgotpasswordresetpassword")
+    public ResponseEntity<?> forgotPasswordResetPassword(@RequestParam String email ,@RequestParam String password,@RequestParam String userName){
+        try {
+            return ResponseEntity.ok(authenticationService.forgotPasswordResetPassword(email,password,userName));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
+
+
 }
