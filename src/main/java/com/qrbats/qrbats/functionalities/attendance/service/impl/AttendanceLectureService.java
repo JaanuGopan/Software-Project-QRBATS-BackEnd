@@ -149,12 +149,4 @@ public class AttendanceLectureService {
             throw new RuntimeException("Error In Getting Attendance. ",e);
         }
     }
-
-
-
-
-
-
-
-
 }

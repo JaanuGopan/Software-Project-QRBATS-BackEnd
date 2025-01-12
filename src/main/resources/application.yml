@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: qrbats
+  server:
+    port: 8080
+  datasource:
+    url: jdbc:mysql://localhost:3306/skytickerdb
+    username: skyticker
+    password: skyticker
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        database: mysql
+        dialect: org.hibernate.dialect.MySQL8Dialect
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: skyticker.uor@gmail.com
+    password: qbcj cajs yqfk pmsa
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+jwt:
+  secretKey: d25e426164bb3111be43543e48adb4cb196b88d714901c993db61bc025c14d23
+
+admin:
+  email: skyticker.uor@gmail.com
+  firstName: skyticker
+  lastName: admin
+  username: skyticker-admin
+  password: skyticker-admin

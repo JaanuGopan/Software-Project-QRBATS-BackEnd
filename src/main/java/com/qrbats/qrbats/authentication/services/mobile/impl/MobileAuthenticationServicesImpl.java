@@ -71,8 +71,6 @@ public class MobileAuthenticationServicesImpl implements MobileAuthenticationSer
 
     @Override
     public JwtAuthenticationResponse signIn(StudentSigninRequest studentSigninRequest) {
-        System.out.println("qwerty");
-
         Optional<Student> loginStudent = studentRepository.findByUserName(studentSigninRequest.getStudentUserName());
         if (loginStudent.isPresent()){
             boolean isPasswordCorrect = passwordEncoder.matches(studentSigninRequest.getPassword(),loginStudent.get().getPassword());
