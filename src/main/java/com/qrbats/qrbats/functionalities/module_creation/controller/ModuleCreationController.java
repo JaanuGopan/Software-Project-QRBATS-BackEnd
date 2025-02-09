@@ -2,7 +2,7 @@ package com.qrbats.qrbats.functionalities.module_creation.controller;
 
 import com.qrbats.qrbats.entity.module.Module;
 import com.qrbats.qrbats.functionalities.module_creation.dto.*;
-import com.qrbats.qrbats.functionalities.module_creation.services.impl.ModuleServiceImpl;
+import com.qrbats.qrbats.functionalities.module_creation.services.ModuleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,11 +11,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/module")
-@CrossOrigin("*")
 @RequiredArgsConstructor
 public class ModuleCreationController {
 
-    private final ModuleServiceImpl moduleService;
+    private final ModuleService moduleService;
 
 
     @GetMapping("getmodulebymodulecode")

@@ -1,10 +1,9 @@
-package com.qrbats.qrbats.functionalities.eventcreation.services.impl;
+package com.qrbats.qrbats.functionalities.eventcreation.services;
 
 import com.qrbats.qrbats.entity.event.Event;
 import com.qrbats.qrbats.entity.event.EventRepository;
 import com.qrbats.qrbats.entity.event.EventRole;
 import com.qrbats.qrbats.functionalities.eventcreation.dto.RegisterEventRequest;
-import com.qrbats.qrbats.functionalities.eventcreation.services.EventService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+
 @SpringBootTest
 class EventServiceImplTest {
 

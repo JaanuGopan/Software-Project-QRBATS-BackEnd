@@ -1,4 +1,4 @@
-package com.qrbats.qrbats.functionalities.attendance.service.impl;
+package com.qrbats.qrbats.functionalities.attendance.service;
 
 import com.qrbats.qrbats.entity.attendance.AttendanceEvent;
 import jakarta.persistence.EntityManager;

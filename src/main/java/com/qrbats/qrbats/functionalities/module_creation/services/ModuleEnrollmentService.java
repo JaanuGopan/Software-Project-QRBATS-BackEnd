@@ -1,10 +1,11 @@
-package com.qrbats.qrbats.functionalities.module_creation.services.impl;
+package com.qrbats.qrbats.functionalities.module_creation.services;
 
 import com.qrbats.qrbats.entity.moduleenrolment.ModuleEnrolment;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,9 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ModuleEnrollmentService {
-    @Autowired
     @PersistenceContext
     private EntityManager entityManager;
 
