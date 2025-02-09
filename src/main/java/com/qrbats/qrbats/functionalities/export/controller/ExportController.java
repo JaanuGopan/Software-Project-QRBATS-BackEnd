@@ -17,7 +17,6 @@ import java.sql.Date;
 
 @RestController
 @RequestMapping("api/v1/export")
-@CrossOrigin("*")
 @RequiredArgsConstructor
 public class ExportController {
     @Autowired

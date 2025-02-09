@@ -1,4 +1,4 @@
-package com.qrbats.qrbats.functionalities.attendance.service.impl;
+package com.qrbats.qrbats.functionalities.attendance.service;
 
 import com.qrbats.qrbats.authentication.entities.student.Student;
 import com.qrbats.qrbats.entity.attendance.AttendanceEvent;
@@ -40,6 +40,7 @@ public class AttendanceLectureService {
             throw new RuntimeException(e);
         }
     }
+
     @Transactional
     public void saveLectureAttendance(String lectureId, AttendanceEvent attendanceEvent) {
         String tableName = "Attendance_lec_" + lectureId;
@@ -56,6 +57,7 @@ public class AttendanceLectureService {
             throw new RuntimeException("Error In Saving Attendance. ",e);
         }
     }
+
     @Transactional
     public List<AttendanceLecture> getAttendanceByLectureIdAndStudentIdAndDate(Integer lectureId, Integer studentId, Date date){
         String tableName = "Attendance_lec_" + lectureId.toString();
@@ -68,6 +70,7 @@ public class AttendanceLectureService {
             throw new RuntimeException("Error In Getting Attendance. ",e);
         }
     }
+
     @Transactional
     public List<AttendanceLecture> getAttendanceByLectureIdAndStudentId(Integer lectureId, Integer studentId){
         String tableName = "Attendance_lec_" + lectureId.toString();
@@ -80,6 +83,7 @@ public class AttendanceLectureService {
             throw new RuntimeException("Error In Getting Attendance. ",e);
         }
     }
+
     @Transactional
     public void deleteLectureAttendance(String lectureId, Integer attendanceId) {
         String tableName = "Attendance_lec_" + lectureId;
@@ -88,6 +92,7 @@ public class AttendanceLectureService {
                 .setParameter(1, attendanceId)
                 .executeUpdate();
     }
+
     @Transactional
     public void dropLectureAttendanceTable(Integer lectureId) {
         String tableName = "Attendance_lec_" + lectureId.toString();

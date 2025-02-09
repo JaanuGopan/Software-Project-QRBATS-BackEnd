@@ -1,11 +1,8 @@
 package com.qrbats.qrbats.functionalities.eventcreation.controller;
 
 import com.qrbats.qrbats.entity.event.Event;
-import com.qrbats.qrbats.functionalities.eventcreation.dto.DeleteByIdRequest;
-import com.qrbats.qrbats.functionalities.eventcreation.dto.GetAllEventByModuleCodeRequest;
-import com.qrbats.qrbats.functionalities.eventcreation.dto.GetAllEventsByUserIdRequest;
 import com.qrbats.qrbats.functionalities.eventcreation.dto.RegisterEventRequest;
-import com.qrbats.qrbats.functionalities.eventcreation.services.impl.EventServiceImpl;
+import com.qrbats.qrbats.functionalities.eventcreation.services.EventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,12 +11,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/event")
-@CrossOrigin("*")
 @RequiredArgsConstructor
 public class EventCreationController {
 
-    private final EventServiceImpl eventService;
-
+    private final EventService eventService;
 
     @PostMapping("/create")
     public ResponseEntity<?> createEvent(@RequestBody RegisterEventRequest request) {

@@ -6,6 +6,7 @@ import com.qrbats.qrbats.authentication.entities.user.repository.UserRepository;
 import com.qrbats.qrbats.entity.location.Location;
 import com.qrbats.qrbats.entity.location.LocationRepository;
 import com.qrbats.qrbats.functionalities.locationfunc.service.LocationService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -18,16 +19,13 @@ import java.util.List;
 import java.util.Optional;
 
 @SpringBootApplication
+@RequiredArgsConstructor
 public class QrbatsApplication implements CommandLineRunner {
 
-	@Autowired
-	private UserRepository userRepository;
-	@Autowired
-	private LocationRepository locationRepository;
-	@Autowired
-	private LocationService locationService;
-	@Autowired
-	private PasswordEncoder passwordEncoder;
+	private final UserRepository userRepository;
+	private final LocationRepository locationRepository;
+	private final LocationService locationService;
+	private final PasswordEncoder passwordEncoder;
 
 	@Value("${admin.email}")
 	private String adminEmail;

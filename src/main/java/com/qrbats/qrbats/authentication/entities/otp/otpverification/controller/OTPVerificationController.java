@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/otp")
 @RequiredArgsConstructor
-@CrossOrigin("*")
 public class OTPVerificationController {
 
     private final OTPVerificationService otpVerificationService;
