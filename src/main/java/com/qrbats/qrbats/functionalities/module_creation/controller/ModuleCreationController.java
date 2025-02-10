@@ -72,7 +72,7 @@ public class ModuleCreationController {
         return ResponseEntity.ok(moduleService.getModuleByDepartmentId(departmentId));
     }
 
-    @PostMapping("/getallmodulesbystudentid/{studentId}")
+    @GetMapping("/getallmodulesbystudentid/{studentId}")
     public ResponseEntity<?> getAllModulesByStudentId(@PathVariable Integer studentId){
         try {
             return ResponseEntity.ok(moduleService.getAllModulesByStudentId(studentId));
