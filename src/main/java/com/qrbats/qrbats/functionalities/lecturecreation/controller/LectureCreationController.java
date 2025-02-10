@@ -13,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("api/v1/lecture")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class LectureCreationController {
     @Autowired
     private final LectureCreationService lectureCreationService;

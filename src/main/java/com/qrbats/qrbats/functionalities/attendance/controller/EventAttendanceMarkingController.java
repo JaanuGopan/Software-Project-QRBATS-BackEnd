@@ -11,6 +11,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/attendance")
 @AllArgsConstructor
+@CrossOrigin(origins = "*")
 public class EventAttendanceMarkingController {
     private final EventAttendanceMarkingService eventAttendanceMarkingService;
 
