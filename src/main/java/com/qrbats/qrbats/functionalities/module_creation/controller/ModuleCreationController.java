@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("api/v1/module")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*", methods = RequestMethod.GET)
 public class ModuleCreationController {
 
     private final ModuleService moduleService;
