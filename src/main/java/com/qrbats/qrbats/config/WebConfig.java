@@ -1,4 +1,3 @@
-/*
 package com.qrbats.qrbats.config;
 
 import org.springframework.context.annotation.Bean;
@@ -11,12 +10,11 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedOrigins("*")
+        registry.addMapping("/api/v1/**")
+                //.allowedOrigins("*")
                 //.allowedOrigins("http://localhost:5173","http://10.50.227.44:5000","http://localhost:52249")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(false);
     }
 }
-*/
