@@ -14,6 +14,7 @@ import java.sql.Date;
 @RestController
 @RequestMapping("/api/v1/lectureattendance")
 @AllArgsConstructor
+@CrossOrigin(origins = "*")
 public class LectureAttendanceMarkingController {
     @Autowired
     private final LectureAttendanceMarkingService lectureAttendanceMarkingService;
