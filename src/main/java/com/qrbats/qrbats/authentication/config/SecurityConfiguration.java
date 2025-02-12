@@ -36,7 +36,7 @@ public class SecurityConfiguration {
                         .requestMatchers("api/v1/admin/**").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("api/v1/lecturer/**").hasAnyAuthority(Role.LECTURER.name())
                         .requestMatchers("api/v1/student/**").hasAnyAuthority(Role.STUDENT.name())
-                        .requestMatchers("api/v1/mobile/**").authenticated()
+                        .requestMatchers("api/v1/mobile/**").permitAll()
                         .requestMatchers("api/v1/attendance/**").authenticated()
                         .requestMatchers("api/v1/module/**").authenticated()
                         .requestMatchers("api/v1/event/**").authenticated()
