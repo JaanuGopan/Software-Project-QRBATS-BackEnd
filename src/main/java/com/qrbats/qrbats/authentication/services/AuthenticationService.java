@@ -167,7 +167,15 @@ public class AuthenticationService {
     }
 
     public Boolean forgotPasswordResetPassword(String email, String password, String userName) {
+        Optional<User> checkUser = userRepository.findByUserName(userName);
         Optional<User> existUser = userRepository.findByEmail(email);
+
+        if (checkUser.isPresent()){
+            if (!checkUser.get().getEmail().equals(email)){
+                throw new IllegalArgumentException("The username already taken so please change the username.");
+            }
+        }
+
         if (!existUser.isPresent()) throw new RuntimeException("No User Found For This Email " + email);
 
         existUser.get().setUserName(userName);

@@ -1,8 +1,11 @@
+server:
+  address: 0.0.0.0
+  port: 8080
+
 spring:
   application:
     name: qrbats
-  server:
-    port: 8080
+
   datasource:
     url: jdbc:mysql://localhost:3306/skytickerdb
     username: skyticker
