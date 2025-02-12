@@ -1,11 +1,12 @@
 package com.qrbats.qrbats.authentication.controller;
 
+import com.qrbats.qrbats.authentication.entities.user.User;
+import com.qrbats.qrbats.authentication.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -13,9 +14,16 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin(origins = "*")
 public class AdminController {
 
-    @GetMapping("/admin")
-    public ResponseEntity<String> sayHello(){
-        return ResponseEntity.ok("Hi Admin");
+    private final UserService userService;
+
+    @GetMapping("/get-all-staffs")
+    public ResponseEntity<List<User>> getAllStaffs(){
+        return ResponseEntity.ok(userService.getAllStaffs());
+    }
+
+    @GetMapping("/get-all-students")
+    public ResponseEntity<List<User>> getAllStudents(){
+        return ResponseEntity.ok(userService.getAllStudent());
     }
 
 }

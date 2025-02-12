@@ -26,9 +26,9 @@ public class EventAttendanceMarkingController {
         }
     }
 
-    @GetMapping("getallattendancebyeventid/{eventId}")
+    @GetMapping("getallattendancebyeventid")
     public ResponseEntity<?> getAllAttendanceByEventId(
-            @PathVariable Integer eventId
+            @RequestParam Integer eventId
     ){
         try {
             return ResponseEntity.ok(eventAttendanceMarkingService.getAllAttendanceByEventId(eventId));

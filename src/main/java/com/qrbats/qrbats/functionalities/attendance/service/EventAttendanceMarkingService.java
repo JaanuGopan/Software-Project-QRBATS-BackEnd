@@ -1,7 +1,7 @@
 package com.qrbats.qrbats.functionalities.attendance.service;
 
-import com.qrbats.qrbats.authentication.entities.student.Student;
-import com.qrbats.qrbats.authentication.entities.student.repository.StudentRepository;
+import com.qrbats.qrbats.authentication.entities.user.User;
+import com.qrbats.qrbats.authentication.entities.user.repository.UserRepository;
 import com.qrbats.qrbats.entity.attendance.AttendanceEvent;
 import com.qrbats.qrbats.entity.event.Event;
 import com.qrbats.qrbats.entity.event.EventRepository;
@@ -16,6 +16,7 @@ import java.sql.Time;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -24,7 +25,7 @@ public class EventAttendanceMarkingService {
 
     private final EventRepository eventRepository;
     private final LocationRepository locationRepository;
-    private final StudentRepository studentRepository;
+    private final UserRepository userRepository;
 
     private final AttendanceEventService attendanceEventService;
 
@@ -66,10 +67,10 @@ public class EventAttendanceMarkingService {
 
     public AttendanceEvent markAttendance(AttendanceMarkingRequest attendanceMarkingRequest){
 
-        Optional<Student> student = studentRepository.findById(attendanceMarkingRequest.getAttendeeId());
+        Optional<User> student = userRepository.findById(attendanceMarkingRequest.getAttendeeId());
         Optional<Event> event = eventRepository.findById(attendanceMarkingRequest.getEventId());
-        if (!student.isPresent()) throw new RuntimeException("Student Not Found.");
-        if (!event.isPresent()) throw new RuntimeException("Event not found.");
+        if (student.isEmpty()) throw new RuntimeException("Student Not Found.");
+        if (event.isEmpty()) throw new RuntimeException("Event not found.");
         if (!event.get().getEventDate().isEqual(attendanceMarkingRequest.getAttendanceDate())){
             throw new RuntimeException("The Event Date And Your Attendance Date Are Not Match.");
         }
@@ -78,7 +79,7 @@ public class EventAttendanceMarkingService {
                 attendanceMarkingRequest.getEventId());
 
         boolean existsAttendance = attendanceEventList.stream()
-                .anyMatch(attendanceEvent -> (attendanceEvent.getAttendeeId() == attendanceMarkingRequest.getAttendeeId())
+                .anyMatch(attendanceEvent -> (Objects.equals(attendanceEvent.getAttendeeId(), attendanceMarkingRequest.getAttendeeId()))
                         && (attendanceEvent.getAttendanceStatus().equals(true)));
         if (existsAttendance) throw new  RuntimeException("The Attendance Already Marked.");
 
@@ -89,7 +90,7 @@ public class EventAttendanceMarkingService {
         if (!isTimeOverlap) throw new RuntimeException("Attended Time Is Not In The Event Duration");
 
         Optional<Location> location = locationRepository.findByLocationName(event.get().getEventVenue());
-        if (!location.isPresent()) throw new RuntimeException("Location Not Found.");
+        if (location.isEmpty()) throw new RuntimeException("Location Not Found.");
 
         double locationLatitude = location.get().getLocationGPSLatitude();
         double locationLongitude = location.get().getLocationGPSLongitude();
@@ -107,10 +108,9 @@ public class EventAttendanceMarkingService {
 
         attendanceEventService.saveEventAttendance(attendanceMarkingRequest.getEventId(), attendanceEvent);
 
-        AttendanceEvent attendanceEventAfterMarked = attendanceEventService.getAttendanceByEventIdAndStudentId(
+        return attendanceEventService.getAttendanceByEventIdAndStudentId(
                 attendanceMarkingRequest.getEventId(), attendanceMarkingRequest.getAttendeeId()
         );
-        return attendanceEventAfterMarked;
     }
 
     public List<AttendanceListResponse> getAllAttendanceByEventId(Integer eventId) {
@@ -119,10 +119,10 @@ public class EventAttendanceMarkingService {
         List<AttendanceListResponse> attendanceListResponseList = new ArrayList<>();
 
         for (AttendanceEvent attendanceEvent : attendanceEventList){
-            Optional<Student> student = studentRepository.findById(attendanceEvent.getAttendeeId());
+            Optional<User> student = userRepository.findById(attendanceEvent.getAttendeeId());
             if (student.isPresent()){
                 AttendanceListResponse attendanceListResponse = new AttendanceListResponse();
-                attendanceListResponse.setStudentName(student.get().getStudentName());
+                attendanceListResponse.setStudentName(student.get().getFirstName() + " " + student.get().getLastName());
                 attendanceListResponse.setAttendedTime(attendanceEvent.getAttendanceTime());
                 attendanceListResponse.setAttendedDate(attendanceEvent.getAttendanceDate());
                 attendanceListResponse.setIndexNumber(student.get().getIndexNumber());
@@ -137,8 +137,8 @@ public class EventAttendanceMarkingService {
 
     public List<AttendanceEventHistoryResponse> getAllAttendanceHistoryByStudentId(Integer studentId) {
 
-        Optional<Student> student = studentRepository.findById(studentId);
-        if (!student.isPresent()) throw new RuntimeException("Student Not Found For This Id");
+        Optional<User> student = userRepository.findById(studentId);
+        if (student.isEmpty()) throw new RuntimeException("Student Not Found For This Id");
 
         List<Event> eventList = eventRepository.findAll();
 

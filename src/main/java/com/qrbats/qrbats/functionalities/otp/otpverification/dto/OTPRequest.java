@@ -1,4 +1,4 @@
-package com.qrbats.qrbats.authentication.entities.otp.otpverification.dto;
+package com.qrbats.qrbats.functionalities.otp.otpverification.dto;
 
 import lombok.Data;
 

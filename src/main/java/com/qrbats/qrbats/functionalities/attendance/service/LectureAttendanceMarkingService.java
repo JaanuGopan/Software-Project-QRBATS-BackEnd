@@ -1,7 +1,7 @@
 package com.qrbats.qrbats.functionalities.attendance.service;
 
-import com.qrbats.qrbats.authentication.entities.student.Student;
-import com.qrbats.qrbats.authentication.entities.student.repository.StudentRepository;
+import com.qrbats.qrbats.authentication.entities.user.User;
+import com.qrbats.qrbats.authentication.entities.user.repository.UserRepository;
 import com.qrbats.qrbats.entity.attendance.AttendanceEvent;
 import com.qrbats.qrbats.entity.attendance.AttendanceLecture;
 import com.qrbats.qrbats.entity.lecture.Lecture;
@@ -28,7 +28,7 @@ import java.util.Optional;
 public class LectureAttendanceMarkingService {
 
     private final ModuleRepository moduleRepository;
-    private final StudentRepository studentRepository;
+    private final UserRepository userRepository;
     private final LectureRepository lectureRepository;
     private final LocationRepository locationRepository;
     private final AttendanceLectureService attendanceLectureService;
@@ -47,9 +47,9 @@ public class LectureAttendanceMarkingService {
 
     public AttendanceLecture markLectureAttendance(LectureAttendanceMarkingRequest request) {
         Module module = moduleRepository.findByModuleCode(request.getModuleCode()).orElseThrow(() -> new RuntimeException("Module Not Found."));
-        Student student = studentRepository.findById(request.getStudentId()).orElseThrow(() -> new RuntimeException("Student Not Found"));
+        User student = userRepository.findById(request.getStudentId()).orElseThrow(() -> new RuntimeException("Student Not Found"));
 
-        if (!module.getDepartmentId().equals(student.getDepartmentId()) || !module.getSemester().equals(student.getCurrentSemester())) {
+        if (!module.getDepartmentId().equals(student.getDepartmentId()) || !module.getSemester().equals(student.getSemester())) {
             throw new RuntimeException("Student Not Suit For This Module.");
         }
 
@@ -92,16 +92,16 @@ public class LectureAttendanceMarkingService {
 
     public AttendanceLecture markLectureAttendanceByLectureId(LectureAttendanceMarkingByLectureIdRequest request) {
         Optional<Lecture> attendLecture = lectureRepository.findById(request.getLectureId());
-        if (!attendLecture.isPresent()) throw new RuntimeException("There Is No Lecture For This Id");
+        if (attendLecture.isEmpty()) throw new RuntimeException("There Is No Lecture For This Id");
 
         Module module = moduleRepository.findByModuleCode(attendLecture.get().getLectureModuleCode()).orElseThrow(() -> new RuntimeException("Module Not Found."));
-        Student student = studentRepository.findById(request.getStudentId()).orElseThrow(() -> new RuntimeException("Student Not Found"));
+        User student = userRepository.findById(request.getStudentId()).orElseThrow(() -> new RuntimeException("Student Not Found"));
 
-        if (!module.getDepartmentId().equals(student.getDepartmentId()) || !module.getSemester().equals(student.getCurrentSemester())) {
+        if (!module.getDepartmentId().equals(student.getDepartmentId()) || !module.getSemester().equals(student.getSemester())) {
             throw new RuntimeException("You Are Not Suit For This Module.");
         }
 
-        boolean checkStudentModuleEnrollment = moduleEnrollmentService.checkStudentEnrollment(module.getModuleId(), student.getStudentId());
+        boolean checkStudentModuleEnrollment = moduleEnrollmentService.checkStudentEnrollment(module.getModuleId(), student.getUserId());
         if (!checkStudentModuleEnrollment){
             throw new RuntimeException("You Are Not Enroll This Module "+module.getModuleCode()+".");
         }
@@ -144,22 +144,22 @@ public class LectureAttendanceMarkingService {
 
     public List<LectureAttendanceResponse> getAllAttendanceByModuleCode(String moduleCode) {
         Optional<Module> module = moduleRepository.findByModuleCode(moduleCode);
-        if (!module.isPresent())
+        if (module.isEmpty())
             throw new RuntimeException("There Is No Any Module Found For This " + moduleCode + " ModuleCode.");
 
         Optional<List<Lecture>> lectureList = lectureRepository.findAllByLectureModuleCode(moduleCode);
-        if (!lectureList.isPresent()) throw new RuntimeException("There Is No Any Lectures For This ModuleCode.");
+        if (lectureList.isEmpty()) throw new RuntimeException("There Is No Any Lectures For This ModuleCode.");
 
         List<LectureAttendanceResponse> lectureAttendanceResponseList = new ArrayList<>();
         for (Lecture lecture : lectureList.get()) {
             List<AttendanceLecture> attendanceLectures = attendanceLectureService.getAllAttendanceByLectureId(lecture.getLectureId());
             if (!attendanceLectures.isEmpty()) {
                 for (AttendanceLecture attendanceLecture : attendanceLectures) {
-                    Optional<Student> student = studentRepository.findById(attendanceLecture.getAttendeeId());
+                    Optional<User> student = userRepository.findById(attendanceLecture.getAttendeeId());
                     if (student.isPresent()) {
                         LectureAttendanceResponse lectureAttendanceResponse = new LectureAttendanceResponse();
-                        lectureAttendanceResponse.setStudentId(student.get().getStudentId());
-                        lectureAttendanceResponse.setStudentName(student.get().getStudentName());
+                        lectureAttendanceResponse.setStudentId(student.get().getUserId());
+                        lectureAttendanceResponse.setStudentName(student.get().getFirstName() + " " + student.get().getLastName());
                         lectureAttendanceResponse.setStudentIndexNumber(student.get().getIndexNumber());
                         lectureAttendanceResponse.setAttendanceStatus(attendanceLecture.getAttendanceStatus());
                         lectureAttendanceResponse.setAttendedDate(attendanceLecture.getAttendanceDate());
@@ -176,38 +176,38 @@ public class LectureAttendanceMarkingService {
     public List<LectureAttendanceResponse> getAllAttendanceByLectureId(Integer lectureId) {
         Lecture lecture = lectureRepository.findById(lectureId).orElseThrow(() -> new RuntimeException("Lecture Not Found."));
 
-        List<Student> enrolledStudentsList = moduleService.getAllEnrolledStudentByModuleCode(lecture.getLectureModuleCode());
+        List<User> enrolledStudentsList = moduleService.getAllEnrolledStudentByModuleCode(lecture.getLectureModuleCode());
         List<AttendanceLecture> allAttendanceByLectureId = attendanceLectureService.getAllAttendanceByLectureId(lectureId);
 
         List<LectureAttendanceResponse> lectureAttendanceResponseList = new ArrayList<>();
 
         for (AttendanceLecture attendanceLecture : allAttendanceByLectureId) {
-            Optional<Student> student = studentRepository.findById(attendanceLecture.getAttendeeId());
+            Optional<User> student = userRepository.findById(attendanceLecture.getAttendeeId());
             if (student.isPresent()) {
                 LectureAttendanceResponse lectureAttendanceResponse = new LectureAttendanceResponse();
                 lectureAttendanceResponse.setStudentId(attendanceLecture.getAttendeeId());
                 lectureAttendanceResponse.setAttendedDate(attendanceLecture.getAttendanceDate());
                 lectureAttendanceResponse.setAttendedTime(attendanceLecture.getAttendanceTime());
                 lectureAttendanceResponse.setAttendanceStatus(attendanceLecture.getAttendanceStatus());
-                lectureAttendanceResponse.setStudentName(student.get().getStudentName());
+                lectureAttendanceResponse.setStudentName(student.get().getFirstName() + " " + student.get().getLastName());
                 lectureAttendanceResponse.setStudentIndexNumber(student.get().getIndexNumber());
                 lectureAttendanceResponseList.add(lectureAttendanceResponse);
             }
 
         }
 
-        for (Student enrolledStudent : enrolledStudentsList){
+        for (User enrolledStudent : enrolledStudentsList){
             boolean isAddNotAttendedStudent = true;
             for (AttendanceLecture attendanceLecture : allAttendanceByLectureId){
-                if (attendanceLecture.getAttendeeId().equals(enrolledStudent.getStudentId())){
+                if (attendanceLecture.getAttendeeId().equals(enrolledStudent.getUserId())){
                     isAddNotAttendedStudent = false;
                 }
             }
             if (isAddNotAttendedStudent) {
                 LectureAttendanceResponse lectureAttendanceResponse = new LectureAttendanceResponse();
-                lectureAttendanceResponse.setStudentName(enrolledStudent.getStudentName());
+                lectureAttendanceResponse.setStudentName(enrolledStudent.getFirstName() + " " + enrolledStudent.getLastName());
                 lectureAttendanceResponse.setStudentIndexNumber(enrolledStudent.getIndexNumber());
-                lectureAttendanceResponse.setStudentId(enrolledStudent.getStudentId());
+                lectureAttendanceResponse.setStudentId(enrolledStudent.getUserId());
                 lectureAttendanceResponse.setAttendanceStatus(false);
                 lectureAttendanceResponseList.add(lectureAttendanceResponse);
             }
@@ -221,10 +221,10 @@ public class LectureAttendanceMarkingService {
     }
 
     public List<LectureAttendanceResponse> getAllAttendanceByStudentId(Integer studentId) {
-        Optional<Student> student = studentRepository.findById(studentId);
-        if (!student.isPresent()) throw new RuntimeException("There Is No Student Found For This Id.");
+        Optional<User> student = userRepository.findById(studentId);
+        if (student.isEmpty()) throw new RuntimeException("There Is No Student Found For This Id.");
         Optional<List<Module>> moduleList = moduleRepository.findAllByDepartmentId(student.get().getDepartmentId());
-        if (!moduleList.isPresent()) throw new RuntimeException("There Are No Any Modules For The Student.");
+        if (moduleList.isEmpty()) throw new RuntimeException("There Are No Any Modules For The Student.");
         List<LectureAttendanceResponse> returnAttendanceList = new ArrayList<>();
         for (Module module : moduleList.get()) {
             List<LectureAttendanceResponse> attendanceListResponseList = getAllAttendanceByModuleCode(module.getModuleCode());
@@ -236,11 +236,11 @@ public class LectureAttendanceMarkingService {
     }
 
     public List<AttendanceLectureHistoryResponse> getAllAttendanceHistoryByStudentId(Integer studentId) {
-        Optional<Student> student = studentRepository.findById(studentId);
-        if (!student.isPresent()) throw new RuntimeException("There Is No Student Found For This Id.");
+        Optional<User> student = userRepository.findById(studentId);
+        if (student.isEmpty()) throw new RuntimeException("There Is No Student Found For This Id.");
         Optional<List<Module>> moduleList = moduleRepository.findAllBySemesterAndDepartmentId(
-                student.get().getCurrentSemester(), student.get().getDepartmentId());
-        if (!moduleList.isPresent()) throw new RuntimeException("There Are No Any Modules For The Student.");
+                student.get().getSemester(), student.get().getDepartmentId());
+        if (moduleList.isEmpty()) throw new RuntimeException("There Are No Any Modules For The Student.");
 
         List<AttendanceLectureHistoryResponse> attendanceLectureHistoryResponseList = new ArrayList<>();
         for (Module module : moduleList.get()) {
@@ -270,7 +270,7 @@ public class LectureAttendanceMarkingService {
 
     public List<StudentOverallAttendanceResponse> getAllStudentsAttendanceReportByModuleId(Integer moduleId) {
         Optional<Module> module = moduleRepository.findById(moduleId);
-        if (!module.isPresent()) throw new RuntimeException("Module Not Found For This Id.");
+        if (module.isEmpty()) throw new RuntimeException("Module Not Found For This Id.");
 
         Optional<List<Lecture>> allLectureList = lectureRepository.findAllByLectureModuleCode(module.get().getModuleCode());
         if (allLectureList.isEmpty()) throw new RuntimeException("There Is No Lecture For This Module");
@@ -280,17 +280,17 @@ public class LectureAttendanceMarkingService {
         List<StudentOverallAttendanceResponse> responseList = new ArrayList<>();
 
         for (ModuleEnrolment enrolment : moduleEnrolmentList){
-            Optional<Student> student = studentRepository.findById(enrolment.getStudentId());
+            Optional<User> student = userRepository.findById(enrolment.getStudentId());
             if (student.isPresent()){
                 StudentOverallAttendanceResponse response = new StudentOverallAttendanceResponse();
-                response.setStudentId(student.get().getStudentId());
-                response.setStudentName(student.get().getStudentName());
+                response.setStudentId(student.get().getUserId());
+                response.setStudentName(student.get().getFirstName() + " " + student.get().getLastName());
                 response.setIndexNumber(student.get().getIndexNumber());
 
                 Integer attendedLecture = 0;
                 Integer totalLecture = 0;
                 for (Lecture lecture : allLectureList.get()){
-                    List<AttendanceLecture> attendanceLecture = attendanceLectureService.getAttendanceByLectureIdAndStudentId(lecture.getLectureId(),student.get().getStudentId());
+                    List<AttendanceLecture> attendanceLecture = attendanceLectureService.getAttendanceByLectureIdAndStudentId(lecture.getLectureId(),student.get().getUserId());
                     if (!attendanceLecture.isEmpty()){
                         attendedLecture++;
                     }
@@ -343,37 +343,37 @@ public class LectureAttendanceMarkingService {
 
         List<AttendanceLecture> attendanceLectureList = attendanceLectureService.getAttendanceByLectureIdAndDate(lectureId,lectureDate);
 
-        List<Student> enrolledStudentsList = moduleService.getAllEnrolledStudentByModuleCode(lecture.get().getLectureModuleCode());
+        List<User> enrolledStudentsList = moduleService.getAllEnrolledStudentByModuleCode(lecture.get().getLectureModuleCode());
 
         List<LectureAttendanceResponse> lectureAttendanceResponseList = new ArrayList<>();
 
         for (AttendanceLecture attendanceLecture : attendanceLectureList) {
-            Optional<Student> student = studentRepository.findById(attendanceLecture.getAttendeeId());
+            Optional<User> student = userRepository.findById(attendanceLecture.getAttendeeId());
             if (student.isPresent()) {
                 LectureAttendanceResponse lectureAttendanceResponse = new LectureAttendanceResponse();
                 lectureAttendanceResponse.setStudentId(attendanceLecture.getAttendeeId());
                 lectureAttendanceResponse.setAttendedDate(attendanceLecture.getAttendanceDate());
                 lectureAttendanceResponse.setAttendedTime(attendanceLecture.getAttendanceTime());
                 lectureAttendanceResponse.setAttendanceStatus(attendanceLecture.getAttendanceStatus());
-                lectureAttendanceResponse.setStudentName(student.get().getStudentName());
+                lectureAttendanceResponse.setStudentName(student.get().getFirstName() + " " + student.get().getLastName());
                 lectureAttendanceResponse.setStudentIndexNumber(student.get().getIndexNumber());
                 lectureAttendanceResponseList.add(lectureAttendanceResponse);
             }
 
         }
 
-        for (Student enrolledStudent : enrolledStudentsList){
+        for (User enrolledStudent : enrolledStudentsList){
             boolean isAddNotAttendedStudent = true;
             for (AttendanceLecture attendanceLecture : attendanceLectureList){
-                if (attendanceLecture.getAttendeeId().equals(enrolledStudent.getStudentId())){
+                if (attendanceLecture.getAttendeeId().equals(enrolledStudent.getUserId())){
                     isAddNotAttendedStudent = false;
                 }
             }
             if (isAddNotAttendedStudent) {
                 LectureAttendanceResponse lectureAttendanceResponse = new LectureAttendanceResponse();
-                lectureAttendanceResponse.setStudentName(enrolledStudent.getStudentName());
+                lectureAttendanceResponse.setStudentName(enrolledStudent.getFirstName() + " " + enrolledStudent.getLastName());
                 lectureAttendanceResponse.setStudentIndexNumber(enrolledStudent.getIndexNumber());
-                lectureAttendanceResponse.setStudentId(enrolledStudent.getStudentId());
+                lectureAttendanceResponse.setStudentId(enrolledStudent.getUserId());
                 lectureAttendanceResponse.setAttendanceStatus(false);
                 lectureAttendanceResponseList.add(lectureAttendanceResponse);
             }

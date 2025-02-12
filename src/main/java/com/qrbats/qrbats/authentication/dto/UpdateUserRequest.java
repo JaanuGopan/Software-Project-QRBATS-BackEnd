@@ -11,4 +11,6 @@ public class UpdateUserRequest {
     private Integer departmentId;
     private String userName;
     private String password;
+    private Integer semester;
+    private String indexNumber;
 }

@@ -51,8 +51,8 @@ public class EventCreationController {
         }
     }
 
-    @GetMapping("geteventbyuserid/{userId}")
-    public ResponseEntity<List<Event>> findAllEventByUserId(@PathVariable String userId) {
+    @GetMapping("geteventbyuserid")
+    public ResponseEntity<List<Event>> findAllEventByUserId(@RequestParam String userId) {
         return ResponseEntity.ok(eventService.getAllEventByUserId(Integer.parseInt(userId)));
     }
 

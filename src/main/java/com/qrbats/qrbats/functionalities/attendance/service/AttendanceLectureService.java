@@ -1,9 +1,7 @@
 package com.qrbats.qrbats.functionalities.attendance.service;
 
-import com.qrbats.qrbats.authentication.entities.student.Student;
 import com.qrbats.qrbats.entity.attendance.AttendanceEvent;
 import com.qrbats.qrbats.entity.attendance.AttendanceLecture;
-import com.qrbats.qrbats.entity.lecture.Lecture;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
@@ -14,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor

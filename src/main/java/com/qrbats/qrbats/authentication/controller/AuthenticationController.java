@@ -26,9 +26,18 @@ public class AuthenticationController {
     }
 
     @GetMapping("/signin")
-    public ResponseEntity<?> signIn(@RequestParam String userName,@RequestParam String password){
+    public ResponseEntity<?> staffLogin(@RequestParam String userName,@RequestParam String password){
         try {
-            return ResponseEntity.ok(authenticationService.signin(userName,password));
+            return ResponseEntity.ok(authenticationService.staffLogin(userName,password));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/student-login")
+    public ResponseEntity<?> studentLogin(@RequestParam String userName,@RequestParam String password){
+        try {
+            return ResponseEntity.ok(authenticationService.studentLogin(userName,password));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -39,14 +48,13 @@ public class AuthenticationController {
         return ResponseEntity.ok(authenticationService.refreshToken(refreshTokenRequest));
     }
 
-    @PostMapping("/getallstaffs")
-    public ResponseEntity<List<User>> getAllStaffs(){
-       return ResponseEntity.ok(authenticationService.getAllStaffs());
-    }
-
-    @PostMapping("/deleteuserbyuserid")
-    public void deleteUserById(@RequestBody DeleteUserByIdRequest deleteUserByIdRequest){
-        authenticationService.deleteByUserId(deleteUserByIdRequest.getUserId());
+    @DeleteMapping("/deleteuserbyuserid")
+    public ResponseEntity<?> deleteUserById(@RequestParam Integer userId){
+        try {
+            return ResponseEntity.ok(authenticationService.deleteByUserId(userId));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PutMapping("/updateuser")
@@ -90,7 +98,19 @@ public class AuthenticationController {
         }
     }
 
+    @PostMapping("/check-student-email")
+    public ResponseEntity<Boolean> checkStudentEmailIsExist(@RequestParam String email){
+        return ResponseEntity.ok(authenticationService.checkStudentIsExistByEmail(email));
+    }
 
+    @PostMapping("/check-student-index-number")
+    public ResponseEntity<Boolean> checkStudentIndexNoIsExist(@RequestParam String indexNumber){
+        return ResponseEntity.ok(authenticationService.checkStudentIndexNumberIsExist(indexNumber));
+    }
 
+    @PostMapping("/check-student-username")
+    public ResponseEntity<Boolean> checkStudentUserNameIsExist(@RequestParam String userName){
+        return ResponseEntity.ok(authenticationService.checkStudentUserNameIsExist(userName));
+    }
 
 }

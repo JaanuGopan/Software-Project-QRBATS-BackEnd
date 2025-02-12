@@ -72,6 +72,4 @@ public class JWTService {
         return extractClaim(token, Claims::getExpiration).before(new Date());
     }
 
-
-
 }
