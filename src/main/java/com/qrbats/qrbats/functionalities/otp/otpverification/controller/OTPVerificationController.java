@@ -16,12 +16,12 @@ public class OTPVerificationController {
 
     private final OTPVerificationService otpVerificationService;
 
-    @PostMapping("/generateotp")
+    @PostMapping("/generate-otp")
     public ResponseEntity<Boolean> sendOTP(@RequestBody OTPRequest otpRequest){
         return ResponseEntity.ok(otpVerificationService.sendOTP(otpRequest.getOtpSendEmail()));
     }
 
-    @PostMapping("/otpverification")
+    @PostMapping("/otp-verification")
     public ResponseEntity<Boolean> verifyOTP(@RequestBody StudentOTPVerificationRequest studentOTPVerificationRequest){
         return ResponseEntity.ok(otpVerificationService.otpVerification(
                 studentOTPVerificationRequest.getStudentEmail(),

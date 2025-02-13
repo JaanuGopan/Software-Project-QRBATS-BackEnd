@@ -23,7 +23,7 @@ public class ExportController {
     @Autowired
     private final ExportService exportService;
 
-    @GetMapping("/getcsv/{lectureId}")
+    @GetMapping("/get-csv/{lectureId}")
     public ResponseEntity<?> getLectureAttendanceReport(@PathVariable Integer lectureId) throws IOException {
         try {
             ByteArrayInputStream in = exportService.exportLectureAttendance(lectureId);
@@ -34,7 +34,7 @@ public class ExportController {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
-    @GetMapping("/donwloadattendancebylectureidanddate")
+    @GetMapping("/download-attendance-by-lectureId-and-date")
     public ResponseEntity<?> downloadAttendanceReportByLectureIdAndDate(@RequestParam Integer lectureId, @RequestParam Date date) throws IOException {
         try {
             ByteArrayInputStream in = exportService.exportLectureAttendanceByLectureIdAndDate(lectureId,date);
@@ -46,7 +46,7 @@ public class ExportController {
         }
     }
 
-    @GetMapping("/geteventreport/{eventId}")
+    @GetMapping("/get-event-report/{eventId}")
     public ResponseEntity<?> getEventAttendanceReport(@PathVariable Integer eventId) throws IOException {
         try {
             ByteArrayInputStream in = exportService.exportEventAttendance(eventId);
@@ -57,7 +57,7 @@ public class ExportController {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
-    @GetMapping("/getstudentsoverallreport/{moduleId}")
+    @GetMapping("/get-students-overall-report/{moduleId}")
     public ResponseEntity<?> getStudentOverallAttendanceReport(@PathVariable Integer moduleId) throws IOException {
         try {
             ByteArrayInputStream in = exportService.exportOverallStudentAttendance(moduleId);

@@ -15,7 +15,7 @@ import java.util.List;
 public class EventAttendanceMarkingController {
     private final EventAttendanceMarkingService eventAttendanceMarkingService;
 
-    @PostMapping("markattendance")
+    @PostMapping("mark-attendance")
     public ResponseEntity<?> markAttandance(
             @RequestBody AttendanceMarkingRequest attendaceMarkingRequest
     ){
@@ -26,7 +26,7 @@ public class EventAttendanceMarkingController {
         }
     }
 
-    @GetMapping("getallattendancebyeventid")
+    @GetMapping("get-all-attendance-by-eventId")
     public ResponseEntity<?> getAllAttendanceByEventId(
             @RequestParam Integer eventId
     ){
@@ -37,7 +37,7 @@ public class EventAttendanceMarkingController {
         }
     }
 
-    @GetMapping("getallattendancebystudentid/{studentId}")
+    @GetMapping("get-all-attendance-by-studentId/{studentId}")
     public ResponseEntity<?> getAllAttendanceByStudentId(@PathVariable Integer studentId){
         try {
             return ResponseEntity.ok(eventAttendanceMarkingService.getAllAttendanceHistoryByStudentId(studentId));

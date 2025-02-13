@@ -26,4 +26,13 @@ public class AdminController {
         return ResponseEntity.ok(userService.getAllStudent());
     }
 
+    @DeleteMapping("/delete-user")
+    public ResponseEntity<?> deleteUserById(@RequestParam Integer userId){
+        try {
+            return ResponseEntity.ok(userService.deleteByUserId(userId));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }

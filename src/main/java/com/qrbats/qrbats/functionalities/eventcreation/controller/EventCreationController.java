@@ -37,12 +37,12 @@ public class EventCreationController {
 
 
 
-    @PostMapping("/getallevents")
+    @PostMapping("/get-all-events")
     public ResponseEntity<List<Event>> findAllEvents() {
         return ResponseEntity.ok(eventService.getAllEvent());
     }
 
-    @DeleteMapping("/deletebyid/{eventId}")
+    @DeleteMapping("/delete-by-eventId/{eventId}")
     public ResponseEntity<?> deleteById(@PathVariable Integer eventId) {
         try {
             return ResponseEntity.ok(eventService.deleteEvent(eventId));
@@ -51,12 +51,12 @@ public class EventCreationController {
         }
     }
 
-    @GetMapping("geteventbyuserid")
+    @GetMapping("get-event-by-userId")
     public ResponseEntity<List<Event>> findAllEventByUserId(@RequestParam String userId) {
         return ResponseEntity.ok(eventService.getAllEventByUserId(Integer.parseInt(userId)));
     }
 
-    @GetMapping("/geteventbyeventid/{eventId}")
+    @GetMapping("/get-event-by-eventId/{eventId}")
     public ResponseEntity<?> findEventByEventId(@PathVariable Integer eventId){
         try {
             return ResponseEntity.ok(eventService.getEventByEventId(eventId));

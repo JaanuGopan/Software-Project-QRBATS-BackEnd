@@ -3,18 +3,23 @@ package com.qrbats.qrbats.authentication.controller;
 import com.qrbats.qrbats.authentication.dto.*;
 import com.qrbats.qrbats.authentication.entities.user.User;
 import com.qrbats.qrbats.authentication.services.AuthenticationService;
+import com.qrbats.qrbats.authentication.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class AuthenticationController {
+
     private final AuthenticationService authenticationService;
+    private final UserService userService;
 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody SignUpRequest signUpRequest){
@@ -25,7 +30,7 @@ public class AuthenticationController {
         }
     }
 
-    @GetMapping("/signin")
+    @GetMapping("/login")
     public ResponseEntity<?> staffLogin(@RequestParam String userName,@RequestParam String password){
         try {
             return ResponseEntity.ok(authenticationService.staffLogin(userName,password));
@@ -43,21 +48,36 @@ public class AuthenticationController {
         }
     }
 
+    @GetMapping("/user")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getAuthenticatedUser() {
+        Optional<User> userOptional = userService.getAuthenticatedUser();
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            return ResponseEntity.ok(new UserResponseDTO(
+                    user.getUserId(),
+                    user.getUsername(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.getEmail(),
+                    user.getDepartmentId(),
+                    user.getSemester(),
+                    user.getIndexNumber(),
+                    user.getRole()
+            ));
+        } else {
+            return ResponseEntity.status(401).body("User not authenticated");
+        }
+    }
+
     @PostMapping("/refresh")
     public ResponseEntity<JwtAuthenticationResponse> refresh(@RequestBody RefreshTokenRequest refreshTokenRequest){
         return ResponseEntity.ok(authenticationService.refreshToken(refreshTokenRequest));
     }
 
-    @DeleteMapping("/deleteuserbyuserid")
-    public ResponseEntity<?> deleteUserById(@RequestParam Integer userId){
-        try {
-            return ResponseEntity.ok(authenticationService.deleteByUserId(userId));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @PutMapping("/updateuser")
+    @PutMapping("/update-user")
     public ResponseEntity<?> updateUser(@RequestBody UpdateUserRequest request){
         try {
              return ResponseEntity.ok(authenticationService.updateUser(request));
@@ -66,12 +86,12 @@ public class AuthenticationController {
         }
     }
 
-    @GetMapping("/verifypassword")
+    @GetMapping("/verify-password")
     public ResponseEntity<Boolean> verifyPassword(@RequestParam String userName,@RequestParam String password){
         return ResponseEntity.ok(authenticationService.passwordVerification(userName,password));
     }
 
-    @PostMapping("/forgotpasswordsendotp")
+    @PostMapping("/forgot-password-send-otp")
     public ResponseEntity<?> forgotPasswordSendEmail(@RequestParam String email){
         try {
             return ResponseEntity.ok(authenticationService.forgotPasswordSendEmail(email));
@@ -80,7 +100,7 @@ public class AuthenticationController {
         }
     }
 
-    @GetMapping("/forgotpasswordverifyotp")
+    @GetMapping("/forgot-password-verify-otp")
     public ResponseEntity<?> forgotPasswordOtpVerification(@RequestParam String email ,@RequestParam String otp){
         try {
             return ResponseEntity.ok(authenticationService.forgotPasswordOtpVerification(email,otp));
@@ -89,7 +109,7 @@ public class AuthenticationController {
         }
     }
 
-    @PutMapping("/forgotpasswordresetpassword")
+    @PutMapping("/forgot-password-reset-password")
     public ResponseEntity<?> forgotPasswordResetPassword(@RequestParam String email ,@RequestParam String password,@RequestParam String userName){
         try {
             return ResponseEntity.ok(authenticationService.forgotPasswordResetPassword(email,password,userName));

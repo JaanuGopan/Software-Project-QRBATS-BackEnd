@@ -18,7 +18,7 @@ public class LectureCreationController {
     @Autowired
     private final LectureCreationService lectureCreationService;
 
-    @PostMapping("/createlecture")
+    @PostMapping("/create-lecture")
     ResponseEntity<?> createLecture(@RequestBody CreateLectureRequest createLectureRequest) {
         try {
             return ResponseEntity.ok(lectureCreationService.createLecture(createLectureRequest));
@@ -27,27 +27,27 @@ public class LectureCreationController {
         }
     }
 
-    @GetMapping("/getalllecturebyuserid/{userId}")
-    ResponseEntity<List<Lecture>> getAllLecturesByUserId(@PathVariable Integer userId) {
+    @GetMapping("/get-all-lecture-by-userId")
+    ResponseEntity<List<Lecture>> getAllLecturesByUserId(@RequestParam Integer userId) {
         return ResponseEntity.ok(lectureCreationService.getAllLectureByUserId(userId));
     }
 
-    @GetMapping("/getalllecturebymodulecode")
+    @GetMapping("/get-all-lecture-by-module-code")
     ResponseEntity<List<Lecture>> getAllLecturesByModuleCode(@RequestParam String moduleCode) {
         return ResponseEntity.ok(lectureCreationService.getAllLectureByModuleCode(moduleCode));
     }
 
-    @GetMapping("/getalllecturebyvenue")
+    @GetMapping("/get-all-lecture-by-venue")
     ResponseEntity<List<Lecture>> getAllLecturesByVenue(@RequestParam String venue) {
         return ResponseEntity.ok(lectureCreationService.getAllLecturesByVenue(venue));
     }
 
-    @GetMapping("/getalllecturebyday")
+    @GetMapping("/get-all-lecture-by-day")
     ResponseEntity<List<Lecture>> getAllLecturesByDay(@RequestParam String day) {
         return ResponseEntity.ok(lectureCreationService.getAllLecturesByDay(day));
     }
 
-    @PutMapping("/updatelecture/{lectureId}")
+    @PutMapping("/update-lecture/{lectureId}")
     ResponseEntity<?> updateLecture(@PathVariable Integer lectureId, @RequestBody Lecture updateLecture) {
         try {
             return ResponseEntity.ok(lectureCreationService.updateLecture(lectureId, updateLecture));
@@ -56,7 +56,7 @@ public class LectureCreationController {
         }
     }
 
-    @DeleteMapping("/deletelecture/{lectureId}")
+    @DeleteMapping("/delete-lecture/{lectureId}")
     ResponseEntity<?> deleteLecture(@PathVariable Integer lectureId) {
         try {
             lectureCreationService.deleteLecture(lectureId);
@@ -66,7 +66,7 @@ public class LectureCreationController {
         }
     }
 
-    @GetMapping("/getalllecturesbydayandvenue")
+    @GetMapping("/get-all-lectures-by-day-and-venue")
     ResponseEntity<?> getAllLecturesByDayANdVenue(@RequestParam String day,@RequestParam String venue){
         try {
             return ResponseEntity.ok(lectureCreationService.getAllLecturesByDayAndVenue(day,venue));

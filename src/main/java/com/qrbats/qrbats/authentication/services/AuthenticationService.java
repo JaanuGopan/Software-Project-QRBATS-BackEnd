@@ -59,7 +59,7 @@ public class AuthenticationService {
                 )
         );
 
-        var user = userRepository.findByUserName(
+        User user = userRepository.findByUserName(
                 userName).orElseThrow(
                 () -> new IllegalArgumentException("Invalid userName or password")
         );
@@ -69,20 +69,26 @@ public class AuthenticationService {
         }
 
         Map<String, Object> extraClaims = new HashMap<>();
-        extraClaims.put("firstName", user.getFirstName());
-        extraClaims.put("lastName", user.getLastName());
-        extraClaims.put("email", user.getEmail());
-        extraClaims.put("role", user.getRole());
-        extraClaims.put("userId", user.getUserId());
-        extraClaims.put("departmentId", user.getDepartmentId());
 
         var jwt = jwtService.generateToken(user, extraClaims);
         var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
 
         JwtAuthenticationResponse jwtAuthenticationResponse = new JwtAuthenticationResponse();
 
+        UserResponseDTO userResponseDTO = new UserResponseDTO();
+        userResponseDTO.setUserId(user.getUserId());
+        userResponseDTO.setEmail(user.getEmail());
+        userResponseDTO.setRole(user.getRole());
+        userResponseDTO.setSemester(user.getSemester());
+        userResponseDTO.setFirstName(user.getFirstName());
+        userResponseDTO.setDepartmentId(user.getDepartmentId());
+        userResponseDTO.setIndexNumber(user.getIndexNumber());
+        userResponseDTO.setLastName(user.getLastName());
+        userResponseDTO.setUserName(user.getUsername());
+
         jwtAuthenticationResponse.setToken(jwt);
         jwtAuthenticationResponse.setRefreshToken(refreshToken);
+        jwtAuthenticationResponse.setUser(userResponseDTO);
         return jwtAuthenticationResponse;
     }
 
@@ -138,13 +144,6 @@ public class AuthenticationService {
 
         }
         return null;
-    }
-
-    public Boolean deleteByUserId(Integer userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("Invalid userId."));
-
-        userRepository.deleteById(userId);
-        return true;
     }
 
     public boolean updateUser(UpdateUserRequest request) {
