@@ -12,7 +12,7 @@ import java.rmi.server.RemoteServer;
 import java.sql.Date;
 
 @RestController
-@RequestMapping("/api/v1/lectureattendance")
+@RequestMapping("/api/v1/lecture-attendance")
 @AllArgsConstructor
 @CrossOrigin(origins = "*")
 public class LectureAttendanceMarkingController {
