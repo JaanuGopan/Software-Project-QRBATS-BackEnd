@@ -42,7 +42,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/v1/location/**").authenticated()
                         .requestMatchers("api/v1/report/**").authenticated()
                         .requestMatchers("api/v1/lecture/**").authenticated()
-                        .requestMatchers("api/v1/lectureattendance/**").authenticated()
+                        .requestMatchers("api/v1/lecture-attendance/**").authenticated()
                         .requestMatchers("api/v1/export/**").authenticated()
                         .requestMatchers("/swagger-ui.html").authenticated()
                         .anyRequest().authenticated())
