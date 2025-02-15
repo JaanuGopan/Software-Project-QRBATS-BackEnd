@@ -1,7 +1,7 @@
 package com.qrbats.qrbats.functionalities.module_creation.services;
 
-import com.qrbats.qrbats.authentication.entities.student.Student;
-import com.qrbats.qrbats.authentication.entities.student.repository.StudentRepository;
+import com.qrbats.qrbats.authentication.entities.user.User;
+import com.qrbats.qrbats.authentication.entities.user.repository.UserRepository;
 import com.qrbats.qrbats.entity.module.Module;
 import com.qrbats.qrbats.entity.module.ModuleRepository;
 import com.qrbats.qrbats.entity.moduleenrolment.ModuleEnrolment;
@@ -20,7 +20,7 @@ import java.util.Optional;
 public class ModuleService {
 
     private final ModuleRepository moduleRepository;
-    private final StudentRepository studentRepository;
+    private final UserRepository userRepository;
 
     private final ModuleEnrollmentService moduleEnrollmentService;
 
@@ -121,31 +121,30 @@ public class ModuleService {
     }
 
     public List<Module> getAllModulesByStudentId(Integer studentId) {
-        Optional<Student> student = studentRepository.findById(studentId);
+        Optional<User> student = userRepository.findById(studentId);
         if (student.isEmpty()) throw new RuntimeException("Student Not Found.");
-        Optional<List<Module>> moduleList = moduleRepository.findAllBySemesterAndDepartmentId(student.get().getCurrentSemester(), student.get().getDepartmentId());
+        Optional<List<Module>> moduleList = moduleRepository.findAllBySemesterAndDepartmentId(student.get().getSemester(), student.get().getDepartmentId());
         if (moduleList.isEmpty()) throw new RuntimeException("Modules Not Found.");
 
         return moduleList.get();
     }
 
     public boolean moduleEnrollment(Integer moduleId, Integer studentId, String enrollmentKey) {
-        Optional<Student> student = studentRepository.findById(studentId);
+        Optional<User> student = userRepository.findById(studentId);
         if (student.isEmpty()) throw new RuntimeException("Student Not Found.");
 
         Optional<Module> module = moduleRepository.findById(moduleId);
         if (module.isEmpty()) throw new RuntimeException("There Is No Module For This Id");
 
         if (Objects.equals(module.get().getModuleEnrolmentKey(), enrollmentKey)) {
-            boolean enrollmentStatus = moduleEnrollmentService.studentModuleEnrollment(moduleId, studentId);
-            return enrollmentStatus;
+            return moduleEnrollmentService.studentModuleEnrollment(moduleId, studentId);
         } else {
             throw new RuntimeException("The Enrolment Key Is Not Match.");
         }
     }
 
     public boolean moduleUnEnrollment(Integer moduleId, Integer studentId){
-        Optional<Student> student = studentRepository.findById(studentId);
+        Optional<User> student = userRepository.findById(studentId);
         if (student.isEmpty()) throw new RuntimeException("Student Not Found.");
 
         Optional<Module> module = moduleRepository.findById(moduleId);
@@ -161,11 +160,11 @@ public class ModuleService {
     }
 
     public List<Module> getAllEnrolledModules(Integer studentId) {
-        Optional<Student> student = studentRepository.findById(studentId);
+        Optional<User> student = userRepository.findById(studentId);
         if (student.isEmpty()) throw new RuntimeException("Student Not Found For This Id.");
 
         Integer studentDepartmentId = student.get().getDepartmentId();
-        Integer studentSemester = student.get().getCurrentSemester();
+        Integer studentSemester = student.get().getSemester();
 
         Optional<List<Module>> allModules = moduleRepository.findAllBySemesterAndDepartmentId(studentSemester, studentDepartmentId);
         if (allModules.isEmpty()) throw new RuntimeException("There Are No Any Modules For You.");
@@ -180,17 +179,15 @@ public class ModuleService {
         return enrolledModuleList;
     }
 
-    public List<Student> getAllEnrolledStudentByModuleCode(String moduleCode) {
+    public List<User> getAllEnrolledStudentByModuleCode(String moduleCode) {
         Optional<Module> module = moduleRepository.findByModuleCode(moduleCode);
         if (module.isEmpty()) throw new RuntimeException("No Module Found For This Module Code "+ moduleCode);
         List<ModuleEnrolment> moduleEnrolmentList = moduleEnrollmentService.getModuleEnrolmentListByModuleId(
                 module.get().getModuleId());
-        List<Student> studentList = new ArrayList<>();
+        List<User> studentList = new ArrayList<>();
         for (ModuleEnrolment moduleEnrolment : moduleEnrolmentList){
-            Optional<Student> student = studentRepository.findById(moduleEnrolment.getStudentId());
-            if (student.isPresent()){
-                studentList.add(student.get());
-            }
+            Optional<User> student = userRepository.findById(moduleEnrolment.getStudentId());
+            student.ifPresent(studentList::add);
         }
         return studentList;
 

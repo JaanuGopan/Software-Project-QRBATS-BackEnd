@@ -214,7 +214,7 @@ public class LectureCreationService {
 
         Optional<List<Lecture>> lectureList = lectureRepository.findAllByLectureDayAndLectureVenue(
                 updateLecture.getLectureDay(), updateLecture.getLectureVenue());
-        if (lectureList.isPresent()) lectureList.get().remove(existingLecture.get());
+        lectureList.ifPresent(lectures -> lectures.remove(existingLecture.get()));
 
         for (Lecture checkLecture : lectureList.get()) {
             if (

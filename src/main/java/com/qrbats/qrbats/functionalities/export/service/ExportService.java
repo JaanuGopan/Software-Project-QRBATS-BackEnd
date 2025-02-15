@@ -1,7 +1,7 @@
 package com.qrbats.qrbats.functionalities.export.service;
 
-import com.qrbats.qrbats.authentication.entities.student.Student;
-import com.qrbats.qrbats.authentication.entities.student.repository.StudentRepository;
+import com.qrbats.qrbats.authentication.entities.user.User;
+import com.qrbats.qrbats.authentication.entities.user.repository.UserRepository;
 import com.qrbats.qrbats.entity.attendance.AttendanceEvent;
 import com.qrbats.qrbats.entity.attendance.AttendanceLecture;
 import com.qrbats.qrbats.entity.module.Module;
@@ -39,7 +39,7 @@ public class ExportService {
     @Autowired
     private final LectureRepository lectureRepository;
     @Autowired
-    private final StudentRepository studentRepository;
+    private final UserRepository userRepository;
     @Autowired
     private final ModuleService moduleService;
     @Autowired
@@ -54,7 +54,7 @@ public class ExportService {
 
     public ByteArrayInputStream exportLectureAttendance(Integer lectureId) throws IOException {
         Optional<Lecture> lecture = lectureRepository.findById(lectureId);
-        if (!lecture.isPresent()) throw new RuntimeException("Lecture Not Found For This Id.");
+        if (lecture.isEmpty()) throw new RuntimeException("Lecture Not Found For This Id.");
 
         List<AttendanceLecture> attendanceLectureList = attendanceLectureService
                 .getAllAttendanceByLectureId(lectureId);
@@ -65,15 +65,15 @@ public class ExportService {
         CSVWriter writer = new CSVWriter(new OutputStreamWriter(out));
 
         // Write CSV headers
-        String[] lectureName = {"Lecture Name : ", lecture.get().getLectureName().toString()};
+        String[] lectureName = {"Lecture Name : ", lecture.get().getLectureName()};
         writer.writeNext(lectureName);
         String[] header = {"No", "Student Name", "Index Number", "Attended Date", "Attended Time", "Attendance Status"};
         writer.writeNext(header);
-        Integer number = 1;
+        int number = 1;
         for (AttendanceLecture attendanceLecture : attendanceLectureList) {
-            Optional<Student> student = studentRepository.findById(attendanceLecture.getAttendeeId());
+            Optional<User> student = userRepository.findById(attendanceLecture.getAttendeeId());
             if (student.isPresent()) {
-                String[] row = {number.toString(), student.get().getStudentName(), student.get().getIndexNumber(),
+                String[] row = {Integer.toString(number), student.get().getFirstName() + " " + student.get().getLastName(), student.get().getIndexNumber(),
                         attendanceLecture.getAttendanceDate().toString(),
                         attendanceLecture.getAttendanceTime().toString(),
                         attendanceLecture.getAttendanceStatus() ? "Attended" : "Not Attended"};
@@ -82,16 +82,16 @@ public class ExportService {
             }
 
         }
-        List<Student> enrolledStudentList = moduleService.getAllEnrolledStudentByModuleCode(lecture.get().getLectureModuleCode());
-        for (Student student : enrolledStudentList) {
+        List<User> enrolledStudentList = moduleService.getAllEnrolledStudentByModuleCode(lecture.get().getLectureModuleCode());
+        for (User student : enrolledStudentList) {
             boolean isAddNotAttendedStudent = true;
             for (AttendanceLecture attendanceLecture : attendanceLectureList) {
-                if (attendanceLecture.getAttendeeId().equals(student.getStudentId())) {
+                if (attendanceLecture.getAttendeeId().equals(student.getUserId())) {
                     isAddNotAttendedStudent = false;
                 }
             }
             if (isAddNotAttendedStudent) {
-                String[] row = {number.toString(), student.getStudentName(), student.getIndexNumber(), "-", "-", "Not Attended"};
+                String[] row = {Integer.toString(number), student.getFirstName() + " " + student.getLastName(), student.getIndexNumber(), "-", "-", "Not Attended"};
                 writer.writeNext(row);
                 number++;
             }
@@ -105,7 +105,7 @@ public class ExportService {
 
     public ByteArrayInputStream exportLectureAttendanceByLectureIdAndDate(Integer lectureId, Date date) throws IOException {
         Optional<Lecture> lecture = lectureRepository.findById(lectureId);
-        if (!lecture.isPresent()) throw new RuntimeException("Lecture Not Found For This Id.");
+        if (lecture.isEmpty()) throw new RuntimeException("Lecture Not Found For This Id.");
 
         List<AttendanceLecture> attendanceLectureList = attendanceLectureService
                 .getAttendanceByLectureIdAndDate(lectureId,date);
@@ -120,11 +120,11 @@ public class ExportService {
         writer.writeNext(lectureName);
         String[] header = {"No", "Student Name", "Index Number", "Attended Date", "Attended Time", "Attendance Status"};
         writer.writeNext(header);
-        Integer number = 1;
+        int number = 1;
         for (AttendanceLecture attendanceLecture : attendanceLectureList) {
-            Optional<Student> student = studentRepository.findById(attendanceLecture.getAttendeeId());
+            Optional<User> student = userRepository.findById(attendanceLecture.getAttendeeId());
             if (student.isPresent()) {
-                String[] row = {number.toString(), student.get().getStudentName(), student.get().getIndexNumber(),
+                String[] row = {Integer.toString(number), student.get().getFirstName() + " " + student.get().getLastName(), student.get().getIndexNumber(),
                         attendanceLecture.getAttendanceDate().toString(),
                         attendanceLecture.getAttendanceTime().toString(),
                         attendanceLecture.getAttendanceStatus() ? "Attended" : "Not Attended"};
@@ -133,16 +133,16 @@ public class ExportService {
             }
 
         }
-        List<Student> enrolledStudentList = moduleService.getAllEnrolledStudentByModuleCode(lecture.get().getLectureModuleCode());
-        for (Student student : enrolledStudentList) {
+        List<User> enrolledStudentList = moduleService.getAllEnrolledStudentByModuleCode(lecture.get().getLectureModuleCode());
+        for (User student : enrolledStudentList) {
             boolean isAddNotAttendedStudent = true;
             for (AttendanceLecture attendanceLecture : attendanceLectureList) {
-                if (attendanceLecture.getAttendeeId().equals(student.getStudentId())) {
+                if (attendanceLecture.getAttendeeId().equals(student.getUserId())) {
                     isAddNotAttendedStudent = false;
                 }
             }
             if (isAddNotAttendedStudent) {
-                String[] row = {number.toString(), student.getStudentName(), student.getIndexNumber(), "-", "-", "Not Attended"};
+                String[] row = {Integer.toString(number), student.getFirstName() + " " + student.getLastName(), student.getIndexNumber(), "-", "-", "Not Attended"};
                 writer.writeNext(row);
                 number++;
             }
@@ -174,9 +174,9 @@ public class ExportService {
         writer.writeNext(header);
         Integer number = 1;
         for (AttendanceEvent attendanceEvent : attendanceList) {
-            Optional<Student> student = studentRepository.findById(attendanceEvent.getAttendeeId());
+            Optional<User> student = userRepository.findById(attendanceEvent.getAttendeeId());
             if (student.isPresent()) {
-                String[] row = {number.toString(), student.get().getStudentName(), student.get().getIndexNumber(),
+                String[] row = {number.toString(), student.get().getFirstName() + " " + student.get().getLastName(), student.get().getIndexNumber(),
                         attendanceEvent.getAttendanceDate().toString(), attendanceEvent.getAttendanceTime().toString(),
                         "Attended"};
                 writer.writeNext(row);
@@ -206,10 +206,10 @@ public class ExportService {
         writer.writeNext(header);
         Integer number = 1;
         for (StudentOverallAttendanceResponse response : responses) {
-            Optional<Student> student = studentRepository.findById(response.getStudentId());
+            Optional<User> student = userRepository.findById(response.getStudentId());
             if (student.isPresent()) {
                 int totalLectureCount = response.getAttendedLectureCount() + response.getMissedLectureCount();
-                String[] row = {number.toString(), student.get().getStudentName(), student.get().getIndexNumber(),
+                String[] row = {number.toString(), student.get().getFirstName() + " " + student.get().getLastName(), student.get().getIndexNumber(),
                         response.getAttendedLectureCount().toString(), String.valueOf(totalLectureCount),
                         String.format("%.2f", response.getAttendancePercentage()) +" %"};
                 writer.writeNext(row);

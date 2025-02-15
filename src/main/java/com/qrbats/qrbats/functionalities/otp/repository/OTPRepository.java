@@ -1,6 +1,6 @@
-package com.qrbats.qrbats.authentication.entities.otp.repository;
+package com.qrbats.qrbats.functionalities.otp.repository;
 
-import com.qrbats.qrbats.authentication.entities.otp.OTP;
+import com.qrbats.qrbats.functionalities.otp.OTP;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

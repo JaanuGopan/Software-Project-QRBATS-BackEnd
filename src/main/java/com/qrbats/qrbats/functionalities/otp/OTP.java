@@ -1,4 +1,4 @@
-package com.qrbats.qrbats.authentication.entities.otp;
+package com.qrbats.qrbats.functionalities.otp;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

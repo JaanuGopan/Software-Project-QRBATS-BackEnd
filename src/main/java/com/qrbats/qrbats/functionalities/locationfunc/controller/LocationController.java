@@ -20,17 +20,17 @@ public class LocationController {
 
     private final LocationService locationService;
 
-    @PostMapping("createlocation")
+    @PostMapping("create-location")
     public ResponseEntity<Location> createLocation(@RequestBody CreateLocationRequest request){
          return ResponseEntity.ok(locationService.createLocation(request));
     }
 
-    @PostMapping("/getdistance")
+    @PostMapping("/get-distance")
     public ResponseEntity<Double> getDistance(@RequestBody LocationDistanceRequest request){
         return ResponseEntity.ok(locationService.getDistance(request));
     }
 
-    @GetMapping("/getalllocationnames")
+    @GetMapping("/get-all-location-names")
     public ResponseEntity<List<LocationNameResponse>> getAllLocationNames(){
         return ResponseEntity.ok(locationService.getAllLocationName());
     }

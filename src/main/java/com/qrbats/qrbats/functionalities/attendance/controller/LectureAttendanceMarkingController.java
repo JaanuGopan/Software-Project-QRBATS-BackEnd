@@ -12,14 +12,14 @@ import java.rmi.server.RemoteServer;
 import java.sql.Date;
 
 @RestController
-@RequestMapping("/api/v1/lectureattendance")
+@RequestMapping("/api/v1/lecture-attendance")
 @AllArgsConstructor
 @CrossOrigin(origins = "*")
 public class LectureAttendanceMarkingController {
     @Autowired
     private final LectureAttendanceMarkingService lectureAttendanceMarkingService;
 
-    @PostMapping("/markattendance")
+    @PostMapping("/mark-attendance")
     public ResponseEntity<?> markLectureAttendance(@RequestBody LectureAttendanceMarkingRequest lectureAttendanceMarkingRequest){
         try {
             return ResponseEntity.ok(lectureAttendanceMarkingService.markLectureAttendance(lectureAttendanceMarkingRequest));
@@ -28,7 +28,7 @@ public class LectureAttendanceMarkingController {
         }
     }
 
-    @PostMapping("/markattendancebylectureid")
+    @PostMapping("/mark-attendance-by-lectureId")
     public ResponseEntity<?> markLectureAttendanceByLectureId(@RequestBody LectureAttendanceMarkingByLectureIdRequest request){
         try {
             return ResponseEntity.ok(lectureAttendanceMarkingService.markLectureAttendanceByLectureId(request));
@@ -37,7 +37,7 @@ public class LectureAttendanceMarkingController {
         }
     }
 
-    @GetMapping("/getallattendancebylectureid/{lectureId}")
+    @GetMapping("/get-all-attendance-by-lectureId/{lectureId}")
     public ResponseEntity<?> getAllAttendanceByLectureId(@PathVariable Integer lectureId){
         try {
             return ResponseEntity.ok(lectureAttendanceMarkingService.getAllAttendanceByLectureId(lectureId));
@@ -46,7 +46,7 @@ public class LectureAttendanceMarkingController {
         }
     }
 
-    @GetMapping("/getallAttendancebymodulecode")
+    @GetMapping("/get-all-attendance-by-module-code")
     public ResponseEntity<?> getAllAttendanceByModuleCode(@RequestParam String moduleCode){
         try {
             return ResponseEntity.ok(lectureAttendanceMarkingService.getAllAttendanceByModuleCode(moduleCode));
@@ -55,7 +55,7 @@ public class LectureAttendanceMarkingController {
         }
     }
 
-    @GetMapping("/getattendancebystudentid/{studentId}")
+    @GetMapping("/get-attendance-by-studentId/{studentId}")
     public ResponseEntity<?> getAllAttendanceByStudentId(@PathVariable Integer studentId){
         try {
             return ResponseEntity.ok(lectureAttendanceMarkingService.getAllAttendanceByStudentId(studentId));
@@ -64,7 +64,7 @@ public class LectureAttendanceMarkingController {
         }
     }
 
-    @GetMapping("/getallattendancehistorybystudentid/{studentId}")
+    @GetMapping("/get-all-attendance-history-by-studentId/{studentId}")
     public ResponseEntity<?> getAllAttendanceHistoryByStudentId(@PathVariable Integer studentId){
         try {
             return ResponseEntity.ok(lectureAttendanceMarkingService.getAllAttendanceHistoryByStudentId(studentId));
@@ -73,7 +73,7 @@ public class LectureAttendanceMarkingController {
         }
     }
 
-    @GetMapping("/getallstudentattendancebymoduleId/{moduleId}")
+    @GetMapping("/get-all-student-attendance-by-moduleId/{moduleId}")
     public ResponseEntity<?> getAllStudentsAttendanceReportByModuleId(@PathVariable Integer moduleId){
         try {
             return ResponseEntity.ok(lectureAttendanceMarkingService.getAllStudentsAttendanceReportByModuleId(moduleId));
@@ -83,7 +83,7 @@ public class LectureAttendanceMarkingController {
 
     }
 
-    @GetMapping("/getalllecturewithdatefordaylecture/{lectureId}")
+    @GetMapping("/get-all-lecture-with-date-for-day-lecture/{lectureId}")
     public ResponseEntity<?> getAllLectureWithDateForDayLecture(@PathVariable Integer lectureId){
         try {
             return ResponseEntity.ok(lectureAttendanceMarkingService.getAllLectureWithDateForDayLecture(lectureId));
@@ -92,7 +92,7 @@ public class LectureAttendanceMarkingController {
         }
     }
 
-    @GetMapping("/getallattendancebylectureidanddate")
+    @GetMapping("/get-all-attendance-by-lectureId-and-date")
     public ResponseEntity<?> getAllAttendanceByLectureIdAndDate(@RequestParam Integer lectureId, @RequestParam Date date){
         try {
             return ResponseEntity.ok(lectureAttendanceMarkingService.getAllAttendanceForLectureWithDate(lectureId,date));

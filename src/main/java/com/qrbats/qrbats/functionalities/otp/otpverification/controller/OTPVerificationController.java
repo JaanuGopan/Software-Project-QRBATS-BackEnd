@@ -1,9 +1,9 @@
-package com.qrbats.qrbats.authentication.entities.otp.otpverification.controller;
+package com.qrbats.qrbats.functionalities.otp.otpverification.controller;
 
 
-import com.qrbats.qrbats.authentication.entities.otp.otpverification.dto.OTPRequest;
-import com.qrbats.qrbats.authentication.entities.otp.otpverification.dto.StudentOTPVerificationRequest;
-import com.qrbats.qrbats.authentication.entities.otp.otpverification.service.OTPVerificationService;
+import com.qrbats.qrbats.functionalities.otp.otpverification.dto.OTPRequest;
+import com.qrbats.qrbats.functionalities.otp.otpverification.dto.StudentOTPVerificationRequest;
+import com.qrbats.qrbats.functionalities.otp.otpverification.service.OTPVerificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,12 +16,12 @@ public class OTPVerificationController {
 
     private final OTPVerificationService otpVerificationService;
 
-    @PostMapping("/generateotp")
+    @PostMapping("/generate-otp")
     public ResponseEntity<Boolean> sendOTP(@RequestBody OTPRequest otpRequest){
         return ResponseEntity.ok(otpVerificationService.sendOTP(otpRequest.getOtpSendEmail()));
     }
 
-    @PostMapping("/otpverification")
+    @PostMapping("/otp-verification")
     public ResponseEntity<Boolean> verifyOTP(@RequestBody StudentOTPVerificationRequest studentOTPVerificationRequest){
         return ResponseEntity.ok(otpVerificationService.otpVerification(
                 studentOTPVerificationRequest.getStudentEmail(),

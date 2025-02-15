@@ -1,6 +1,7 @@
 package com.qrbats.qrbats.authentication.entities.user;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,29 +23,35 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "User_id")
+    @Column(name = "user_id")
     private Integer userId;
 
-    @Column(name = "Email")
+    @Column(name = "email")
     private String email;
 
-    @Column(name = "First_name")
+    @Column(name = "first_name")
     private String firstName;
 
-    @Column(name = "Last_name")
+    @Column(name = "last_name")
     private String lastName;
 
-    @Column(name = "User_name")
+    @Column(name = "user_name")
     private String userName;
 
-    @Column(name = "Password")
+    @Column(name = "password")
     private String password;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(name = "Department_id")
+    @Column(name = "department_id")
     private Integer departmentId;
+
+    @Column(name = "semester")
+    private Integer semester;
+
+    @Column(name = "indexNo")
+    private String indexNumber;
 
 
    @Override

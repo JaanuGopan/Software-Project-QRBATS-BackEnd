@@ -1,8 +1,8 @@
-package com.qrbats.qrbats.authentication.entities.otp.otpverification.service;
+package com.qrbats.qrbats.functionalities.otp.otpverification.service;
 
 
-import com.qrbats.qrbats.authentication.entities.otp.OTP;
-import com.qrbats.qrbats.authentication.entities.otp.repository.OTPRepository;
+import com.qrbats.qrbats.functionalities.otp.OTP;
+import com.qrbats.qrbats.functionalities.otp.repository.OTPRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;

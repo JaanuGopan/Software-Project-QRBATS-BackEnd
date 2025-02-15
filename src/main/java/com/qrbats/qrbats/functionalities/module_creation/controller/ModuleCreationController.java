@@ -18,7 +18,7 @@ public class ModuleCreationController {
     private final ModuleService moduleService;
 
 
-    @GetMapping("getmodulebymodulecode")
+    @GetMapping("get-module-by-module-code")
     public  ResponseEntity<?> getModuleByModuleCode(@RequestParam String moduleCode){
         try {
             return ResponseEntity.ok(moduleService.getModuleByModuleCode(moduleCode));
@@ -26,7 +26,7 @@ public class ModuleCreationController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    @PostMapping("/createmodule")
+    @PostMapping("/create-module")
     public ResponseEntity<?> createModule(@RequestBody ModuleCreationRequest request){
         try {
             return ResponseEntity.ok(moduleService.createModule(request));
@@ -35,12 +35,12 @@ public class ModuleCreationController {
         }
     }
 
-    @DeleteMapping("deletemodule/{moduleId}")
+    @DeleteMapping("delete-module/{moduleId}")
     public void deleteModule(@PathVariable Integer  moduleId){
         moduleService.deleteModule(moduleId);
     }
 
-    @PutMapping("/updatemodule")
+    @PutMapping("/update-module")
     public ResponseEntity<?> updateModule(@RequestBody ModuleUpdateRequest moduleUpdateRequest){
         try {
             return ResponseEntity.ok(moduleService.updateModule(moduleUpdateRequest));
@@ -49,7 +49,7 @@ public class ModuleCreationController {
         }
     }
 
-    @GetMapping("getmodulebylecturerid/{userId}")
+    @GetMapping("get-module-by-lecturerId/{userId}")
     public ResponseEntity<List<Module>> getModuleByLecturerId(
             @PathVariable String userId
     ){
@@ -58,7 +58,7 @@ public class ModuleCreationController {
         );
     }
 
-    @PostMapping("getallmodulebysemesteranddepartmentid")
+    @PostMapping("get-all-module-by-semester-and-departmentId")
     public ResponseEntity<List<Module>> getModuleBySemesterDepartment(
             @RequestBody GatAllModuleBySemesterAndDepartmentIdRequest request
     ) {
@@ -67,12 +67,12 @@ public class ModuleCreationController {
       ));
     }
 
-    @GetMapping("/getallmodulebydepartmentid/{departmentId}")
+    @GetMapping("/get-all-module-by-departmentId/{departmentId}")
     public ResponseEntity<List<Module>> getAllModulesByDepartmentId(@PathVariable Integer departmentId){
         return ResponseEntity.ok(moduleService.getModuleByDepartmentId(departmentId));
     }
 
-    @GetMapping("/getallmodulesbystudentid/{studentId}")
+    @GetMapping("/get-all-modules-by-studentId/{studentId}")
     public ResponseEntity<?> getAllModulesByStudentId(@PathVariable Integer studentId){
         try {
             return ResponseEntity.ok(moduleService.getAllModulesByStudentId(studentId));
@@ -81,7 +81,7 @@ public class ModuleCreationController {
         }
     }
 
-    @PostMapping("/moduleenrollment")
+    @PostMapping("/module-enrollment")
     public ResponseEntity<?> moduleEnrollment(
             @RequestParam Integer moduleId,@RequestParam Integer studentId,@RequestParam String enrollmentKey){
 
@@ -92,7 +92,7 @@ public class ModuleCreationController {
         }
     }
 
-    @DeleteMapping("/moduleunenrollment")
+    @DeleteMapping("/module-un-enrollment")
     public ResponseEntity<?> moduleUnEnrollment(@RequestParam Integer moduleId,@RequestParam Integer studentId){
         try {
             return ResponseEntity.ok(moduleService.moduleUnEnrollment(moduleId,studentId));
@@ -101,7 +101,7 @@ public class ModuleCreationController {
         }
     }
 
-    @GetMapping("/getallenrolledmodules/{studentId}")
+    @GetMapping("/get-all-enrolled-modules/{studentId}")
     public ResponseEntity<?> getAllEnrolledModules(@PathVariable Integer studentId){
         try {
             return ResponseEntity.ok(moduleService.getAllEnrolledModules(studentId));
