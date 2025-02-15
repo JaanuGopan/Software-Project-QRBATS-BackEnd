@@ -8,6 +8,7 @@ import com.qrbats.qrbats.authentication.entities.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -34,8 +35,9 @@ public class AuthenticationService {
         if (existUserByUserName.isPresent()) throw new IllegalArgumentException("The username already exist.");
         Optional<User> existUserByEmail = userRepository.findByEmail(signUpRequest.getEmail());
         if (existUserByEmail.isPresent()) throw new IllegalArgumentException("The email already exist.");
-        if(signUpRequest.getIndexNumber() != null && userRepository.findByIndexNumber(signUpRequest.getIndexNumber()).isPresent()){
-           throw new IllegalArgumentException("The Student index number is already exist.");
+        if (signUpRequest.getIndexNumber() != null && userRepository
+                .findByIndexNumber(signUpRequest.getIndexNumber()).isPresent()) {
+            throw new IllegalArgumentException("The Student index number is already exist.");
         }
 
         User user = new User();
@@ -54,17 +56,16 @@ public class AuthenticationService {
     }
 
     public JwtAuthenticationResponse staffLogin(String userName, String password) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                        userName, password
-                )
-        );
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userName, password));
+        } catch (AuthenticationException e) {
+            throw new IllegalArgumentException("Invalid userName or password.");
+        }
 
-        User user = userRepository.findByUserName(
-                userName).orElseThrow(
-                () -> new IllegalArgumentException("Invalid userName or password")
-        );
+        User user = userRepository.findByUserName(userName)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid userName or password."));
 
-        if (user.getRole().equals(Role.STUDENT)){
+        if (user.getRole().equals(Role.STUDENT)) {
             throw new IllegalArgumentException("You are not access to this site.");
         }
 
@@ -93,17 +94,16 @@ public class AuthenticationService {
     }
 
     public JwtAuthenticationResponse studentLogin(String userName, String password) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                        userName, password
-                )
-        );
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userName, password));
+        } catch (AuthenticationException e) {
+            throw new IllegalArgumentException("Invalid userName or password.");
+        }
 
-        var user = userRepository.findByUserName(
-                userName).orElseThrow(
-                () -> new IllegalArgumentException("Invalid userName or password")
-        );
+        User user = userRepository.findByUserName(userName)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid userName or password"));
 
-        if (!user.getRole().equals(Role.STUDENT)){
+        if (!user.getRole().equals(Role.STUDENT)) {
             throw new IllegalArgumentException("You are not access to this site.");
         }
 
@@ -164,7 +164,8 @@ public class AuthenticationService {
 
         if (user.get().getIndexNumber() != null && !request.getIndexNumber().equals(user.get().getIndexNumber())) {
             Optional<User> existUserByUserName = userRepository.findByIndexNumber(request.getIndexNumber());
-            if (existUserByUserName.isPresent()) throw new RuntimeException("This student index number is already exist.");
+            if (existUserByUserName.isPresent())
+                throw new RuntimeException("This student index number is already exist.");
         }
 
         if (request.getUserName() != null) user.get().setUserName(request.getUserName());
@@ -172,7 +173,8 @@ public class AuthenticationService {
         if (request.getFirstName() != null) user.get().setFirstName(request.getFirstName());
         if (request.getLastName() != null) user.get().setLastName(request.getLastName());
         if (request.getDepartmentId() != null) user.get().setDepartmentId(request.getDepartmentId());
-        if (request.getPassword() != null && !request.getPassword().isEmpty()) user.get().setPassword(passwordEncoder.encode(request.getPassword()));
+        if (request.getPassword() != null && !request.getPassword().isEmpty())
+            user.get().setPassword(passwordEncoder.encode(request.getPassword()));
         if (request.getSemester() != null) user.get().setSemester(request.getSemester());
         if (request.getIndexNumber() != null) user.get().setIndexNumber(request.getIndexNumber());
         userRepository.save(user.get());
@@ -199,15 +201,15 @@ public class AuthenticationService {
         Optional<User> existUser = userRepository.findByEmail(email);
         if (existUser.isEmpty()) throw new RuntimeException("No User Found For This Email " + email);
 
-        return otpVerificationService.otpVerification(email,otp);
+        return otpVerificationService.otpVerification(email, otp);
     }
 
     public Boolean forgotPasswordResetPassword(String email, String password, String userName) {
         Optional<User> checkUser = userRepository.findByUserName(userName);
         Optional<User> existUser = userRepository.findByEmail(email);
 
-        if (checkUser.isPresent()){
-            if (!checkUser.get().getEmail().equals(email)){
+        if (checkUser.isPresent()) {
+            if (!checkUser.get().getEmail().equals(email)) {
                 throw new IllegalArgumentException("The username already taken so please change the username.");
             }
         }
