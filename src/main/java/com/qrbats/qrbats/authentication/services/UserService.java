@@ -31,15 +31,16 @@ public class UserService {
         };
     }
 
-    public Optional<User> getAuthenticatedUser() {
+    public User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
             String username = ((UserDetails) authentication.getPrincipal()).getUsername();
-            return userRepository.findByUserName(username);
+            return userRepository.findByUserName(username)
+                    .orElseThrow(() -> new IllegalArgumentException("User not found"));
         }
 
-        return Optional.empty();
+        return null;
     }
 
     public List<User> getAllStaffs() {
@@ -58,5 +59,10 @@ public class UserService {
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("Invalid userId."));
         userRepository.deleteById(userId);
         return true;
+    }
+
+    public User getUserById(Integer userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found."));
     }
 }

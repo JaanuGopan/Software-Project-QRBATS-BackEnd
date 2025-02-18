@@ -5,27 +5,28 @@ import com.qrbats.qrbats.authentication.entities.user.User;
 import com.qrbats.qrbats.authentication.entities.user.repository.UserRepository;
 import com.qrbats.qrbats.entity.location.Location;
 import com.qrbats.qrbats.entity.location.LocationRepository;
-import com.qrbats.qrbats.functionalities.locationfunc.service.LocationService;
+import com.qrbats.qrbats.functionalities.department.service.DepartmentService;
+import com.qrbats.qrbats.functionalities.location.service.LocationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
-import java.util.Optional;
 
 @SpringBootApplication
 @RequiredArgsConstructor
+@EnableScheduling
 public class QrbatsApplication implements CommandLineRunner {
 
 	private final UserRepository userRepository;
 	private final LocationRepository locationRepository;
 	private final LocationService locationService;
 	private final PasswordEncoder passwordEncoder;
+	private final DepartmentService departmentService;
 
 	@Value("${admin.email}")
 	private String adminEmail;
@@ -61,6 +62,8 @@ public class QrbatsApplication implements CommandLineRunner {
 			user.setPassword(passwordEncoder.encode(adminPassword));
 			userRepository.save(user);
 		}
+
+		departmentService.createDefaultDepartment();
 	}
 
 }

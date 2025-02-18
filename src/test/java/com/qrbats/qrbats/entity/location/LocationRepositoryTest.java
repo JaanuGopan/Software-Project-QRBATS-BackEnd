@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+
 @SpringBootTest
 class LocationRepositoryTest {
     @Autowired
@@ -17,8 +17,8 @@ class LocationRepositoryTest {
         Location location = new Location();
         location.setLocationName("testLocation");
         location.setAllowableRadius(30.0);
-        location.setLocationGPSLatitude(10.00);
-        location.setLocationGPSLongitude(10.00);
+        location.setLatitude(10.00);
+        location.setLongitude(10.00);
 
         return underTestLocationRepo.save(location);
     }

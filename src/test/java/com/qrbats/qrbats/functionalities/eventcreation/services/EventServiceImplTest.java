@@ -3,7 +3,7 @@ package com.qrbats.qrbats.functionalities.eventcreation.services;
 import com.qrbats.qrbats.entity.event.Event;
 import com.qrbats.qrbats.entity.event.EventRepository;
 import com.qrbats.qrbats.entity.event.EventRole;
-import com.qrbats.qrbats.functionalities.eventcreation.dto.RegisterEventRequest;
+import com.qrbats.qrbats.functionalities.eventcreation.dto.EventDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +44,7 @@ class EventServiceImplTest {
 
         // given
         Event sampleEvent = addSampleEvent();
-        RegisterEventRequest request = new RegisterEventRequest();
+        EventDto request = new EventDto();
         request.setEventDate(sampleEvent.getEventDate());
         request.setEventName(sampleEvent.getEventName());
         request.setEventRole(String.valueOf(sampleEvent.getEventRole()));
@@ -66,7 +66,7 @@ class EventServiceImplTest {
     void testCreateEventWithInvalidDetails(){
         // given
         Event sampleEvent = addSampleEvent();
-        RegisterEventRequest request = new RegisterEventRequest();
+        EventDto request = new EventDto();
         request.setEventDate(sampleEvent.getEventDate());
         request.setEventName(sampleEvent.getEventName());
         request.setEventRole(String.valueOf(sampleEvent.getEventRole()));

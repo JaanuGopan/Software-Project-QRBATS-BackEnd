@@ -53,6 +53,9 @@ public class User implements UserDetails {
     @Column(name = "indexNo")
     private String indexNumber;
 
+    @Column(name = "batch")
+    private Integer batch;
+
 
    @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

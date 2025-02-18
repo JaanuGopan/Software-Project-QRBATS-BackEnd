@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -51,11 +50,9 @@ public class AuthenticationController {
     @GetMapping("/user")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getAuthenticatedUser() {
-        Optional<User> userOptional = userService.getAuthenticatedUser();
+        User user = userService.getAuthenticatedUser();
 
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-
+        if (user != null) {
             return ResponseEntity.ok(new UserResponseDTO(
                     user.getUserId(),
                     user.getUsername(),
@@ -132,5 +129,4 @@ public class AuthenticationController {
     public ResponseEntity<Boolean> checkStudentUserNameIsExist(@RequestParam String userName){
         return ResponseEntity.ok(authenticationService.checkStudentUserNameIsExist(userName));
     }
-
 }

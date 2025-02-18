@@ -23,10 +23,10 @@ public class ExportController {
     @Autowired
     private final ExportService exportService;
 
-    @GetMapping("/get-csv/{lectureId}")
-    public ResponseEntity<?> getLectureAttendanceReport(@PathVariable Integer lectureId) throws IOException {
+    @GetMapping("/get-csv")
+    public ResponseEntity<?> getLectureAttendanceReport(@RequestParam Long lectureId) throws IOException {
         try {
-            ByteArrayInputStream in = exportService.exportLectureAttendance(lectureId);
+            ByteArrayInputStream in = exportService.exportAttendance(lectureId);
             HttpHeaders headers = new HttpHeaders();
             headers.add("Content-Disposition", "attachment; filename=lecture_"+lectureId.toString()+".csv");
             return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(new InputStreamResource(in));
@@ -34,19 +34,8 @@ public class ExportController {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
-    @GetMapping("/download-attendance-by-lectureId-and-date")
-    public ResponseEntity<?> downloadAttendanceReportByLectureIdAndDate(@RequestParam Integer lectureId, @RequestParam Date date) throws IOException {
-        try {
-            ByteArrayInputStream in = exportService.exportLectureAttendanceByLectureIdAndDate(lectureId,date);
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Content-Disposition", "attachment; filename=lecture_"+lectureId.toString()+"_"+date.toString()+".csv");
-            return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(new InputStreamResource(in));
-        } catch (RuntimeException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
-        }
-    }
 
-    @GetMapping("/get-event-report/{eventId}")
+    /*@GetMapping("/get-event-report/{eventId}")
     public ResponseEntity<?> getEventAttendanceReport(@PathVariable Integer eventId) throws IOException {
         try {
             ByteArrayInputStream in = exportService.exportEventAttendance(eventId);
@@ -56,11 +45,12 @@ public class ExportController {
         } catch (RuntimeException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
-    }
-    @GetMapping("/get-students-overall-report/{moduleId}")
-    public ResponseEntity<?> getStudentOverallAttendanceReport(@PathVariable Integer moduleId) throws IOException {
+    }*/
+
+    @GetMapping("/get-students-overall-report")
+    public ResponseEntity<?> getStudentOverallAttendanceReport(@RequestParam Integer moduleId) throws IOException {
         try {
-            ByteArrayInputStream in = exportService.exportOverallStudentAttendance(moduleId);
+            ByteArrayInputStream in = exportService.exportModuleAttendance(moduleId);
             HttpHeaders headers = new HttpHeaders();
             headers.add("Content-Disposition", "attachment; filename=module_"+moduleId.toString()+"_students_report.csv");
             return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(new InputStreamResource(in));

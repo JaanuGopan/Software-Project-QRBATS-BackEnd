@@ -14,4 +14,5 @@ public class SignUpRequest {
     private Integer departmentId;
     private Integer semester;
     private String indexNumber;
+    private Integer batch;
 }

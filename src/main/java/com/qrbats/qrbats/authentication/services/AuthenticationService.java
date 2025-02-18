@@ -51,6 +51,7 @@ public class AuthenticationService {
         user.setSemester(signUpRequest.getSemester());
         user.setIndexNumber(signUpRequest.getIndexNumber());
         user.setRole(signUpRequest.getRole());
+        user.setBatch(signUpRequest.getBatch());
 
         return userRepository.save(user);
     }
@@ -70,6 +71,7 @@ public class AuthenticationService {
         }
 
         Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("userId",user.getUserId());
 
         var jwt = jwtService.generateToken(user, extraClaims);
         var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
@@ -116,6 +118,7 @@ public class AuthenticationService {
         extraClaims.put("departmentId", user.getDepartmentId());
         extraClaims.put("semester", user.getSemester());
         extraClaims.put("indexNumber", user.getIndexNumber());
+        extraClaims.put("batch", user.getBatch());
 
         var jwt = jwtService.generateToken(user, extraClaims);
         var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
