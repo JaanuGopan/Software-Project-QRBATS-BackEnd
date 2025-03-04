@@ -122,7 +122,7 @@ public class EventAttendanceMarkingService {
             Optional<User> student = userRepository.findById(attendanceEvent.getAttendeeId());
             if (student.isPresent()){
                 AttendanceListResponse attendanceListResponse = new AttendanceListResponse();
-                attendanceListResponse.setStudentName(student.get().getFirstName() + " " + student.get().getLastName());
+                attendanceListResponse.setStudentName(student.get().getFirstName());
                 attendanceListResponse.setAttendedTime(attendanceEvent.getAttendanceTime());
                 attendanceListResponse.setAttendedDate(attendanceEvent.getAttendanceDate());
                 attendanceListResponse.setIndexNumber(student.get().getIndexNumber());

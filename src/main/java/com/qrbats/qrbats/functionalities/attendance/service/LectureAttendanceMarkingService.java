@@ -159,7 +159,7 @@ public class LectureAttendanceMarkingService {
                     if (student.isPresent()) {
                         LectureAttendanceResponse lectureAttendanceResponse = new LectureAttendanceResponse();
                         lectureAttendanceResponse.setStudentId(student.get().getUserId());
-                        lectureAttendanceResponse.setStudentName(student.get().getFirstName() + " " + student.get().getLastName());
+                        lectureAttendanceResponse.setStudentName(student.get().getFirstName());
                         lectureAttendanceResponse.setStudentIndexNumber(student.get().getIndexNumber());
                         lectureAttendanceResponse.setAttendanceStatus(attendanceLecture.getAttendanceStatus());
                         lectureAttendanceResponse.setAttendedDate(attendanceLecture.getAttendanceDate());
@@ -189,7 +189,7 @@ public class LectureAttendanceMarkingService {
                 lectureAttendanceResponse.setAttendedDate(attendanceLecture.getAttendanceDate());
                 lectureAttendanceResponse.setAttendedTime(attendanceLecture.getAttendanceTime());
                 lectureAttendanceResponse.setAttendanceStatus(attendanceLecture.getAttendanceStatus());
-                lectureAttendanceResponse.setStudentName(student.get().getFirstName() + " " + student.get().getLastName());
+                lectureAttendanceResponse.setStudentName(student.get().getFirstName());
                 lectureAttendanceResponse.setStudentIndexNumber(student.get().getIndexNumber());
                 lectureAttendanceResponseList.add(lectureAttendanceResponse);
             }
@@ -355,7 +355,7 @@ public class LectureAttendanceMarkingService {
                 lectureAttendanceResponse.setAttendedDate(attendanceLecture.getAttendanceDate());
                 lectureAttendanceResponse.setAttendedTime(attendanceLecture.getAttendanceTime());
                 lectureAttendanceResponse.setAttendanceStatus(attendanceLecture.getAttendanceStatus());
-                lectureAttendanceResponse.setStudentName(student.get().getFirstName() + " " + student.get().getLastName());
+                lectureAttendanceResponse.setStudentName(student.get().getFirstName());
                 lectureAttendanceResponse.setStudentIndexNumber(student.get().getIndexNumber());
                 lectureAttendanceResponseList.add(lectureAttendanceResponse);
             }

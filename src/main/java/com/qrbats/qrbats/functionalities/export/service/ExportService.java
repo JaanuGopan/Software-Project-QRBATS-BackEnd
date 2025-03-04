@@ -73,7 +73,7 @@ public class ExportService {
         for (AttendanceLecture attendanceLecture : attendanceLectureList) {
             Optional<User> student = userRepository.findById(attendanceLecture.getAttendeeId());
             if (student.isPresent()) {
-                String[] row = {Integer.toString(number), student.get().getFirstName() + " " + student.get().getLastName(), student.get().getIndexNumber(),
+                String[] row = {Integer.toString(number), student.get().getFirstName(), student.get().getIndexNumber(),
                         attendanceLecture.getAttendanceDate().toString(),
                         attendanceLecture.getAttendanceTime().toString(),
                         attendanceLecture.getAttendanceStatus() ? "Attended" : "Not Attended"};
@@ -124,7 +124,7 @@ public class ExportService {
         for (AttendanceLecture attendanceLecture : attendanceLectureList) {
             Optional<User> student = userRepository.findById(attendanceLecture.getAttendeeId());
             if (student.isPresent()) {
-                String[] row = {Integer.toString(number), student.get().getFirstName() + " " + student.get().getLastName(), student.get().getIndexNumber(),
+                String[] row = {Integer.toString(number), student.get().getFirstName(), student.get().getIndexNumber(),
                         attendanceLecture.getAttendanceDate().toString(),
                         attendanceLecture.getAttendanceTime().toString(),
                         attendanceLecture.getAttendanceStatus() ? "Attended" : "Not Attended"};
@@ -176,7 +176,7 @@ public class ExportService {
         for (AttendanceEvent attendanceEvent : attendanceList) {
             Optional<User> student = userRepository.findById(attendanceEvent.getAttendeeId());
             if (student.isPresent()) {
-                String[] row = {number.toString(), student.get().getFirstName() + " " + student.get().getLastName(), student.get().getIndexNumber(),
+                String[] row = {number.toString(), student.get().getFirstName(), student.get().getIndexNumber(),
                         attendanceEvent.getAttendanceDate().toString(), attendanceEvent.getAttendanceTime().toString(),
                         "Attended"};
                 writer.writeNext(row);
@@ -209,7 +209,7 @@ public class ExportService {
             Optional<User> student = userRepository.findById(response.getStudentId());
             if (student.isPresent()) {
                 int totalLectureCount = response.getAttendedLectureCount() + response.getMissedLectureCount();
-                String[] row = {number.toString(), student.get().getFirstName() + " " + student.get().getLastName(), student.get().getIndexNumber(),
+                String[] row = {number.toString(), student.get().getFirstName(), student.get().getIndexNumber(),
                         response.getAttendedLectureCount().toString(), String.valueOf(totalLectureCount),
                         String.format("%.2f", response.getAttendancePercentage()) +" %"};
                 writer.writeNext(row);
