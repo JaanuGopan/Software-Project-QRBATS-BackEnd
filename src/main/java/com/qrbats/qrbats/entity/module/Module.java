@@ -1,22 +1,22 @@
 package com.qrbats.qrbats.entity.module;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Date;
+import java.time.LocalDate;
 
 @Entity
 @Data
 @AllArgsConstructor
-@Table
 @NoArgsConstructor
 public class Module {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String moduleCode;
     private String moduleName;
@@ -25,6 +25,6 @@ public class Module {
     private Integer studentBatch;
     private Integer departmentId;
     private Integer createdBy;
-    private Date statingDate;
-    private Date endingDate;
+    private LocalDate statingDate;
+    private LocalDate endingDate;
 }

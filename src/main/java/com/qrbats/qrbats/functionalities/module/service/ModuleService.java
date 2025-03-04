@@ -7,11 +7,9 @@ import com.qrbats.qrbats.entity.module.Module;
 import com.qrbats.qrbats.entity.module.ModuleRepository;
 import com.qrbats.qrbats.entity.module_enrollment.ModuleEnrollment;
 import com.qrbats.qrbats.functionalities.module.dto.ModuleDto;
-import com.qrbats.qrbats.functionalities.module.service.ModuleEnrollmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -37,14 +35,22 @@ public class ModuleService {
 
     public Module saveModule(ModuleDto moduleDto) {
         
-        if (moduleDto.getStatingDate().after(moduleDto.getEndingDate())){
+        if (moduleDto.getStatingDate().isAfter(moduleDto.getEndingDate())){
             throw new IllegalArgumentException("The module start time should be before module end time.");
         }
         
         if (moduleDto.getId() == null) {
-
-            if (moduleDto.getStatingDate().before(Date.valueOf(LocalDate.now()))) {
+            if (moduleDto.getStatingDate().isBefore(LocalDate.now())) {
                 throw new IllegalArgumentException("The module start time should be in future.");
+            }
+
+            Optional<List<Module>> moduleList = moduleRepository.findAllByModuleCode(moduleDto.getModuleCode());
+            if (moduleList.isPresent()){
+                for (Module module : moduleList.get()) {
+                    if (module.getStudentBatch().equals(moduleDto.getStudentBatch())){
+                        throw new IllegalArgumentException("This Module is already created for " + moduleDto.getStudentBatch());
+                    }
+                }
             }
             
             Module module = new Module();
@@ -56,11 +62,11 @@ public class ModuleService {
             module.setDepartmentId(moduleDto.getDepartmentId());
             module.setCreatedBy(auditInfoProvider.getCurrentUserIdentifier());
             module.setStatingDate(moduleDto.getStatingDate());
-            module.setEndingDate(module.getEndingDate());
+            module.setEndingDate(moduleDto.getEndingDate());
             
             return moduleRepository.save(module);
         } else {
-            Module module = getModuleByModuleId(moduleDto.getCreatedBy());
+            Module module = getModuleByModuleId(moduleDto.getId());
             if (moduleDto.getModuleCode() != null) module.setModuleCode(moduleDto.getModuleCode());
             if (moduleDto.getModuleName() != null) module.setModuleName(moduleDto.getModuleName());
             if (moduleDto.getModuleEnrolmentKey() != null) module.setModuleEnrolmentKey(moduleDto.getModuleEnrolmentKey());
@@ -68,7 +74,7 @@ public class ModuleService {
             if (moduleDto.getStudentBatch() != null) module.setStudentBatch(moduleDto.getStudentBatch());
             if (moduleDto.getDepartmentId() != null) module.setDepartmentId(moduleDto.getDepartmentId());
             if (moduleDto.getStatingDate() != null) module.setStatingDate(moduleDto.getStatingDate());
-            if (moduleDto.getEndingDate() != null) module.setEndingDate(module.getEndingDate());
+            if (moduleDto.getEndingDate() != null) module.setEndingDate(moduleDto.getEndingDate());
 
             return moduleRepository.save(module);
         }
@@ -76,6 +82,9 @@ public class ModuleService {
 
     public void deleteModule(Integer moduleId) {
         Module module = getModuleByModuleId(moduleId);
+        if (!module.getCreatedBy().equals(auditInfoProvider.getCurrentUserIdentifier())){
+            throw new IllegalArgumentException("You are not authorized to delete this module.");
+        }
         moduleRepository.delete(module);
         moduleEnrollmentService.deleteAllEnrollmentByModuleId(moduleId);
     }

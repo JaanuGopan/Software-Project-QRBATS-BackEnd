@@ -34,7 +34,7 @@ public class ModuleController {
         try {
             return new ResponseEntity<>(moduleService.saveModule(moduleDto), HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
-            throw  new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
@@ -48,7 +48,7 @@ public class ModuleController {
        }
     }
 
-    @GetMapping("get-module-by-createdBy")
+    @GetMapping("/get-all-modules-for-user")
     public ResponseEntity<List<Module>> getModuleByLecturerId(){
         try {
             return new ResponseEntity<>(moduleService.getModuleByLecturerId(), HttpStatus.OK);

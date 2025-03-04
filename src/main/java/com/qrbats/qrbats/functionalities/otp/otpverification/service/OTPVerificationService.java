@@ -83,7 +83,7 @@ public class OTPVerificationService {
           otpRepository.save(existStudentOTP.get());
           return isOtpValid;
      }
-     @Scheduled(fixedRate = 60000) // Runs every minute
+     //@Scheduled(fixedRate = 60000) // Runs every minute
      public void deleteExpiredOTPs() {
           LocalDateTime oneMinuteAgo = LocalDateTime.now().minusMinutes(1);
           otpRepository.deleteByCreationTimeBefore(oneMinuteAgo);

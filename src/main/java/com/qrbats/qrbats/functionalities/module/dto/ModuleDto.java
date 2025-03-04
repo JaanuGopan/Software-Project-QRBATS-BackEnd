@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.sql.Date;
+import java.time.LocalDate;
+
 @Data
 @AllArgsConstructor
 public class ModuleDto {
@@ -18,6 +20,6 @@ public class ModuleDto {
     private Integer departmentId;
     @Nullable
     private Integer createdBy;
-    private Date statingDate;
-    private Date endingDate;
+    private LocalDate statingDate;
+    private LocalDate endingDate;
 }

@@ -3,6 +3,7 @@ package com.qrbats.qrbats.functionalities.location.controller;
 import com.qrbats.qrbats.entity.location.Location;
 import com.qrbats.qrbats.functionalities.location.dto.CreateLocationRequest;
 import com.qrbats.qrbats.functionalities.location.dto.LocationDistanceRequest;
+import com.qrbats.qrbats.functionalities.location.dto.LocationDto;
 import com.qrbats.qrbats.functionalities.location.dto.LocationNameResponse;
 import com.qrbats.qrbats.functionalities.location.service.LocationService;
 import lombok.RequiredArgsConstructor;
@@ -29,9 +30,9 @@ public class LocationController {
         return ResponseEntity.ok(locationService.getDistance(request));
     }*/
 
-    @GetMapping("/get-all-location-names")
-    public ResponseEntity<List<LocationNameResponse>> getAllLocationNames(){
-        return ResponseEntity.ok(locationService.getAllLocationName());
+    @GetMapping("/get-all-location")
+    public ResponseEntity<List<LocationDto>> getAllLocation(){
+        return ResponseEntity.ok(locationService.getAllLocation());
     }
 
 }

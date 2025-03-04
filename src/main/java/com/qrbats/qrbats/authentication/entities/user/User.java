@@ -18,42 +18,22 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "User")
+@Table(name = "app_user")
 public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
     private Integer userId;
-
-    @Column(name = "email")
     private String email;
-
-    @Column(name = "first_name")
     private String firstName;
-
-    @Column(name = "last_name")
     private String lastName;
-
-    @Column(name = "user_name")
     private String userName;
-
-    @Column(name = "password")
     private String password;
-
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     private Role role;
-
-    @Column(name = "department_id")
     private Integer departmentId;
-
-    @Column(name = "semester")
     private Integer semester;
-
-    @Column(name = "indexNo")
     private String indexNumber;
-
-    @Column(name = "batch")
     private Integer batch;
 
 

@@ -17,7 +17,7 @@ import java.time.LocalTime;
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
     private String eventName;
     private LocalDate eventDate;
     private Integer locationId;

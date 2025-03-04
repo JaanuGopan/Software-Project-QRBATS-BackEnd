@@ -12,20 +12,7 @@ import java.util.Optional;
 @Repository
 public interface LectureRepository extends JpaRepository<Lecture, Long> {
     Optional<List<Lecture>> findAllByModuleId(Integer moduleId);
-
-    @Query("SELECT l FROM Lecture l " +
-            "WHERE l.lectureDate = :lectureDate " +
-            "AND l.locationId = :locationId " +
-            "AND ((:startTime BETWEEN l.startTime AND l.endTime) " +
-            "OR (:endTime BETWEEN l.startTime AND l.endTime) " +
-            "OR (l.startTime BETWEEN :startTime AND :endTime))")
-    List<Lecture> findConflictingLectures(
-            @Param("lectureDate") Date lectureDate,
-            @Param("locationId") Integer locationId,
-            @Param("startTime") Time startTime,
-            @Param("endTime") Time endTime
-    );
-
     Optional<List<Lecture>> findAllByLectureStatus(LectureStatus lectureStatus);
     Optional<List<Lecture>> findAllByLectureStatusAndModuleId(LectureStatus lectureStatus, Integer moduleId);
+    Optional<List<Lecture>> findAllByCreatedBy(Integer createdBy);
 }

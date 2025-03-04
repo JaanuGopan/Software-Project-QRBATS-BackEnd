@@ -4,6 +4,7 @@ import com.qrbats.qrbats.entity.location.Location;
 import com.qrbats.qrbats.entity.location.LocationRepository;
 import com.qrbats.qrbats.entity.location.LocationCoordinates;
 import com.qrbats.qrbats.functionalities.location.dto.CreateLocationRequest;
+import com.qrbats.qrbats.functionalities.location.dto.LocationDto;
 import com.qrbats.qrbats.functionalities.location.dto.LocationNameResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -98,14 +100,17 @@ public class LocationService {
         }
     }
 
-    public List<LocationNameResponse> getAllLocationName() {
+    public List<LocationDto> getAllLocation() {
         List<Location> locationList = repository.findAll();
-        List<LocationNameResponse> returnList = new ArrayList<>();
-        for (Location location : locationList){
-            LocationNameResponse locationNameResponse = new LocationNameResponse();
-            locationNameResponse.setLocationName(location.getLocationName());
-            returnList.add(locationNameResponse);
-        }
-        return returnList;
+        return locationList.stream()
+                .map(location -> new LocationDto(location.getLocationId(), location.getLocationName()))
+                .collect(Collectors.toList());
     }
+
+    public String getLocationName(Integer locationId) {
+        return repository.findById(locationId)
+                .map(Location::getLocationName)
+                .orElse("");
+    }
+
 }

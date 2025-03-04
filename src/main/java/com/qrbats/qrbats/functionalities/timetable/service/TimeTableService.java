@@ -1,8 +1,10 @@
 package com.qrbats.qrbats.functionalities.timetable.service;
 
 import com.qrbats.qrbats.config.AuditInfoProvider;
+import com.qrbats.qrbats.entity.module.Module;
 import com.qrbats.qrbats.entity.timetable.TimeTable;
 import com.qrbats.qrbats.entity.timetable.TimeTableRepository;
+import com.qrbats.qrbats.functionalities.module.service.ModuleService;
 import com.qrbats.qrbats.functionalities.timetable.dto.TimeTableDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,8 +18,16 @@ import java.util.List;
 public class TimeTableService {
     private final TimeTableRepository timeTableRepository;
     private final AuditInfoProvider auditInfoProvider;
+    private final ModuleService moduleService;
 
     public TimeTable saveTimeTable(TimeTableDto timeTableDto) {
+        Module module = moduleService.getModuleByModuleId(timeTableDto.getModuleId());
+        if (timeTableDto.getStartingDate().isBefore(module.getStatingDate())) {
+            throw new IllegalArgumentException("The timetable start date should be after module start date.");
+        }
+        if (timeTableDto.getValidDate().isAfter(module.getEndingDate())) {
+            throw new IllegalArgumentException("The timetable end date should be before module end date.");
+        }
         validateTimeTableDto(timeTableDto);
 
         TimeTable timeTable;
@@ -42,18 +52,18 @@ public class TimeTableService {
     }
 
     private void validateTimeTableDto(TimeTableDto timeTableDto) {
-        if (timeTableDto.getStartingDate() != null && timeTableDto.getStartingDate().before(Date.valueOf(LocalDate.now()))) {
+        if (timeTableDto.getStartingDate() != null && timeTableDto.getStartingDate().isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("The timetable starting date should be in the future.");
         }
-        if (timeTableDto.getValidDate() != null && timeTableDto.getValidDate().before(Date.valueOf(LocalDate.now()))) {
+        if (timeTableDto.getValidDate() != null && timeTableDto.getValidDate().isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("The timetable valid date should be in the future.");
         }
         if (timeTableDto.getValidDate() != null && timeTableDto.getStartingDate() != null &&
-                timeTableDto.getValidDate().before(timeTableDto.getStartingDate())) {
+                timeTableDto.getValidDate().isBefore(timeTableDto.getStartingDate())) {
             throw new IllegalArgumentException("The timetable valid date should be after the starting date.");
         }
         if (timeTableDto.getEndTime() != null && timeTableDto.getStartTime() != null &&
-                timeTableDto.getEndTime().before(timeTableDto.getStartTime())) {
+                timeTableDto.getEndTime().isBefore(timeTableDto.getStartTime())) {
             throw new IllegalArgumentException("The timetable end time should be after the start time.");
         }
 

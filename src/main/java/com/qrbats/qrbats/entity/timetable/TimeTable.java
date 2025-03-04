@@ -1,26 +1,28 @@
 package com.qrbats.qrbats.entity.timetable;
 
-import com.qrbats.qrbats.authentication.entities.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.sql.Date;
-import java.sql.Time;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 @Data
 @Entity
-@Table(name = "time_table")
+@AllArgsConstructor
+@NoArgsConstructor
 public class TimeTable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private Integer moduleId;
     private DayOfWeek dayOfWeek;
-    private Time startTime;
-    private Time endTime;
+    private LocalTime startTime;
+    private LocalTime endTime;
     private Integer locationId;
-    private Date startDate;
-    private Date endDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private Integer createdBy;
 }

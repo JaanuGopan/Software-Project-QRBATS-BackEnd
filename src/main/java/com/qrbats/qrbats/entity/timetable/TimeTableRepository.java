@@ -7,22 +7,25 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Time;
 import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.List;
 
 @Repository
-public interface TimeTableRepository extends JpaRepository<TimeTable,Integer> {
+public interface TimeTableRepository extends JpaRepository<TimeTable, Integer> {
 
     @Query("SELECT t FROM TimeTable t " +
             "WHERE t.dayOfWeek = :dayOfWeek " +
             "AND t.locationId = :locationId " +
-            "AND ((:startTime BETWEEN t.startTime AND t.endTime) " +
+            "AND ( (" +
+            ":startTime BETWEEN t.startTime AND t.endTime) " +
             "OR (:endTime BETWEEN t.startTime AND t.endTime) " +
-            "OR (t.startTime BETWEEN :startTime AND :endTime))")
+            "OR (t.startTime BETWEEN :startTime AND :endTime) " +
+            "OR (t.startTime <= :startTime AND t.endTime >= :endTime) )")
     List<TimeTable> findConflictingTimeTables(
             @Param("dayOfWeek") DayOfWeek dayOfWeek,
             @Param("locationId") Integer locationId,
-            @Param("startTime") Time startTime,
-            @Param("endTime") Time endTime
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime") LocalTime endTime
     );
-
 }
+
