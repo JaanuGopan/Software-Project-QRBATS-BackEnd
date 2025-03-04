@@ -284,7 +284,7 @@ public class LectureAttendanceMarkingService {
             if (student.isPresent()){
                 StudentOverallAttendanceResponse response = new StudentOverallAttendanceResponse();
                 response.setStudentId(student.get().getUserId());
-                response.setStudentName(student.get().getFirstName() + " " + student.get().getLastName());
+                response.setStudentName(student.get().getFirstName());
                 response.setIndexNumber(student.get().getIndexNumber());
 
                 Integer attendedLecture = 0;
