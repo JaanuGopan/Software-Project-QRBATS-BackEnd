@@ -371,7 +371,7 @@ public class LectureAttendanceMarkingService {
             }
             if (isAddNotAttendedStudent) {
                 LectureAttendanceResponse lectureAttendanceResponse = new LectureAttendanceResponse();
-                lectureAttendanceResponse.setStudentName(enrolledStudent.getFirstName() + " " + enrolledStudent.getLastName());
+                lectureAttendanceResponse.setStudentName(enrolledStudent.getFirstName());
                 lectureAttendanceResponse.setStudentIndexNumber(enrolledStudent.getIndexNumber());
                 lectureAttendanceResponse.setStudentId(enrolledStudent.getUserId());
                 lectureAttendanceResponse.setAttendanceStatus(false);
