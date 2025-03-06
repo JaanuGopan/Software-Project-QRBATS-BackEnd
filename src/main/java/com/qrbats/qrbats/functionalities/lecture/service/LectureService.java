@@ -5,9 +5,10 @@ import com.qrbats.qrbats.entity.lecture.Lecture;
 import com.qrbats.qrbats.entity.lecture.LectureRepository;
 import com.qrbats.qrbats.entity.lecture.LectureStatus;
 import com.qrbats.qrbats.entity.module.Module;
-import com.qrbats.qrbats.entity.timetable.TimeTable;
-import com.qrbats.qrbats.functionalities.lecture.dto.LectureDto;
+import com.qrbats.qrbats.functionalities.lecture.dto.LectureViewDto;
+import com.qrbats.qrbats.functionalities.location.service.LocationService;
 import com.qrbats.qrbats.functionalities.module.service.ModuleService;
+import com.qrbats.qrbats.functionalities.timetable.dto.TimeTableDto;
 import com.qrbats.qrbats.service.scheduler.DynamicSchedulerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -31,22 +32,12 @@ public class LectureService {
     private final ModuleService moduleService;
     private final AuditInfoProvider auditInfoProvider;
     private final DynamicSchedulerService dynamicSchedulerService;
+    private final LocationService locationService;
 
-    public List<Lecture> createLecturesForTimetable(TimeTable timeTable) {
-        Module module = moduleService.getModuleByModuleId(timeTable.getModuleId());
+    public List<Lecture> createLecturesForTimetable(TimeTableDto timeTableDto) {
+        Module module = moduleService.getModuleByModuleId(timeTableDto.getModuleId());
 
-        List<LocalDate> allLecturesDates = new ArrayList<>();
-        LocalDate start = timeTable.getStartDate();
-        LocalDate end = timeTable.getEndDate();
-        // Find the first occurrence of the specified day of the week
-        while (!start.getDayOfWeek().equals(timeTable.getDayOfWeek())) {
-            start = start.plusDays(1);
-        }
-        // Collect all dates matching the day of the week
-        while (!start.isAfter(end)) {
-            allLecturesDates.add(start);
-            start = start.plusWeeks(1);
-        }
+        List<LocalDate> allLecturesDates = new ArrayList<>(timeTableDto.getLectureDateList());
 
         List<Lecture> lectureList = new ArrayList<>();
 
@@ -54,11 +45,11 @@ public class LectureService {
             Lecture lecture = new Lecture();
             lecture.setLectureDate(lectureDate);
             lecture.setLectureStatus(LectureStatus.PENDING);
-            lecture.setStartTime(timeTable.getStartTime());
-            lecture.setEndTime(timeTable.getEndTime());
-            lecture.setLocationId(timeTable.getLocationId());
-            lecture.setModuleId(timeTable.getModuleId());
-            lecture.setName(module.getModuleCode() + "_" + module.getStudentBatch() + "_" + timeTable.getDayOfWeek() + "_" + lectureDate.toString());
+            lecture.setStartTime(timeTableDto.getStartTime());
+            lecture.setEndTime(timeTableDto.getEndTime());
+            lecture.setLocationId(timeTableDto.getLocationId());
+            lecture.setModuleId(timeTableDto.getModuleId());
+            lecture.setName(module.getModuleCode() + "_" + module.getStudentBatch() + "_" + timeTableDto.getDayOfWeek() + "_" + lectureDate.toString());
             lecture.setCreatedBy(auditInfoProvider.getCurrentUserIdentifier());
 
             Lecture savedLecture = lectureRepository.save(lecture);
@@ -66,7 +57,7 @@ public class LectureService {
 
             // Automatically change the lecture stare to Finish after lecture complete.
             LocalDateTime executionTime = LocalDateTime.of(lectureDate, lecture.getEndTime());
-            dynamicSchedulerService.scheduleLectureCompletion(savedLecture.getId(), () -> changeLectureStateByLectureId(savedLecture.getId()), executionTime);
+            //dynamicSchedulerService.scheduleLectureCompletion(savedLecture.getId(), () -> changeLectureStateByLectureId(savedLecture.getId()), executionTime);
         });
 
         return lectureList;
@@ -135,8 +126,24 @@ public class LectureService {
         }
     }
 
-    public List<Lecture> getAllLectureForUser() {
-        return lectureRepository
+    public List<LectureViewDto> getAllLectureForUser() {
+        List<Lecture> lectureList = lectureRepository
                 .findAllByCreatedBy(auditInfoProvider.getCurrentUserIdentifier()).orElse(new ArrayList<>());
+        List<LectureViewDto> lectureViewDtoList = new ArrayList<>();
+        for (Lecture lecture : lectureList) {
+            LectureViewDto lectureViewDto = new LectureViewDto();
+            lectureViewDto.setId(lecture.getId());
+            lectureViewDto.setLectureEndTime(lecture.getEndTime());
+            lectureViewDto.setLectureStartTime(lecture.getStartTime());
+            lectureViewDto.setLectureStatus(lecture.getLectureStatus());
+            lectureViewDto.setLectureDate(lecture.getLectureDate());
+            lectureViewDto.setLocationName(locationService.getLocationName(lecture.getLocationId()));
+            lectureViewDto.setModuleCode(moduleService.getModuleByModuleId(lecture.getModuleId()).getModuleCode());
+            lectureViewDto.setName(lecture.getName());
+            lectureViewDto.setCreatedBy(lecture.getCreatedBy());
+
+            lectureViewDtoList.add(lectureViewDto);
+        }
+        return lectureViewDtoList;
     }
 }

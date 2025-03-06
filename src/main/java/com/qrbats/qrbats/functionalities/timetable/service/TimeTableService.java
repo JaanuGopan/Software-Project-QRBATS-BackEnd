@@ -1,15 +1,16 @@
 package com.qrbats.qrbats.functionalities.timetable.service;
 
 import com.qrbats.qrbats.config.AuditInfoProvider;
+import com.qrbats.qrbats.entity.lecture.Lecture;
 import com.qrbats.qrbats.entity.module.Module;
 import com.qrbats.qrbats.entity.timetable.TimeTable;
 import com.qrbats.qrbats.entity.timetable.TimeTableRepository;
+import com.qrbats.qrbats.functionalities.lecture.service.LectureService;
 import com.qrbats.qrbats.functionalities.module.service.ModuleService;
 import com.qrbats.qrbats.functionalities.timetable.dto.TimeTableDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class TimeTableService {
     private final TimeTableRepository timeTableRepository;
     private final AuditInfoProvider auditInfoProvider;
     private final ModuleService moduleService;
+    private final LectureService lectureService;
 
     public TimeTable saveTimeTable(TimeTableDto timeTableDto) {
         Module module = moduleService.getModuleByModuleId(timeTableDto.getModuleId());
@@ -35,6 +37,8 @@ public class TimeTableService {
             timeTable = new TimeTable();
             mapDtoToEntity(timeTableDto, timeTable);
             timeTable.setCreatedBy(auditInfoProvider.getCurrentUserIdentifier());
+
+            List<Lecture> lecturesList = lectureService.createLecturesForTimetable(timeTableDto);
         } else {
             timeTable = timeTableRepository.findById(timeTableDto.getId())
                     .orElseThrow(() -> new IllegalArgumentException("No timetable found with ID: " + timeTableDto.getId()));

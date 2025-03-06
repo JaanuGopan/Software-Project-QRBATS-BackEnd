@@ -1,13 +1,10 @@
 package com.qrbats.qrbats.functionalities.timetable.dto;
 
-import com.qrbats.qrbats.entity.lecture.Lecture;
-import com.qrbats.qrbats.functionalities.lecture.dto.LectureDto;
+
 import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.sql.Date;
-import java.sql.Time;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;

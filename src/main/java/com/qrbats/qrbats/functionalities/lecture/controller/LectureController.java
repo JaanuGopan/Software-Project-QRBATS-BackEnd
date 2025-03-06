@@ -1,8 +1,7 @@
 package com.qrbats.qrbats.functionalities.lecture.controller;
 
 import com.qrbats.qrbats.entity.lecture.Lecture;
-import com.qrbats.qrbats.entity.timetable.TimeTable;
-import com.qrbats.qrbats.functionalities.lecture.dto.LectureDto;
+import com.qrbats.qrbats.functionalities.lecture.dto.LectureViewDto;
 import com.qrbats.qrbats.functionalities.lecture.service.LectureService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,9 +23,9 @@ public class LectureController {
     private final LectureService lectureService;
 
     @GetMapping("/get-all-lecture-for-user")
-    public ResponseEntity<List<Lecture>> getAllLecturesForUser() {
+    public ResponseEntity<List<LectureViewDto>> getAllLecturesForUser() {
         try {
-            List<Lecture> lectureDtoList = lectureService.getAllLectureForUser();
+            List<LectureViewDto> lectureDtoList = lectureService.getAllLectureForUser();
             return new ResponseEntity<>(lectureDtoList, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
