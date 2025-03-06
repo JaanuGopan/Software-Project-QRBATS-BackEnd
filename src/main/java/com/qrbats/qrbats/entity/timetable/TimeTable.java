@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -25,4 +26,5 @@ public class TimeTable {
     private LocalDate startDate;
     private LocalDate endDate;
     private Integer createdBy;
+    private String lectureDateList;
 }

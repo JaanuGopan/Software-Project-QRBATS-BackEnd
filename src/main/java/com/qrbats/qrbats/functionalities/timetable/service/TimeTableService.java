@@ -92,5 +92,7 @@ public class TimeTableService {
         if (dto.getDayOfWeek() != null) entity.setDayOfWeek(dto.getDayOfWeek());
         if (dto.getStartingDate() != null) entity.setStartDate(dto.getStartingDate());
         if (dto.getValidDate() != null) entity.setEndDate(dto.getValidDate());
+        if (dto.getLocationId() != null) entity.setLocationId(dto.getLocationId());
+        if (dto.getLectureDateList() != null) entity.setLectureDateList(dto.getLectureDateList().toString());
     }
 }

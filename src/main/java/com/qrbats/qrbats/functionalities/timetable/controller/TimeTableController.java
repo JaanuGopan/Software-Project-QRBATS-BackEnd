@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 @RequestMapping("/api/v1/timetables")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class TimeTableController {
 
     private final TimeTableService timeTableService;
