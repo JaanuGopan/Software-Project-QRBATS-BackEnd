@@ -91,7 +91,7 @@ public class ExportService {
                 }
             }
             if (isAddNotAttendedStudent) {
-                String[] row = {Integer.toString(number), student.getFirstName() + " " + student.getLastName(), student.getIndexNumber(), "-", "-", "Not Attended"};
+                String[] row = {Integer.toString(number), student.getFirstName() , student.getIndexNumber(), "-", "-", "Not Attended"};
                 writer.writeNext(row);
                 number++;
             }
@@ -142,7 +142,7 @@ public class ExportService {
                 }
             }
             if (isAddNotAttendedStudent) {
-                String[] row = {Integer.toString(number), student.getFirstName() + " " + student.getLastName(), student.getIndexNumber(), "-", "-", "Not Attended"};
+                String[] row = {Integer.toString(number), student.getFirstName(), student.getIndexNumber(), "-", "-", "Not Attended"};
                 writer.writeNext(row);
                 number++;
             }
