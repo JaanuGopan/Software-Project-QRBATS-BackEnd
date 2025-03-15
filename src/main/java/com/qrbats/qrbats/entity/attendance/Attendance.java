@@ -21,7 +21,6 @@ public class Attendance {
     @Column(nullable = false, unique = true)
     private Integer attendeeId;
 
-    @Column(columnDefinition = "jsonb")
     @Convert(converter = AttendanceDataJsonConverter.class)
-    private Map<Integer, Map<Long, LectureAttendance>> attendanceData;
+    private AttendanceData attendanceData;
 }

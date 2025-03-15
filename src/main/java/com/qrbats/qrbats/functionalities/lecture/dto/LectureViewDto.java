@@ -23,5 +23,7 @@ public class LectureViewDto {
     @Nullable
     private String moduleCode;
     @Nullable
+    private Integer moduleId;
+    @Nullable
     private Integer createdBy;
 }

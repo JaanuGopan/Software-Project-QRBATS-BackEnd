@@ -1,3 +1,4 @@
+/*
 package com.qrbats.qrbats.service.scheduler;
 
 import com.qrbats.qrbats.functionalities.lecture.service.LectureService;
@@ -33,3 +34,4 @@ public class ScheduledJobManager {
     }
 }
 
+*/

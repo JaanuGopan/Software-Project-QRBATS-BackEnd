@@ -29,8 +29,22 @@ public class ModuleService {
 
     public Module getModuleByModuleCode(String moduleCode) {
         Optional<Module> module = moduleRepository.findByModuleCode(moduleCode);
-        if (module.isEmpty()) throw new RuntimeException("There Is No Module For This ModuleCode "+ moduleCode);
+        if (module.isEmpty()) throw new IllegalArgumentException("There Is No Module For This ModuleCode "+ moduleCode);
         return module.get();
+    }
+
+    public Module getModuleByModuleIdForStudent(Integer moduleId) {
+        Optional<Module> module = moduleRepository.findById(moduleId);
+        if (module.isEmpty()) throw new IllegalArgumentException("Module not found.");
+        ModuleEnrollment moduleEnrollment = moduleEnrollmentService.getModuleEnrollmentByStudentIdAndModuleId(auditInfoProvider.getCurrentUserIdentifier(), moduleId);
+
+        return module.get();
+    }
+
+    public Boolean checkStudentModuleEnrollment(Integer moduleId) {
+        ModuleEnrollment moduleEnrollment = moduleEnrollmentService
+                .getModuleEnrollmentByStudentIdAndModuleId(auditInfoProvider.getCurrentUserIdentifier(), moduleId);
+        return moduleEnrollment != null;
     }
 
     public Module saveModule(ModuleDto moduleDto) {
@@ -129,8 +143,15 @@ public class ModuleService {
         User user = userService.getAuthenticatedUser();
         Module module = getModuleByModuleId(moduleId);
 
+        if (!module.getStudentBatch().equals(user.getBatch())) {
+            throw new IllegalArgumentException("This module is not allocate to your batch.");
+        }
+        if (!module.getSemester().equals(user.getSemester())){
+            throw new IllegalArgumentException("This module is not allocate to your current semester.");
+        }
+
         if (Objects.equals(module.getModuleEnrolmentKey(), enrollmentKey)) {
-            ModuleEnrollment moduleEnrollment = moduleEnrollmentService.enrollModule(moduleId, user.getUserId());
+            ModuleEnrollment moduleEnrollment = moduleEnrollmentService.enrollModule(moduleId);
             return moduleEnrollment != null;
         } else {
             throw new IllegalArgumentException("The Enrolment Key Is Not Match.");
@@ -140,11 +161,31 @@ public class ModuleService {
     public void moduleUnEnrollment(Integer moduleId){
         User user = userService.getAuthenticatedUser();
         Module module = getModuleByModuleId(moduleId);
-        moduleEnrollmentService.unEnrollModule(user.getUserId(), moduleId);
+        moduleEnrollmentService.unEnrollModule(moduleId);
     }
 
     public List<Module> getAllEnrolledModulesForStudent() {
-        return getAllModulesByStudentId();
+        List<ModuleEnrollment> moduleEnrollmentList = moduleEnrollmentService.getAllModuleEnrollmentForStudent();
+        List<Module> moduleList = new ArrayList<>();
+        for (ModuleEnrollment moduleEnrollment : moduleEnrollmentList) {
+            Module module = getModuleByModuleId(moduleEnrollment.getModuleId());
+            moduleList.add(module);
+        }
+        return moduleList;
+    }
+
+    public List<Module> getAllUnEnrolledModulesForStudent() {
+        List<ModuleEnrollment> moduleEnrollmentList = moduleEnrollmentService.getAllModuleEnrollmentForStudent();
+        User student = userService.getAuthenticatedUser();
+        List<Module> moduleList = moduleRepository
+                .findAllBySemesterAndDepartmentIdAndStudentBatch(student.getSemester(), student.getDepartmentId(), student.getBatch())
+                .orElse(new ArrayList<>());
+        moduleList.removeIf(module ->
+                moduleEnrollmentList.stream()
+                        .anyMatch(enrollment -> enrollment.getModuleId().equals(module.getId()))
+        );
+
+        return moduleList;
     }
 
 }

@@ -18,4 +18,5 @@ public class UserResponseDTO {
     private Integer semester;
     private String indexNumber;
     private Role role;
+    private Integer studentBatch;
 }

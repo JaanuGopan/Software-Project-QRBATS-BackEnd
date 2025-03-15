@@ -1,6 +1,7 @@
 package com.qrbats.qrbats.authentication.services;
 
 import com.qrbats.qrbats.authentication.dto.*;
+import com.qrbats.qrbats.config.AuditInfoProvider;
 import com.qrbats.qrbats.functionalities.otp.otpverification.service.OTPVerificationService;
 import com.qrbats.qrbats.authentication.entities.user.Role;
 import com.qrbats.qrbats.authentication.entities.user.User;
@@ -13,10 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +25,7 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JWTService jwtService;
+    private final AuditInfoProvider auditInfoProvider;
 
     private final OTPVerificationService otpVerificationService;
 
@@ -150,7 +150,7 @@ public class AuthenticationService {
     }
 
     public boolean updateUser(UpdateUserRequest request) {
-        Optional<User> user = userRepository.findById(request.getUserId());
+        Optional<User> user = userRepository.findById(auditInfoProvider.getCurrentUserIdentifier());
         if (user.isEmpty()) {
             throw new RuntimeException("User not found for this id.");
         }
@@ -165,10 +165,13 @@ public class AuthenticationService {
             if (existUserByUserName.isPresent()) throw new RuntimeException("Username already exist.");
         }
 
-        if (user.get().getIndexNumber() != null && !request.getIndexNumber().equals(user.get().getIndexNumber())) {
-            Optional<User> existUserByUserName = userRepository.findByIndexNumber(request.getIndexNumber());
-            if (existUserByUserName.isPresent())
-                throw new RuntimeException("This student index number is already exist.");
+        if (user.get().getIndexNumber() != null) {
+            assert request.getIndexNumber() != null;
+            if (!request.getIndexNumber().equals(user.get().getIndexNumber())) {
+                Optional<User> existUserByUserName = userRepository.findByIndexNumber(request.getIndexNumber());
+                if (existUserByUserName.isPresent())
+                    throw new RuntimeException("This student index number is already exist.");
+            }
         }
 
         if (request.getUserName() != null) user.get().setUserName(request.getUserName());
@@ -193,33 +196,43 @@ public class AuthenticationService {
         }
     }
 
-    public Boolean forgotPasswordSendEmail(String email) {
+    public Boolean forgotPasswordSendEmailForStudent(String email) {
         Optional<User> existUser = userRepository.findByEmail(email);
-        if (existUser.isEmpty()) throw new RuntimeException("No User Found For This Email " + email);
+        if (existUser.isEmpty()) throw new IllegalArgumentException("No User Found For This Email " + email);
+        if (!existUser.get().getRole().equals(Role.STUDENT)) {
+            throw new IllegalArgumentException("No Student Found For This Email " + email);
+        }
 
         return otpVerificationService.sendOTP(email);
     }
 
-    public Boolean forgotPasswordOtpVerification(String email, String otp) {
+    public Boolean forgotPasswordOtpVerificationForStudent(String email, String otp) {
         Optional<User> existUser = userRepository.findByEmail(email);
-        if (existUser.isEmpty()) throw new RuntimeException("No User Found For This Email " + email);
+        if (existUser.isEmpty()) throw new IllegalArgumentException("No User Found For This Email " + email);
+        if (!existUser.get().getRole().equals(Role.STUDENT)) {
+            throw new IllegalArgumentException("No Student Found For This Email " + email);
+        }
 
         return otpVerificationService.otpVerification(email, otp);
     }
 
-    public Boolean forgotPasswordResetPassword(String email, String password, String userName) {
-        Optional<User> checkUser = userRepository.findByUserName(userName);
-        Optional<User> existUser = userRepository.findByEmail(email);
-
-        if (checkUser.isPresent()) {
-            if (!checkUser.get().getEmail().equals(email)) {
-                throw new IllegalArgumentException("The username already taken so please change the username.");
+    public Boolean forgotPasswordResetPasswordForStudent(String email, String password, String userName) {
+        if (userName != null){
+            Optional<User> checkUser = userRepository.findByUserName(userName);
+            if (checkUser.isPresent()) {
+                if (!checkUser.get().getEmail().equals(email)) {
+                    throw new IllegalArgumentException("The username already taken so please change the username.");
+                }
             }
         }
+        Optional<User> existUser = userRepository.findByEmail(email);
 
-        if (existUser.isEmpty()) throw new IllegalArgumentException("No user found for this email " + email);
+        if (existUser.isEmpty()) throw new IllegalArgumentException("No Student Found For This Email " + email);
+        if (!existUser.get().getRole().equals(Role.STUDENT)) {
+            throw new IllegalArgumentException("No Student Found For This Email " + email);
+        }
 
-        existUser.get().setUserName(userName);
+        if (userName != null) existUser.get().setUserName(userName);
         existUser.get().setPassword(passwordEncoder.encode(password));
         userRepository.save(existUser.get());
         return true;

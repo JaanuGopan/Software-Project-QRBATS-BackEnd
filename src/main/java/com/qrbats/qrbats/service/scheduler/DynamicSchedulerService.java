@@ -1,3 +1,4 @@
+/*
 package com.qrbats.qrbats.service.scheduler;
 
 import com.qrbats.qrbats.service.scheduler.entity.ScheduledJob;
@@ -39,3 +40,4 @@ public class DynamicSchedulerService {
     }
 }
 
+*/

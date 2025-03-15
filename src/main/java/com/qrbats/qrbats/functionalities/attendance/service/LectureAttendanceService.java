@@ -3,10 +3,7 @@ package com.qrbats.qrbats.functionalities.attendance.service;
 import com.qrbats.qrbats.authentication.entities.user.User;
 import com.qrbats.qrbats.authentication.services.UserService;
 import com.qrbats.qrbats.config.AuditInfoProvider;
-import com.qrbats.qrbats.entity.attendance.Attendance;
-import com.qrbats.qrbats.entity.attendance.AttendanceRepository;
-import com.qrbats.qrbats.entity.attendance.AttendanceStatus;
-import com.qrbats.qrbats.entity.attendance.LectureAttendance;
+import com.qrbats.qrbats.entity.attendance.*;
 import com.qrbats.qrbats.entity.lecture.Lecture;
 import com.qrbats.qrbats.entity.location.Location;
 import com.qrbats.qrbats.entity.module.Module;
@@ -61,7 +58,7 @@ public class LectureAttendanceService {
             throw new IllegalArgumentException("Attendance date does not match the lecture date.");
         }
 
-        if (lecture.getStartTime().isBefore(LocalTime.now())) {
+        if (lecture.getStartTime().isAfter(LocalTime.now())) {
             throw new IllegalArgumentException("Attendance time cannot be before the lecture start time.");
         }
 
@@ -70,9 +67,9 @@ public class LectureAttendanceService {
         }
 
         // Validate student eligibility
-        if (!student.getDepartmentId().equals(module.getDepartmentId())) {
+        /*if (!student.getDepartmentId().equals(module.getDepartmentId())) {
             throw new IllegalArgumentException("Student does not belong to the same department as the module.");
-        }
+        }*/
 
         if (!student.getSemester().equals(module.getSemester())) {
             throw new IllegalArgumentException("Student is not in the correct semester for this module.");
@@ -101,12 +98,12 @@ public class LectureAttendanceService {
                 .orElseGet(() -> {
                     Attendance newAttendance = new Attendance();
                     newAttendance.setAttendeeId(student.getUserId());
-                    newAttendance.setAttendanceData(new HashMap<>());
+                    newAttendance.setAttendanceData(new AttendanceData(new HashMap<>()));
                     return newAttendance;
                 });
 
         // Initialize module entry if missing
-        attendance.getAttendanceData()
+        attendance.getAttendanceData().getAttendanceData()
                 .computeIfAbsent(module.getId(), k -> new HashMap<>());
 
         // Create new LectureAttendance record
@@ -116,7 +113,7 @@ public class LectureAttendanceService {
         lectureAttendance.setAttendanceStatus(attendanceStatus);
 
         // Store LectureAttendance inside module's map
-        attendance.getAttendanceData().get(module.getId())
+        attendance.getAttendanceData().getAttendanceData().get(module.getId())
                 .put(lecture.getId(), lectureAttendance);
 
         // Save and return updated attendance record
@@ -136,7 +133,7 @@ public class LectureAttendanceService {
                 .getModuleEnrollmentByStudentIdAndModuleId(studentId, moduleId);
 
         return attendanceRepository.findByAttendeeId(studentId)
-                .map(attendance -> attendance.getAttendanceData().getOrDefault(moduleId, new HashMap<>()))
+                .map(attendance -> attendance.getAttendanceData().getAttendanceData().getOrDefault(moduleId, new HashMap<>()))
                 .orElse(new HashMap<>()); // Return empty map if no attendance found
     }
 
@@ -147,10 +144,18 @@ public class LectureAttendanceService {
                 .getModuleEnrollmentByStudentIdAndModuleId(studentId, module.getId());
 
         return attendanceRepository.findByAttendeeId(studentId)
-                .map(attendance -> attendance.getAttendanceData()
-                        .getOrDefault(module.getId(), Collections.emptyMap())
-                        .get(lectureId))
-                .orElse(null); // Return null if no attendance found
+                .map(attendance -> {
+                    Map<Integer, Map<Long, LectureAttendance>> attendanceData = attendance.getAttendanceData().getAttendanceData();
+                    if (attendanceData == null) {
+                        return null;
+                    }
+                    Map<Long, LectureAttendance> lectureAttendanceMap = attendanceData.get(module.getId());
+                    if (lectureAttendanceMap == null) {
+                        return null;
+                    }
+                    return lectureAttendanceMap.get(lectureId);
+                })
+                .orElse(null);
     }
 
 
@@ -160,7 +165,7 @@ public class LectureAttendanceService {
             return false;
         }
         Attendance attendance = optionalAttendance.get();
-        for (Map<Long, LectureAttendance> lectures : attendance.getAttendanceData().values()) {
+        for (Map<Long, LectureAttendance> lectures : attendance.getAttendanceData().getAttendanceData().values()) {
             if (lectures.containsKey(lectureId)) {
                 return true;
             }
@@ -187,7 +192,7 @@ public class LectureAttendanceService {
                 Attendance attendance = optionalAttendance.get();
 
                 // Check if attendanceData contains the lectureId
-                Map<Long, LectureAttendance> lectureAttendanceMap = attendance.getAttendanceData()
+                Map<Long, LectureAttendance> lectureAttendanceMap = attendance.getAttendanceData().getAttendanceData()
                         .get(lecture.getModuleId());
 
                 if (lectureAttendanceMap != null && lectureAttendanceMap.containsKey(lectureId)) {
@@ -252,7 +257,7 @@ public class LectureAttendanceService {
                 for (Lecture lecture : lectureList) {
                     if (studentAttendance.getAttendanceData() != null) {
                         Map<Long, LectureAttendance> lectureAttendanceMap = studentAttendance
-                                .getAttendanceData().get(lecture.getModuleId());
+                                .getAttendanceData().getAttendanceData().get(lecture.getModuleId());
                         if (lectureAttendanceMap != null && lectureAttendanceMap.containsKey(lecture.getId())) {
                             LectureAttendance lectureAttendance = lectureAttendanceMap.get(lecture.getId());
                             if (lectureAttendance != null && lectureAttendance.getAttendanceStatus() == AttendanceStatus.PRESENT) {
@@ -316,37 +321,42 @@ public class LectureAttendanceService {
 
         // Loop through lectures to gather attendance data
         for (Lecture lecture : lectureList) {
-            LectureAttendance lectureAttendance = getLectureAttendanceByLectureIdForStudent(student.getUserId(), lecture.getId());
-
             // Calculate the duration for finished lectures
             if (lectureService.checkLectureIsFinished(lecture)) {
+                LectureAttendance lectureAttendance = getLectureAttendanceByLectureIdForStudent(student.getUserId(), lecture.getId());
+
                 finishedLectureHours = finishedLectureHours.plus(lectureService.calculateLectureDuration(lecture));
                 finishedLectureCount++;
-            }
 
-            // Check attendance status
-            StudentAttendanceLectureDto studentAttendanceLectureDto = new StudentAttendanceLectureDto();
-            studentAttendanceLectureDto.setLectureName(lecture.getName());
-            studentAttendanceLectureDto.setLectureDate(lecture.getLectureDate());
+                // Check attendance status
+                StudentAttendanceLectureDto studentAttendanceLectureDto = new StudentAttendanceLectureDto();
+                studentAttendanceLectureDto.setLectureName(lecture.getName());
+                studentAttendanceLectureDto.setLectureDate(lecture.getLectureDate());
+                studentAttendanceLectureDto.setLectureStartTime(lecture.getStartTime());
+                studentAttendanceLectureDto.setLectureEndTime(lecture.getEndTime());
+                studentAttendanceLectureDto.setLocationName(locationService.getLocationName(lecture.getLocationId()));
 
-            if (lectureAttendance != null) {
-                if (lectureAttendance.getAttendanceStatus() == AttendanceStatus.PRESENT) {
-                    attendanceCount++;
-                    attendanceHours = attendanceHours.plus(lectureService.calculateLectureDuration(lecture));
-                    studentAttendanceLectureDto.setAttendanceStatus(AttendanceStatus.PRESENT);
+                if (lectureAttendance != null) {
+                    if (lectureAttendance.getAttendanceStatus() == AttendanceStatus.PRESENT || lectureAttendance.getAttendanceStatus() == AttendanceStatus.LATE) {
+                        attendanceCount++;
+                        attendanceHours = attendanceHours.plus(lectureService.calculateLectureDuration(lecture));
+                        studentAttendanceLectureDto.setAttendanceStatus(lectureAttendance.getAttendanceStatus());
+                        studentAttendanceLectureDto.setAttendedTime(lectureAttendance.getAttendedTime());
+                        studentAttendanceLectureDto.setAttendedDate(lectureAttendance.getAttendedDate());
+                    } else {
+                        notAttendanceCount++;
+                        notAttendanceHours = notAttendanceHours.plus(lectureService.calculateLectureDuration(lecture));
+                        studentAttendanceLectureDto.setAttendanceStatus(AttendanceStatus.ABSENT);
+                    }
                 } else {
+                    // If no attendance record, mark as ABSENT
                     notAttendanceCount++;
                     notAttendanceHours = notAttendanceHours.plus(lectureService.calculateLectureDuration(lecture));
                     studentAttendanceLectureDto.setAttendanceStatus(AttendanceStatus.ABSENT);
                 }
-            } else {
-                // If no attendance record, mark as ABSENT
-                notAttendanceCount++;
-                notAttendanceHours = notAttendanceHours.plus(lectureService.calculateLectureDuration(lecture));
-                studentAttendanceLectureDto.setAttendanceStatus(AttendanceStatus.ABSENT);
-            }
 
-            studentAttendancesLectureList.add(studentAttendanceLectureDto);
+                studentAttendancesLectureList.add(studentAttendanceLectureDto);
+            }
         }
 
         // Calculate attendance percentage

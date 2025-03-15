@@ -3,27 +3,13 @@ package com.qrbats.qrbats.functionalities.event.service;
 import com.qrbats.qrbats.config.AuditInfoProvider;
 import com.qrbats.qrbats.entity.event.Event;
 import com.qrbats.qrbats.entity.event.EventRepository;
-import com.qrbats.qrbats.entity.lecture.Lecture;
-import com.qrbats.qrbats.entity.lecture.LectureRepository;
-import com.qrbats.qrbats.entity.lecture.LectureStatus;
-import com.qrbats.qrbats.entity.module.Module;
-import com.qrbats.qrbats.entity.timetable.TimeTable;
-import com.qrbats.qrbats.functionalities.event.dto.EventDto;
-import com.qrbats.qrbats.functionalities.module.service.ModuleService;
-import com.qrbats.qrbats.service.scheduler.DynamicSchedulerService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Date;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.ArrayList;
+import com.qrbats.qrbats.functionalities.event.dto.EventDto;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

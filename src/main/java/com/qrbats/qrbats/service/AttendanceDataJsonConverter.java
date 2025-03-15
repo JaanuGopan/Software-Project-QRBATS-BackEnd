@@ -1,41 +1,32 @@
 package com.qrbats.qrbats.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.qrbats.qrbats.entity.attendance.LectureAttendance;
-import jakarta.annotation.Resource;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.qrbats.qrbats.entity.attendance.AttendanceData;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
-import java.util.HashMap;
-import java.util.Map;
+@Converter
+public class AttendanceDataJsonConverter implements AttributeConverter<AttendanceData, String> {
 
-@Converter(autoApply = true)
-public class AttendanceDataJsonConverter implements AttributeConverter<Map<Integer, Map<Long, LectureAttendance>>, String> {
-
-    @Resource
-    private ObjectMapper objectMapper;
+    private static final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @Override
-    public String convertToDatabaseColumn(Map<Integer, Map<Long, LectureAttendance>> attendanceData) {
+    public String convertToDatabaseColumn(AttendanceData attendanceData) {
         try {
             return objectMapper.writeValueAsString(attendanceData);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error converting attendanceData to JSON", e);
+        } catch (JsonProcessingException jpe) {
+            return null;
         }
     }
 
     @Override
-    public Map<Integer, Map<Long, LectureAttendance>> convertToEntityAttribute(String json) {
-        if (json == null || json.isEmpty()) {
-            return new HashMap<>(); // Return empty map instead of null
-        }
+    public AttendanceData convertToEntityAttribute(String value) {
         try {
-            return objectMapper.readValue(json, new TypeReference<Map<Integer, Map<Long, LectureAttendance>>>() {});
+            return objectMapper.readValue(value, AttendanceData.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error converting JSON to attendanceData", e);
+            return null;
         }
     }
 }
-

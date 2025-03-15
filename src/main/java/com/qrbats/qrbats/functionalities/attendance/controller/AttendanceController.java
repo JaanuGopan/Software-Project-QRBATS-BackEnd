@@ -23,7 +23,7 @@ public class AttendanceController {
     @Autowired
     private final LectureAttendanceService lectureAttendanceService;
 
-    @PostMapping("/mark-attendance")
+    @PostMapping("/mark-attendance-for-lecture")
     public ResponseEntity<Attendance> markAttendance(@RequestBody LectureAttendanceMarkingDto lectureAttendanceMarkingDto){
         try {
             Attendance attendance = lectureAttendanceService.markAttendance(lectureAttendanceMarkingDto);

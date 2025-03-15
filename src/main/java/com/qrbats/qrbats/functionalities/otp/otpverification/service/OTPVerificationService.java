@@ -57,31 +57,31 @@ public class OTPVerificationService {
      public String generateOTP() {
           Random random = new Random();
           int randomNumber = random.nextInt(9999);
-          String otp = Integer.toString(randomNumber);
+          StringBuilder otp = new StringBuilder(Integer.toString(randomNumber));
           while (otp.length() < 4) {
-               otp = "0" + otp;
+               otp.insert(0, "0");
           }
-          return otp;
+          return otp.toString();
      }
 
      public boolean otpVerification(String studentEmail, String otp) {
           Optional<OTP> existStudentOTP = otpRepository.findByEmail(studentEmail);
-          if (!existStudentOTP.isPresent()){
-               throw new RuntimeException("The Email "+studentEmail+" Is Not Valid.");
+          if (existStudentOTP.isEmpty()){
+               throw new IllegalArgumentException("The Email " + studentEmail +" Is Not Valid.");
           }
           if (existStudentOTP.get().getOtp() == null){
-               throw new RuntimeException("There Is No Any OTP Found For This Email "+studentEmail);
+               throw new IllegalArgumentException("There Is No Any OTP Found For This Email " + studentEmail);
           }
           boolean isOtpValid = existStudentOTP.filter(value -> Objects.equals(otp, value.getOtp())).isPresent();
           if (!isOtpValid){
-               throw new RuntimeException("The OTP Is Not Match.");
+               throw new IllegalArgumentException("The OTP Is Not Match.");
           }
-          if (isOtpValid && !existStudentOTP.get().getCreationTime().isAfter(LocalDateTime.now().minusMinutes(5))){
-               throw new RuntimeException("The OTP Is Expired.");
+          if (!existStudentOTP.get().getCreationTime().isAfter(LocalDateTime.now().minusMinutes(5))){
+               throw new IllegalArgumentException("The OTP Is Expired.");
           }
           existStudentOTP.get().setOtp(null);
           otpRepository.save(existStudentOTP.get());
-          return isOtpValid;
+          return true;
      }
      //@Scheduled(fixedRate = 60000) // Runs every minute
      public void deleteExpiredOTPs() {

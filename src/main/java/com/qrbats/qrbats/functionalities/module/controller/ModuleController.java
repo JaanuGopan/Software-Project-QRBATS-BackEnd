@@ -29,6 +29,15 @@ public class ModuleController {
         }
     }
 
+    @GetMapping("/get-module-by-moduleId-for-student")
+    public  ResponseEntity<Module> getModuleByModuleIdForStudent(@RequestParam Integer moduleId){
+        try {
+            return new  ResponseEntity<>(moduleService.getModuleByModuleIdForStudent(moduleId), HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
     @PostMapping("/save-module")
     public ResponseEntity<Module> saveModule(@RequestBody ModuleDto moduleDto){
         try {
@@ -57,14 +66,6 @@ public class ModuleController {
         }
     }
 
-    /*@PostMapping("get-all-module-by-semester-and-departmentId")
-    public ResponseEntity<List<Module>> getModuleBySemesterDepartment(
-            @RequestBody GatAllModuleBySemesterAndDepartmentIdRequest request
-    ) {
-      return ResponseEntity.ok(moduleService.getModuleBySemesterDepartment(
-              request.getSemester(), request.getDepartmentId()
-      ));
-    }*/
 
     @GetMapping("/get-all-module-by-departmentId/{departmentId}")
     public ResponseEntity<List<Module>> getAllModulesByDepartmentId(@PathVariable Integer departmentId){
@@ -81,34 +82,44 @@ public class ModuleController {
     }
 
     @PostMapping("/module-enrollment")
-    public ResponseEntity<?> moduleEnrollment(
-            @RequestParam Integer moduleId, @RequestParam String enrollmentKey){
-
+    public ResponseEntity<Boolean> moduleEnrollment(
+            @RequestParam Integer moduleId,
+            @RequestParam String enrollmentKey
+    ){
         try {
             return ResponseEntity.ok(moduleService.moduleEnrollment(moduleId,enrollmentKey));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
     @DeleteMapping("/module-un-enrollment")
-    public ResponseEntity<Void> moduleUnEnrollment(@RequestParam Integer moduleId){
+    public ResponseEntity<String> moduleUnEnrollment(@RequestParam Integer moduleId){
         try {
             moduleService.moduleUnEnrollment(moduleId);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
+            return ResponseEntity.ok("Module unenrolled successfully");
+        } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
 
-    @GetMapping("/get-all-enrolled-modules")
-    public ResponseEntity<?> getAllEnrolledModules(){
+    @GetMapping("/get-all-enrolled-modules-for-student")
+    public ResponseEntity<List<Module>> getAllEnrolledModulesForStudent(){
         try {
-            return ResponseEntity.ok(moduleService.getAllModulesByStudentId());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            List<Module> modules = moduleService.getAllEnrolledModulesForStudent();
+            return new ResponseEntity<>(modules, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
-
+    @GetMapping("/get-all-un-enrolled-module-for-student")
+    public ResponseEntity<List<Module>> getAllUnEnrolledModulesForStudent() {
+        try {
+            List<Module> modules = moduleService.getAllUnEnrolledModulesForStudent();
+            return new ResponseEntity<>(modules, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
 }
