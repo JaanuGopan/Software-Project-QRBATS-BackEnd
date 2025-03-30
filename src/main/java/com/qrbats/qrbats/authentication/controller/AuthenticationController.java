@@ -4,13 +4,13 @@ import com.qrbats.qrbats.authentication.dto.*;
 import com.qrbats.qrbats.authentication.entities.user.User;
 import com.qrbats.qrbats.authentication.services.AuthenticationService;
 import com.qrbats.qrbats.authentication.services.UserService;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -25,8 +25,8 @@ public class AuthenticationController {
     public ResponseEntity<?> signup(@RequestBody SignUpRequest signUpRequest){
         try {
             return ResponseEntity.ok(authenticationService.signup(signUpRequest));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
@@ -34,8 +34,8 @@ public class AuthenticationController {
     public ResponseEntity<?> staffLogin(@RequestParam String userName,@RequestParam String password){
         try {
             return ResponseEntity.ok(authenticationService.staffLogin(userName,password));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
@@ -43,19 +43,17 @@ public class AuthenticationController {
     public ResponseEntity<?> studentLogin(@RequestParam String userName,@RequestParam String password){
         try {
             return ResponseEntity.ok(authenticationService.studentLogin(userName,password));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
     @GetMapping("/user")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getAuthenticatedUser() {
-        Optional<User> userOptional = userService.getAuthenticatedUser();
+        User user = userService.getAuthenticatedUser();
 
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-
+        if (user != null) {
             return ResponseEntity.ok(new UserResponseDTO(
                     user.getUserId(),
                     user.getUsername(),
@@ -65,7 +63,8 @@ public class AuthenticationController {
                     user.getDepartmentId(),
                     user.getSemester(),
                     user.getIndexNumber(),
-                    user.getRole()
+                    user.getRole(),
+                    user.getBatch()
             ));
         } else {
             return ResponseEntity.status(401).body("User not authenticated");
@@ -81,8 +80,17 @@ public class AuthenticationController {
     public ResponseEntity<?> updateUser(@RequestBody UpdateUserRequest request){
         try {
              return ResponseEntity.ok(authenticationService.updateUser(request));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @PutMapping("/update-student")
+    public ResponseEntity<?> updateStudent(@RequestBody UpdateUserRequest request){
+        try {
+             return ResponseEntity.ok(authenticationService.updateUser(request));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
@@ -91,30 +99,30 @@ public class AuthenticationController {
         return ResponseEntity.ok(authenticationService.passwordVerification(userName,password));
     }
 
-    @PostMapping("/forgot-password-send-otp")
-    public ResponseEntity<?> forgotPasswordSendEmail(@RequestParam String email){
+    @PostMapping("/forgot-password-send-otp-for-student")
+    public ResponseEntity<Boolean> forgotPasswordSendEmail(@RequestParam String email){
         try {
-            return ResponseEntity.ok(authenticationService.forgotPasswordSendEmail(email));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.ok(authenticationService.forgotPasswordSendEmailForStudent(email));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
-    @GetMapping("/forgot-password-verify-otp")
+    @GetMapping("/forgot-password-verify-otp-for-student")
     public ResponseEntity<?> forgotPasswordOtpVerification(@RequestParam String email ,@RequestParam String otp){
         try {
-            return ResponseEntity.ok(authenticationService.forgotPasswordOtpVerification(email,otp));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.ok(authenticationService.forgotPasswordOtpVerificationForStudent(email,otp));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
-    @PutMapping("/forgot-password-reset-password")
-    public ResponseEntity<?> forgotPasswordResetPassword(@RequestParam String email ,@RequestParam String password,@RequestParam String userName){
+    @PutMapping("/forgot-password-reset-password-for-student")
+    public ResponseEntity<?> forgotPasswordResetPassword(@RequestParam String email ,@RequestParam String password,@RequestParam @Nullable String userName){
         try {
-            return ResponseEntity.ok(authenticationService.forgotPasswordResetPassword(email,password,userName));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.ok(authenticationService.forgotPasswordResetPasswordForStudent(email,password,userName));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
@@ -132,5 +140,4 @@ public class AuthenticationController {
     public ResponseEntity<Boolean> checkStudentUserNameIsExist(@RequestParam String userName){
         return ResponseEntity.ok(authenticationService.checkStudentUserNameIsExist(userName));
     }
-
 }

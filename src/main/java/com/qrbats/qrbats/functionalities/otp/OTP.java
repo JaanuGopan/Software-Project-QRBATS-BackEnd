@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "otp")
 public class OTP {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

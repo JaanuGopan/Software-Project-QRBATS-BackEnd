@@ -11,14 +11,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "Department")
 public class Department {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "Department_id")
     private Integer departmentId;
 
-    @Column(name = "Department_name")
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     private DepartmentName departmentName;
+
+    @Enumerated(EnumType.STRING)
+    private DepartmentCode departmentCode;
 }

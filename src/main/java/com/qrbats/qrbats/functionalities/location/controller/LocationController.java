@@ -1,0 +1,38 @@
+package com.qrbats.qrbats.functionalities.location.controller;
+
+import com.qrbats.qrbats.entity.location.Location;
+import com.qrbats.qrbats.functionalities.location.dto.CreateLocationRequest;
+import com.qrbats.qrbats.functionalities.location.dto.LocationDistanceRequest;
+import com.qrbats.qrbats.functionalities.location.dto.LocationDto;
+import com.qrbats.qrbats.functionalities.location.dto.LocationNameResponse;
+import com.qrbats.qrbats.functionalities.location.service.LocationService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("api/v1/location")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "*")
+public class LocationController {
+
+    private final LocationService locationService;
+
+    @PostMapping("create-location")
+    public ResponseEntity<Location> createLocation(@RequestBody CreateLocationRequest request){
+         return ResponseEntity.ok(locationService.createLocation(request));
+    }
+
+    /*@PostMapping("/get-distance")
+    public ResponseEntity<Double> getDistance(@RequestBody LocationDistanceRequest request){
+        return ResponseEntity.ok(locationService.getDistance(request));
+    }*/
+
+    @GetMapping("/get-all-location")
+    public ResponseEntity<List<LocationDto>> getAllLocation(){
+        return ResponseEntity.ok(locationService.getAllLocation());
+    }
+
+}

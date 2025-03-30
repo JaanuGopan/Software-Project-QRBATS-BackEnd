@@ -1,36 +1,30 @@
 package com.qrbats.qrbats.entity.module;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+import java.time.LocalDate;
+
 @Entity
-@Table(name = "Module")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Module {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "Module_id")
-    private Integer moduleId;
-
-    @Column(name = "Module_code")
+    private Integer id;
     private String moduleCode;
-
-    @Column(name = "Module_name")
     private String moduleName;
-
-    @Column(name = "Module_entrolment_key")
     private String moduleEnrolmentKey;
-
-    @Column(name = "Semester")
     private Integer semester;
-
-    @Column(name = "Department_id")
+    private Integer studentBatch;
     private Integer departmentId;
-
-    @Column(name = "Lecturer_id")
-    private Integer lecturerId;
-
+    private Integer createdBy;
+    private LocalDate statingDate;
+    private LocalDate endingDate;
 }
