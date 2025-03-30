@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -22,4 +23,5 @@ public class ModuleAttendanceResultDto {
     private Duration notAttendanceHours;
     private Duration finishedLectureHours;
     private Double attendancePercentage;
+    private List<Long> attendedLectureIdList;
 }

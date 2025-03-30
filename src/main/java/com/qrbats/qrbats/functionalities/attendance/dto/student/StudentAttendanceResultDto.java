@@ -16,8 +16,8 @@ public class StudentAttendanceResultDto {
     private Integer attendanceCount;
     private Integer notAttendanceCount;
     private Integer finishedLectureCount;
-    private Duration attendanceHours;
-    private Duration notAttendanceHours;
-    private Duration finishedLectureHours;
+    private String attendanceHours;
+    private String notAttendanceHours;
+    private String finishedLectureHours;
     private Double attendancePercentage;
 }

@@ -3,6 +3,7 @@ package com.qrbats.qrbats.functionalities.module.service;
 import com.qrbats.qrbats.authentication.entities.user.User;
 import com.qrbats.qrbats.authentication.services.UserService;
 import com.qrbats.qrbats.config.AuditInfoProvider;
+import com.qrbats.qrbats.entity.lecture.LectureRepository;
 import com.qrbats.qrbats.entity.module.Module;
 import com.qrbats.qrbats.entity.module.ModuleRepository;
 import com.qrbats.qrbats.entity.module_enrollment.ModuleEnrollment;
@@ -21,6 +22,7 @@ public class ModuleService {
     private final ModuleEnrollmentService moduleEnrollmentService;
     private final AuditInfoProvider auditInfoProvider;
     private final UserService userService;
+    private final LectureRepository lectureRepository;
 
     public Module getModuleByModuleId(Integer moduleId) {
         return moduleRepository.findById(moduleId)
@@ -100,6 +102,7 @@ public class ModuleService {
             throw new IllegalArgumentException("You are not authorized to delete this module.");
         }
         moduleRepository.delete(module);
+        lectureRepository.deleteAllByModuleId(moduleId);
         moduleEnrollmentService.deleteAllEnrollmentByModuleId(moduleId);
     }
 
@@ -177,13 +180,22 @@ public class ModuleService {
     public List<Module> getAllUnEnrolledModulesForStudent() {
         List<ModuleEnrollment> moduleEnrollmentList = moduleEnrollmentService.getAllModuleEnrollmentForStudent();
         User student = userService.getAuthenticatedUser();
-        List<Module> moduleList = moduleRepository
-                .findAllBySemesterAndDepartmentIdAndStudentBatch(student.getSemester(), student.getDepartmentId(), student.getBatch())
-                .orElse(new ArrayList<>());
-        moduleList.removeIf(module ->
-                moduleEnrollmentList.stream()
-                        .anyMatch(enrollment -> enrollment.getModuleId().equals(module.getId()))
-        );
+        List<Module> moduleList = new ArrayList<>();
+        if (student.getSemester() == 1 || student.getSemester() == 2) {
+            moduleList = moduleRepository.findAllBySemester(student.getSemester()).orElse(new ArrayList<>());
+            moduleList.removeIf(module ->
+                    moduleEnrollmentList.stream()
+                            .anyMatch(enrollment -> enrollment.getModuleId().equals(module.getId()))
+            );
+        } else {
+            moduleList = moduleRepository
+                    .findAllBySemesterAndDepartmentIdAndStudentBatch(student.getSemester(), student.getDepartmentId(), student.getBatch())
+                    .orElse(new ArrayList<>());
+            moduleList.removeIf(module ->
+                    moduleEnrollmentList.stream()
+                            .anyMatch(enrollment -> enrollment.getModuleId().equals(module.getId()))
+            );
+        }
 
         return moduleList;
     }

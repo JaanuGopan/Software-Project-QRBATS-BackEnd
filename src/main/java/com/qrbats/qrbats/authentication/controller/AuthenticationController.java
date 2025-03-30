@@ -25,8 +25,8 @@ public class AuthenticationController {
     public ResponseEntity<?> signup(@RequestBody SignUpRequest signUpRequest){
         try {
             return ResponseEntity.ok(authenticationService.signup(signUpRequest));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
@@ -34,8 +34,8 @@ public class AuthenticationController {
     public ResponseEntity<?> staffLogin(@RequestParam String userName,@RequestParam String password){
         try {
             return ResponseEntity.ok(authenticationService.staffLogin(userName,password));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
@@ -43,8 +43,8 @@ public class AuthenticationController {
     public ResponseEntity<?> studentLogin(@RequestParam String userName,@RequestParam String password){
         try {
             return ResponseEntity.ok(authenticationService.studentLogin(userName,password));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
@@ -80,8 +80,8 @@ public class AuthenticationController {
     public ResponseEntity<?> updateUser(@RequestBody UpdateUserRequest request){
         try {
              return ResponseEntity.ok(authenticationService.updateUser(request));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
@@ -89,8 +89,8 @@ public class AuthenticationController {
     public ResponseEntity<?> updateStudent(@RequestBody UpdateUserRequest request){
         try {
              return ResponseEntity.ok(authenticationService.updateUser(request));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 

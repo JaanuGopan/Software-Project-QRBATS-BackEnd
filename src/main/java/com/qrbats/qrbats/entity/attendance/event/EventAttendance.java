@@ -2,15 +2,13 @@ package com.qrbats.qrbats.entity.attendance.event;
 
 
 import com.qrbats.qrbats.entity.attendance.AttendanceStatus;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Date;
-import java.sql.Time;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 @Data
@@ -19,10 +17,11 @@ import java.sql.Time;
 @Table
 public class EventAttendance {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Integer attendeeId;
     private Long eventId;
-    private Date attendedDate;
-    private Time attendedTime;
+    private LocalDate attendedDate;
+    private LocalTime attendedTime;
     private AttendanceStatus attendanceStatus;
 }

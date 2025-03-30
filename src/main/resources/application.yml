@@ -41,6 +41,6 @@ admin:
   password: skyticker-admin
 
 attendance:
-  allowableDistance: 150000.0
-  lateAttendanceMinutes: 15
+  allowableDistance: 50.0
+  lateAttendanceMinutes: 30
 

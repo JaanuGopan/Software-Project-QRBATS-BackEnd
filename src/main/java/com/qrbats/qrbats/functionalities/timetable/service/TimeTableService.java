@@ -2,101 +2,122 @@ package com.qrbats.qrbats.functionalities.timetable.service;
 
 import com.qrbats.qrbats.config.AuditInfoProvider;
 import com.qrbats.qrbats.entity.lecture.Lecture;
+import com.qrbats.qrbats.entity.lecture.LectureStatus;
+import com.qrbats.qrbats.entity.lecture.LectureType;
 import com.qrbats.qrbats.entity.module.Module;
-import com.qrbats.qrbats.entity.timetable.TimeTable;
-import com.qrbats.qrbats.entity.timetable.TimeTableRepository;
+import com.qrbats.qrbats.functionalities.lecture.dto.LectureDto;
 import com.qrbats.qrbats.functionalities.lecture.service.LectureService;
 import com.qrbats.qrbats.functionalities.module.service.ModuleService;
 import com.qrbats.qrbats.functionalities.timetable.dto.TimeTableDto;
+import com.qrbats.qrbats.functionalities.timetable.dto.schedule.DaySchedule;
+import com.qrbats.qrbats.functionalities.timetable.dto.schedule.TimeSlot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class TimeTableService {
-    private final TimeTableRepository timeTableRepository;
     private final AuditInfoProvider auditInfoProvider;
     private final ModuleService moduleService;
     private final LectureService lectureService;
 
-    public TimeTable saveTimeTable(TimeTableDto timeTableDto) {
+    public List<Lecture> saveTimeTable(TimeTableDto timeTableDto) {
+        System.out.println("Time Table: " + timeTableDto.toString());
         Module module = moduleService.getModuleByModuleId(timeTableDto.getModuleId());
-        if (timeTableDto.getStartingDate().isBefore(module.getStatingDate())) {
+
+        if (timeTableDto.getDayList().isEmpty()) {
+            throw new IllegalArgumentException("Day list is empty");
+        }
+        if (timeTableDto.getDayScheduleList().isEmpty()) {
+            throw new IllegalArgumentException("Day schedule list is empty");
+        }
+        if (timeTableDto.getLectureDatesForDayList().isEmpty()) {
+            throw new IllegalArgumentException("Lecture date list is empty");
+        }
+        if (timeTableDto.getStartDate().isBefore(module.getStatingDate())) {
             throw new IllegalArgumentException("The timetable start date should be after module start date.");
         }
-        if (timeTableDto.getValidDate().isAfter(module.getEndingDate())) {
+        if (timeTableDto.getEndDate().isAfter(module.getEndingDate())) {
             throw new IllegalArgumentException("The timetable end date should be before module end date.");
         }
+
         validateTimeTableDto(timeTableDto);
 
-        TimeTable timeTable;
-        if (timeTableDto.getId() == null) {
-            timeTable = new TimeTable();
-            mapDtoToEntity(timeTableDto, timeTable);
-            timeTable.setCreatedBy(auditInfoProvider.getCurrentUserIdentifier());
-
-            List<Lecture> lecturesList = lectureService.createLecturesForTimetable(timeTableDto);
-        } else {
-            timeTable = timeTableRepository.findById(timeTableDto.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("No timetable found with ID: " + timeTableDto.getId()));
-            validateAuthorization(timeTable);
-            mapDtoToEntity(timeTableDto, timeTable);
+        List<Lecture> lectureList = new ArrayList<>();
+        List<LectureDto> lectureDtoList = getLectureDtoListFromTimeTableDto(timeTableDto);
+        // For validate the lecture.
+        for (LectureDto lectureDto : lectureDtoList) {
+            lectureService.validateSingleLectureDto(lectureDto);
         }
-        return timeTableRepository.save(timeTable);
+        // For save the lecture.
+        for (LectureDto lectureDto : lectureDtoList) {
+            Lecture lecture = lectureService.saveSingleLecture(lectureDto);
+            lectureList.add(lecture);
+        }
+        return lectureList;
     }
 
-    public void deleteTimeTable(Integer id) {
-        TimeTable timeTable = timeTableRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("No timetable found with ID: " + id));
-        validateAuthorization(timeTable);
-        timeTableRepository.deleteById(id);
+    private List<LectureDto> getLectureDtoListFromTimeTableDto(TimeTableDto timeTableDto) {
+        List<LectureDto> lectureDtoList = new ArrayList<>();
+        for (DayOfWeek day : timeTableDto.getDayList()) {
+            List<DaySchedule> dayScheduleList = timeTableDto.getDayScheduleList();
+            List<TimeSlot> timeSlots = new ArrayList<>();
+            for (DaySchedule daySchedule : dayScheduleList) {
+                if (day == daySchedule.getDay()) {
+                    timeSlots.addAll(daySchedule.getTimeSlots());
+                }
+            }
+
+            for (LocalDate lectureDate : timeTableDto.getLectureDatesForDayList().get(day)) {
+                for (TimeSlot timeSlot : timeSlots) {
+                    LectureDto lectureDto = new LectureDto();
+                    lectureDto.setLectureDate(lectureDate);
+                    lectureDto.setLectureStartTime(timeSlot.getStartTime());
+                    lectureDto.setLectureEndTime(timeSlot.getEndTime());
+                    lectureDto.setLectureStatus(LectureStatus.PENDING);
+                    lectureDto.setLectureType(LectureType.LECTURE);
+                    lectureDto.setLocationId(timeSlot.getLocationId());
+                    String lectureName = moduleService.getModuleByModuleId(timeTableDto.getModuleId()).getModuleCode()
+                            + "_" + lectureDate + "_" + timeSlot.getStartTime();
+                    lectureDto.setName(lectureName);
+                    lectureDto.setModuleId(timeTableDto.getModuleId());
+                    lectureDto.setCreatedBy(auditInfoProvider.getCurrentUserIdentifier());
+
+                    lectureDtoList.add(lectureDto);
+                }
+            }
+        }
+
+        return lectureDtoList;
     }
 
     private void validateTimeTableDto(TimeTableDto timeTableDto) {
-        if (timeTableDto.getStartingDate() != null && timeTableDto.getStartingDate().isBefore(LocalDate.now())) {
+        if (timeTableDto.getStartDate() != null && timeTableDto.getStartDate().isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("The timetable starting date should be in the future.");
         }
-        if (timeTableDto.getValidDate() != null && timeTableDto.getValidDate().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("The timetable valid date should be in the future.");
+        if (timeTableDto.getEndDate() != null && timeTableDto.getEndDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("The timetable end date should be in the future.");
         }
-        if (timeTableDto.getValidDate() != null && timeTableDto.getStartingDate() != null &&
-                timeTableDto.getValidDate().isBefore(timeTableDto.getStartingDate())) {
-            throw new IllegalArgumentException("The timetable valid date should be after the starting date.");
-        }
-        if (timeTableDto.getEndTime() != null && timeTableDto.getStartTime() != null &&
-                timeTableDto.getEndTime().isBefore(timeTableDto.getStartTime())) {
-            throw new IllegalArgumentException("The timetable end time should be after the start time.");
+        if (timeTableDto.getEndDate() != null && timeTableDto.getStartDate() != null &&
+                timeTableDto.getEndDate().isBefore(timeTableDto.getStartDate())) {
+            throw new IllegalArgumentException("The timetable end date should be after the starting date.");
         }
 
-        List<TimeTable> conflictingTimeTables = timeTableRepository.findConflictingTimeTables(
-          timeTableDto.getDayOfWeek(),
-          timeTableDto.getLocationId(),
-          timeTableDto.getStartTime(),
-          timeTableDto.getEndTime()
-        );
-
-        if (!conflictingTimeTables.isEmpty()) {
-            throw new IllegalArgumentException("Already there is a timetable in same location and day, it leads time conflict.");
+        for (DaySchedule daySchedule : timeTableDto.getDayScheduleList()) {
+            for (TimeSlot timeSlot : daySchedule.getTimeSlots()) {
+                LocalTime startTime = timeSlot.getStartTime();
+                LocalTime endTime = timeSlot.getEndTime();
+                if (endTime != null && startTime != null &&
+                        endTime.isBefore(startTime)) {
+                    throw new IllegalArgumentException("The timeslot end time should be after the start time for " + daySchedule.getDay().name() + ".");
+                }
+            }
         }
-    }
-
-    private void validateAuthorization(TimeTable timeTable) {
-        if (!timeTable.getCreatedBy().equals(auditInfoProvider.getCurrentUserIdentifier())) {
-            throw new IllegalArgumentException("You are not authorized to perform this action.");
-        }
-    }
-
-    private void mapDtoToEntity(TimeTableDto dto, TimeTable entity) {
-        if (dto.getModuleId() != null) entity.setModuleId(dto.getModuleId());
-        if (dto.getStartTime() != null) entity.setStartTime(dto.getStartTime());
-        if (dto.getEndTime() != null) entity.setEndTime(dto.getEndTime());
-        if (dto.getDayOfWeek() != null) entity.setDayOfWeek(dto.getDayOfWeek());
-        if (dto.getStartingDate() != null) entity.setStartDate(dto.getStartingDate());
-        if (dto.getValidDate() != null) entity.setEndDate(dto.getValidDate());
-        if (dto.getLocationId() != null) entity.setLocationId(dto.getLocationId());
-        if (dto.getLectureDateList() != null) entity.setLectureDateList(dto.getLectureDateList().toString());
     }
 }

@@ -20,5 +20,5 @@ public class UpdateUserRequest {
     @Nullable
     private String indexNumber;
     @Nullable
-    private String studentBatch;
+    private Integer studentBatch;
 }

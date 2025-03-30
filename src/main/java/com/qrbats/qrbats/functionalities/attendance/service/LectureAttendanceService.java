@@ -13,6 +13,7 @@ import com.qrbats.qrbats.functionalities.attendance.dto.LectureAttendanceResultD
 import com.qrbats.qrbats.functionalities.attendance.dto.ModuleAttendanceResultDto;
 import com.qrbats.qrbats.functionalities.attendance.dto.student.StudentAttendanceLectureDto;
 import com.qrbats.qrbats.functionalities.attendance.dto.student.StudentAttendanceResultDto;
+import com.qrbats.qrbats.functionalities.department.service.DepartmentService;
 import com.qrbats.qrbats.functionalities.lecture.service.LectureService;
 import com.qrbats.qrbats.functionalities.location.service.LocationService;
 import com.qrbats.qrbats.functionalities.module.service.ModuleService;
@@ -25,7 +26,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +37,7 @@ public class LectureAttendanceService {
     private final ModuleEnrollmentService moduleEnrollmentService;
     private final LocationService locationService;
     private final AuditInfoProvider auditInfoProvider;
+    private final DepartmentService departmentService;
 
     @Value("${attendance.lateAttendanceMinutes}")
     private Integer lateAttendanceMinutes;
@@ -46,12 +47,7 @@ public class LectureAttendanceService {
         // Retrieve necessary entities
         Lecture lecture = lectureService.findLectureById(lectureAttendanceMarkingDto.getLectureId());
         User student = userService.getAuthenticatedUser();
-        Module module = moduleService.getModuleByModuleId(lecture.getModuleId());
         Location location = locationService.getLocationById(lecture.getLocationId());
-
-        // Check module enrollment
-        ModuleEnrollment moduleEnrollment = moduleEnrollmentService
-                .getModuleEnrollmentByStudentIdAndModuleId(student.getUserId(), module.getId());
 
         // Validate lecture date and time
         if (!lecture.getLectureDate().equals(LocalDate.now())) {
@@ -70,14 +66,6 @@ public class LectureAttendanceService {
         /*if (!student.getDepartmentId().equals(module.getDepartmentId())) {
             throw new IllegalArgumentException("Student does not belong to the same department as the module.");
         }*/
-
-        if (!student.getSemester().equals(module.getSemester())) {
-            throw new IllegalArgumentException("Student is not in the correct semester for this module.");
-        }
-
-        if (!student.getBatch().equals(module.getStudentBatch())) {
-            throw new IllegalArgumentException("Student batch does not match the module's batch.");
-        }
 
         // Location check
         if (!locationService.checkInTheLocation(lectureAttendanceMarkingDto.getLocationCoordinates(), location)) {
@@ -102,19 +90,37 @@ public class LectureAttendanceService {
                     return newAttendance;
                 });
 
-        // Initialize module entry if missing
-        attendance.getAttendanceData().getAttendanceData()
-                .computeIfAbsent(module.getId(), k -> new HashMap<>());
-
         // Create new LectureAttendance record
         LectureAttendance lectureAttendance = new LectureAttendance();
         lectureAttendance.setAttendedDate(LocalDate.now());
         lectureAttendance.setAttendedTime(LocalTime.now());
         lectureAttendance.setAttendanceStatus(attendanceStatus);
 
+        Module module = moduleService.getModuleByModuleId(lecture.getModuleId());
+        // Check module enrollment
+        ModuleEnrollment moduleEnrollment = moduleEnrollmentService
+                .getModuleEnrollmentByStudentIdAndModuleId(student.getUserId(), module.getId());
+
+        if (!student.getSemester().equals(module.getSemester())) {
+            throw new IllegalArgumentException("Student is not in the correct semester for this module.");
+        }
+
+        if (!student.getBatch().equals(module.getStudentBatch())) {
+            throw new IllegalArgumentException("Student batch does not match the module's batch.");
+        }
+
+        // Initialize module entry if missing
+        attendance.getAttendanceData().getAttendanceData()
+                .computeIfAbsent(module.getId(), k -> new HashMap<>());
+
+        if (attendance.getAttendanceData().getAttendanceData().get(module.getId()).containsKey(lecture.getId())) {
+            throw new IllegalArgumentException("You already mark your attendance for " + lecture.getLectureDate() + " lecture.");
+        }
+
         // Store LectureAttendance inside module's map
         attendance.getAttendanceData().getAttendanceData().get(module.getId())
                 .put(lecture.getId(), lectureAttendance);
+
 
         // Save and return updated attendance record
         return attendanceRepository.save(attendance);
@@ -123,7 +129,7 @@ public class LectureAttendanceService {
 
     public Attendance getAllAttendanceByAttendeeId(Integer attendeeId) {
         return attendanceRepository.findByAttendeeId(attendeeId)
-                .orElseThrow(() -> new  IllegalArgumentException("Attendance not found."));
+                .orElseThrow(() -> new IllegalArgumentException("Attendance not found."));
     }
 
     public Map<Long, LectureAttendance> getAttendanceDataByModuleIdForStudent(Integer studentId, Integer moduleId) {
@@ -185,7 +191,7 @@ public class LectureAttendanceService {
             Optional<Attendance> optionalAttendance = attendanceRepository.findByAttendeeId(user.getUserId());
 
             LectureAttendanceResultDto lectureAttendanceResultDto = new LectureAttendanceResultDto();
-            lectureAttendanceResultDto.setStudentName(user.getFirstName() + " " + user.getLastName());
+            lectureAttendanceResultDto.setStudentName(user.getFirstName());
             lectureAttendanceResultDto.setIndexNumber(user.getIndexNumber());
 
             if (optionalAttendance.isPresent()) {
@@ -232,7 +238,8 @@ public class LectureAttendanceService {
 
         // Calculate total hours of finished lectures
         for (Lecture lecture : lectureList) {
-            if (lectureService.checkLectureIsFinished(lecture)) {
+            if (lectureService.checkLectureIsFinished(lecture) || (lecture.getLectureDate().isEqual(LocalDate.now())
+                    && lecture.getStartTime().isBefore(LocalTime.now()))) {
                 finishedLectureHours = finishedLectureHours.plus(lectureService.calculateLectureDuration(lecture));
                 finishedLectureCount++;
             }
@@ -244,8 +251,9 @@ public class LectureAttendanceService {
             Optional<Attendance> attendance = attendanceRepository.findByAttendeeId(student.getUserId());
 
             ModuleAttendanceResultDto moduleAttendanceResultDto = new ModuleAttendanceResultDto();
-            moduleAttendanceResultDto.setStudentName(student.getFirstName() + " " + student.getLastName());
+            moduleAttendanceResultDto.setStudentName(student.getFirstName());
             moduleAttendanceResultDto.setIndexNumber(student.getIndexNumber());
+            moduleAttendanceResultDto.setAttendedLectureIdList(new ArrayList<>());
 
             if (attendance.isPresent()) {
                 Attendance studentAttendance = attendance.get();
@@ -260,7 +268,8 @@ public class LectureAttendanceService {
                                 .getAttendanceData().getAttendanceData().get(lecture.getModuleId());
                         if (lectureAttendanceMap != null && lectureAttendanceMap.containsKey(lecture.getId())) {
                             LectureAttendance lectureAttendance = lectureAttendanceMap.get(lecture.getId());
-                            if (lectureAttendance != null && lectureAttendance.getAttendanceStatus() == AttendanceStatus.PRESENT) {
+                            if (lectureAttendance != null && lectureAttendance.getAttendanceStatus() != AttendanceStatus.ABSENT) {
+                                moduleAttendanceResultDto.getAttendedLectureIdList().add(lecture.getId());
                                 attendedLectureCount++;
                                 attendanceLectureHours = attendanceLectureHours.plus(lectureService.calculateLectureDuration(lecture));
                             }
@@ -274,7 +283,7 @@ public class LectureAttendanceService {
                 moduleAttendanceResultDto.setFinishedLectureHours(finishedLectureHours);
 
                 // Calculate attendance percentage
-                double attendancePercentage = finishedLectureHours.toHours() == 0
+                double attendancePercentage = finishedLectureHours.toMinutes() == 0
                         ? 0.0
                         : ((double) attendanceLectureHours.toMinutes() / finishedLectureHours.toMinutes()) * 100;
 
@@ -314,15 +323,17 @@ public class LectureAttendanceService {
         List<StudentAttendanceLectureDto> studentAttendancesLectureList = new ArrayList<>();
         Duration attendanceHours = Duration.ZERO;
         Duration notAttendanceHours = Duration.ZERO;
+        Duration finishedLectureHours = Duration.ZERO;
         int attendanceCount = 0;
         int notAttendanceCount = 0;
-        Duration finishedLectureHours = Duration.ZERO;
         int finishedLectureCount = 0;
 
         // Loop through lectures to gather attendance data
         for (Lecture lecture : lectureList) {
             // Calculate the duration for finished lectures
-            if (lectureService.checkLectureIsFinished(lecture)) {
+            if (lectureService.checkLectureIsFinished(lecture)
+                    || (lecture.getLectureDate().isEqual(LocalDate.now())
+                    && lecture.getStartTime().isBefore(LocalTime.now()))) {
                 LectureAttendance lectureAttendance = getLectureAttendanceByLectureIdForStudent(student.getUserId(), lecture.getId());
 
                 finishedLectureHours = finishedLectureHours.plus(lectureService.calculateLectureDuration(lecture));
@@ -360,18 +371,17 @@ public class LectureAttendanceService {
         }
 
         // Calculate attendance percentage
-        double attendancePercentage = finishedLectureHours.toHours() == 0
-                ? 0.0
-                : ((double) attendanceHours.toMinutes() / finishedLectureHours.toMinutes()) * 100;
+        double attendancePercentage = (finishedLectureHours.toMinutes() == 0) ? 0.0 :
+                ((double) attendanceHours.toMinutes() / finishedLectureHours.toMinutes()) * 100;
 
         // Populate the result DTO
         studentAttendanceResultDto.setStudentAttendancesLectureList(studentAttendancesLectureList);
         studentAttendanceResultDto.setAttendanceCount(attendanceCount);
         studentAttendanceResultDto.setNotAttendanceCount(notAttendanceCount);
         studentAttendanceResultDto.setFinishedLectureCount(finishedLectureCount);
-        studentAttendanceResultDto.setAttendanceHours(attendanceHours);
-        studentAttendanceResultDto.setNotAttendanceHours(notAttendanceHours);
-        studentAttendanceResultDto.setFinishedLectureHours(finishedLectureHours);
+        studentAttendanceResultDto.setAttendanceHours(attendanceHours.toHours() + " hours " + attendanceHours.toMinutes() % 60 + " minutes");
+        studentAttendanceResultDto.setNotAttendanceHours(notAttendanceHours.toHours() + " hours " + notAttendanceHours.toMinutes() % 60 + " minutes");
+        studentAttendanceResultDto.setFinishedLectureHours(finishedLectureHours.toHours() + " hours " + finishedLectureHours.toMinutes() % 60 + " minutes");
         studentAttendanceResultDto.setAttendancePercentage(attendancePercentage);
 
         return studentAttendanceResultDto;

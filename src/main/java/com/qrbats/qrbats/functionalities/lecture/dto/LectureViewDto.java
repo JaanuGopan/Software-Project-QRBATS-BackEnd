@@ -1,6 +1,7 @@
 package com.qrbats.qrbats.functionalities.lecture.dto;
 
 import com.qrbats.qrbats.entity.lecture.LectureStatus;
+import com.qrbats.qrbats.entity.lecture.LectureType;
 import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,4 +27,5 @@ public class LectureViewDto {
     private Integer moduleId;
     @Nullable
     private Integer createdBy;
+    private LectureType lectureType;
 }

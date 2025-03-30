@@ -47,7 +47,7 @@ public class AuthenticationService {
         user.setUserName(signUpRequest.getUserName());
         user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
         user.setRole(signUpRequest.getRole());
-        user.setDepartmentId(signUpRequest.getDepartmentId());
+        user.setDepartmentId(signUpRequest.getDepartmentId() == -1 ? null : signUpRequest.getDepartmentId());
         user.setSemester(signUpRequest.getSemester());
         user.setIndexNumber(signUpRequest.getIndexNumber());
         user.setRole(signUpRequest.getRole());
@@ -115,7 +115,7 @@ public class AuthenticationService {
         extraClaims.put("email", user.getEmail());
         extraClaims.put("role", user.getRole());
         extraClaims.put("userId", user.getUserId());
-        extraClaims.put("departmentId", user.getDepartmentId());
+        if (user.getDepartmentId() != null)  extraClaims.put("departmentId", user.getDepartmentId());
         extraClaims.put("semester", user.getSemester());
         extraClaims.put("indexNumber", user.getIndexNumber());
         extraClaims.put("batch", user.getBatch());
@@ -178,11 +178,12 @@ public class AuthenticationService {
         if (request.getEmail() != null) user.get().setEmail(request.getEmail());
         if (request.getFirstName() != null) user.get().setFirstName(request.getFirstName());
         if (request.getLastName() != null) user.get().setLastName(request.getLastName());
-        if (request.getDepartmentId() != null) user.get().setDepartmentId(request.getDepartmentId());
+        if (request.getDepartmentId() != null) user.get().setDepartmentId(request.getDepartmentId() == -1 ? null : request.getDepartmentId());
         if (request.getPassword() != null && !request.getPassword().isEmpty())
             user.get().setPassword(passwordEncoder.encode(request.getPassword()));
         if (request.getSemester() != null) user.get().setSemester(request.getSemester());
         if (request.getIndexNumber() != null) user.get().setIndexNumber(request.getIndexNumber());
+        if (request.getStudentBatch() != null) user.get().setBatch(request.getStudentBatch());
         userRepository.save(user.get());
         return true;
     }
