@@ -1,6 +1,5 @@
 package com.qrbats.qrbats.entity.attendance.event;
 
-import com.qrbats.qrbats.entity.attendance.lecture.LectureAttendance;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

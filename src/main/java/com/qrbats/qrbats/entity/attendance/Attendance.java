@@ -1,13 +1,12 @@
 package com.qrbats.qrbats.entity.attendance;
 
-import com.qrbats.qrbats.service.AttendanceDataJsonConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 @Data
@@ -17,10 +16,11 @@ public class Attendance {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private Integer attendeeId;
-
-    @Convert(converter = AttendanceDataJsonConverter.class)
-    private AttendanceData attendanceData;
+    private Integer moduleId;
+    private Long lectureId;
+    private LocalDate attendedDate;
+    private LocalTime attendedTime;
+    private AttendanceStatus attendanceStatus;
 }
