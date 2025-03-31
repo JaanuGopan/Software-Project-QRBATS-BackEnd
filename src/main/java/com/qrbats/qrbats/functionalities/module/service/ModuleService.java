@@ -8,6 +8,7 @@ import com.qrbats.qrbats.entity.module.Module;
 import com.qrbats.qrbats.entity.module.ModuleRepository;
 import com.qrbats.qrbats.entity.module_enrollment.ModuleEnrollment;
 import com.qrbats.qrbats.functionalities.module.dto.ModuleDto;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -96,6 +97,7 @@ public class ModuleService {
         }
     }
 
+    @Transactional
     public void deleteModule(Integer moduleId) {
         Module module = getModuleByModuleId(moduleId);
         if (!module.getCreatedBy().equals(auditInfoProvider.getCurrentUserIdentifier())){
@@ -173,8 +175,10 @@ public class ModuleService {
         List<ModuleEnrollment> moduleEnrollmentList = moduleEnrollmentService.getAllModuleEnrollmentForStudent();
         List<Module> moduleList = new ArrayList<>();
         for (ModuleEnrollment moduleEnrollment : moduleEnrollmentList) {
-            Module module = getModuleByModuleId(moduleEnrollment.getModuleId());
-            moduleList.add(module);
+            if (checkModule(moduleEnrollment.getModuleId())) {
+                Module module = getModuleByModuleId(moduleEnrollment.getModuleId());
+                moduleList.add(module);
+            }
         }
         return moduleList;
     }
