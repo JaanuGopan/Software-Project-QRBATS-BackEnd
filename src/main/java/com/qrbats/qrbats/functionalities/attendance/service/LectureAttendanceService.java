@@ -55,6 +55,8 @@ public class LectureAttendanceService {
         }
 
         if (lecture.getStartTime().isAfter(LocalTime.now())) {
+            System.out.println("lecture startTime :" + lecture.getStartTime());
+            System.out.println("currentTime :" + LocalTime.now());
             throw new IllegalArgumentException("Attendance time cannot be before the lecture start time.");
         }
 
