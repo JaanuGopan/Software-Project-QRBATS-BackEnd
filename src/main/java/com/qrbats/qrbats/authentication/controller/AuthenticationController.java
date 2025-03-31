@@ -85,6 +85,15 @@ public class AuthenticationController {
         }
     }
 
+    @PutMapping("/admin-update-user")
+    public ResponseEntity<?> adminUpdateUser(@RequestBody UpdateUserRequest request){
+        try {
+            return ResponseEntity.ok(authenticationService.adminUpdateUser(request));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
     @PutMapping("/update-student")
     public ResponseEntity<?> updateStudent(@RequestBody UpdateUserRequest request){
         try {

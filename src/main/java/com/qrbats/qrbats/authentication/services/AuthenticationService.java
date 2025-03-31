@@ -152,17 +152,21 @@ public class AuthenticationService {
     public boolean updateUser(UpdateUserRequest request) {
         Optional<User> user = userRepository.findById(auditInfoProvider.getCurrentUserIdentifier());
         if (user.isEmpty()) {
-            throw new RuntimeException("User not found for this id.");
+            throw new IllegalArgumentException("User not found for this id.");
         }
 
-        if (request.getEmail() != null && !request.getEmail().equals(user.get().getEmail())) {
-            Optional<User> existUserByEmail = userRepository.findByEmail(request.getEmail());
-            if (existUserByEmail.isPresent()) throw new RuntimeException("The email address already exist.");
+        if (request.getEmail() != null) {
+            if (!request.getEmail().equals(user.get().getEmail())) {
+                Optional<User> existUserByEmail = userRepository.findByEmail(request.getEmail());
+                if (existUserByEmail.isPresent()) throw new IllegalArgumentException("The email address already exist.");
+            }
         }
 
-        if (request.getUserName() != null && !request.getUserName().equals(user.get().getUsername())) {
-            Optional<User> existUserByUserName = userRepository.findByUserName(request.getUserName());
-            if (existUserByUserName.isPresent()) throw new RuntimeException("Username already exist.");
+        if (request.getUserName() != null) {
+            if (!request.getUserName().equals(user.get().getUsername())) {
+                Optional<User> existUserByUserName = userRepository.findByUserName(request.getUserName());
+                if (existUserByUserName.isPresent()) throw new IllegalArgumentException("Username already exist.");
+            }
         }
 
         if (user.get().getIndexNumber() != null) {
@@ -170,7 +174,53 @@ public class AuthenticationService {
             if (!request.getIndexNumber().equals(user.get().getIndexNumber())) {
                 Optional<User> existUserByUserName = userRepository.findByIndexNumber(request.getIndexNumber());
                 if (existUserByUserName.isPresent())
-                    throw new RuntimeException("This student index number is already exist.");
+                    throw new IllegalArgumentException("This student index number is already exist.");
+            }
+        }
+
+        if (request.getUserName() != null) user.get().setUserName(request.getUserName());
+        if (request.getEmail() != null) user.get().setEmail(request.getEmail());
+        if (request.getFirstName() != null) user.get().setFirstName(request.getFirstName());
+        if (request.getLastName() != null) user.get().setLastName(request.getLastName());
+        if (request.getDepartmentId() != null) user.get().setDepartmentId(request.getDepartmentId() == -1 ? null : request.getDepartmentId());
+        if (request.getPassword() != null && !request.getPassword().isEmpty())
+            user.get().setPassword(passwordEncoder.encode(request.getPassword()));
+        if (request.getSemester() != null) user.get().setSemester(request.getSemester());
+        if (request.getIndexNumber() != null) user.get().setIndexNumber(request.getIndexNumber());
+        if (request.getStudentBatch() != null) user.get().setBatch(request.getStudentBatch());
+        userRepository.save(user.get());
+        return true;
+    }
+
+    public boolean adminUpdateUser(UpdateUserRequest request) {
+        if (request.getUserId() == null) {
+            throw new IllegalArgumentException("User id cannot be null.");
+        }
+        Optional<User> user = userRepository.findById(request.getUserId());
+        if (user.isEmpty()) {
+            throw new IllegalArgumentException("User not found for this id.");
+        }
+
+        if (request.getEmail() != null) {
+            if (!request.getEmail().equals(user.get().getEmail())) {
+                Optional<User> existUserByEmail = userRepository.findByEmail(request.getEmail());
+                if (existUserByEmail.isPresent()) throw new IllegalArgumentException("The email address already exist.");
+            }
+        }
+
+        if (request.getUserName() != null) {
+            if (!request.getUserName().equals(user.get().getUsername())) {
+                Optional<User> existUserByUserName = userRepository.findByUserName(request.getUserName());
+                if (existUserByUserName.isPresent()) throw new IllegalArgumentException("Username already exist.");
+            }
+        }
+
+        if (user.get().getIndexNumber() != null) {
+            assert request.getIndexNumber() != null;
+            if (!request.getIndexNumber().equals(user.get().getIndexNumber())) {
+                Optional<User> existUserByUserName = userRepository.findByIndexNumber(request.getIndexNumber());
+                if (existUserByUserName.isPresent())
+                    throw new IllegalArgumentException("This student index number is already exist.");
             }
         }
 
@@ -193,7 +243,7 @@ public class AuthenticationService {
         if (user.isPresent()) {
             return passwordEncoder.matches(password, user.get().getPassword());
         } else {
-            throw new RuntimeException("Requested UserName has not exist.");
+            throw new IllegalArgumentException("Requested UserName has not exist.");
         }
     }
 

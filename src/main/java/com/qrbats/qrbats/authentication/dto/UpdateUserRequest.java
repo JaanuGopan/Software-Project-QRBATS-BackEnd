@@ -5,6 +5,8 @@ import lombok.Data;
 
 @Data
 public class UpdateUserRequest {
+    @Nullable
+    private Integer userId;
     private String firstName;
     @Nullable
     private String lastName;
