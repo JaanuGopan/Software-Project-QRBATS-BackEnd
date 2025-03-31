@@ -101,9 +101,11 @@ public class ModuleService {
         if (!module.getCreatedBy().equals(auditInfoProvider.getCurrentUserIdentifier())){
             throw new IllegalArgumentException("You are not authorized to delete this module.");
         }
-        moduleRepository.delete(module);
+        //CompletableFuture.runAsync(() -> lectureRepository.deleteAllByModuleId(moduleId), Executors.newFixedThreadPool(1));
+        //CompletableFuture.runAsync(() -> moduleEnrollmentService.deleteAllEnrollmentByModuleId(moduleId), Executors.newFixedThreadPool(1));
         lectureRepository.deleteAllByModuleId(moduleId);
         moduleEnrollmentService.deleteAllEnrollmentByModuleId(moduleId);
+        moduleRepository.delete(module);
     }
 
 
@@ -198,6 +200,10 @@ public class ModuleService {
         }
 
         return moduleList;
+    }
+
+    public boolean checkModule(Integer moduleId) {
+        return moduleRepository.existsById(moduleId);
     }
 
 }

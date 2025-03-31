@@ -47,7 +47,7 @@ public class LectureService {
             if (lectureDto.getModuleId() != null) lecture.setModuleId(lectureDto.getModuleId());
         } else {
             lecture = findLectureById(lectureDto.getId());
-            if(!lecture.getCreatedBy().equals(auditInfoProvider.getCurrentUserIdentifier())) {
+            if (!lecture.getCreatedBy().equals(auditInfoProvider.getCurrentUserIdentifier())) {
                 throw new IllegalArgumentException("You are not authorized.");
             }
             if (checkLectureIsFinished(lecture)) {
@@ -96,73 +96,39 @@ public class LectureService {
         Integer locationId = lectureDto.getLocationId();
         Location location = locationService.getLocationById(locationId);
 
-        if (startTime.isAfter(endTime)) {
-            throw new IllegalArgumentException("The lecture start time should be before lecture end time.");
-        }
-        if (lectureDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("The lecture date should not be in past for " + lectureDate + " lecture.");
-        }
-        if (lectureDate.isEqual(LocalDate.now())) {
-            if (startTime.isBefore(LocalTime.now())) {
-                throw new IllegalArgumentException("The lecture start time should be in future for " + lectureDate + " lecture.");
-            }
-        }
-
         Optional<Lecture> lecture = getLectureByDateAndLocationIdBetweenStartTimeAndEndTime(
                 lectureDate, locationId, startTime, endTime
         );
-        if (lectureDto.getId() == null) {
-            if (lecture.isPresent()) {
+
+        if (lecture.isPresent()) {
+            if (lectureDto.getId() != null && !lectureDto.getId().equals(lecture.get().getId())) {
                 throw new IllegalArgumentException("There is another lecture on " + lectureDate
                         + " at " + lecture.get().getStartTime() + " in " + location.getLocationName() + "."
                 );
+            } else if (lectureDto.getId() == null) {
+                throw new IllegalArgumentException("There is another lecture on " + lectureDate
+                        + " at " + lecture.get().getStartTime() + " in " + location.getLocationName() + "."
+                );
+            }
+        }
+
+        if (startTime.isAfter(endTime)) {
+            throw new IllegalArgumentException("The lecture start time should be before lecture end time.");
+        }
+
+        if (lectureDto.getId() == null) {
+            if (lectureDate.isBefore(LocalDate.now())) {
+                throw new IllegalArgumentException("The lecture date should not be in past for " + lectureDate + " lecture.");
+            }
+            if (lectureDate.isEqual(LocalDate.now())) {
+                if (startTime.isBefore(LocalTime.now())) {
+                    throw new IllegalArgumentException("The lecture start time should be in future for " + lectureDate + " lecture.");
+                }
             }
         } else {
-            if (lecture.isPresent() && !Objects.equals(lecture.get().getId(), lectureDto.getId())) {
-                throw new IllegalArgumentException("There is another lecture on " + lectureDate
-                        + " at " + lecture.get().getStartTime() + " in " + location.getLocationName() + "."
-                );
-            }
+            // handle lecture edit validation.
         }
     }
-
-   /* public List<Lecture> createLecturesForTimetable(TimeTableDto timeTableDto) {
-        Module module = moduleService.getModuleByModuleId(timeTableDto.getModuleId());
-
-        List<LocalDate> allLecturesDates = new ArrayList<>(timeTableDto.getLectureDateList());
-        for (LocalDate allLecturesDate : allLecturesDates) {
-            validateLectureDto(allLecturesDate,timeTableDto);
-        }
-
-        List<Lecture> lectureList = new ArrayList<>();
-
-        allLecturesDates.forEach(lectureDate -> {
-            Lecture lecture = new Lecture();
-            lecture.setLectureDate(lectureDate);
-            lecture.setLectureStatus(LectureStatus.PENDING);
-            lecture.setStartTime(timeTableDto.getStartTime());
-            lecture.setEndTime(timeTableDto.getEndTime());
-            lecture.setLocationId(timeTableDto.getLocationId());
-            lecture.setModuleId(timeTableDto.getModuleId());
-            lecture.setName(module.getModuleCode() + "_" + module.getStudentBatch() + "_" + timeTableDto.getDayOfWeek() + "_" + lectureDate.toString());
-            lecture.setCreatedBy(auditInfoProvider.getCurrentUserIdentifier());
-
-            Lecture savedLecture = lectureRepository.save(lecture);
-            lectureList.add(savedLecture);
-        });
-
-        return lectureList;
-    }*/
-
-    /*public void validateLectureDto(LocalDate lectureDate, TimeTableDto timeTableDto) {
-        LocalTime startTime = timeTableDto.getStartTime();
-        LocalTime endTime = timeTableDto.getEndTime();
-        Integer locationId = timeTableDto.getLocationId();
-        Module module = moduleService.getModuleByModuleId(timeTableDto.getModuleId());
-        Location location = locationService.getLocationById(locationId);
-
-        validateLecture(startTime, endTime, lectureDate, locationId, location);
-    }*/
 
     public Optional<Lecture> getLectureByDateAndLocationIdBetweenStartTimeAndEndTime(
             LocalDate lectureDate,
@@ -171,9 +137,8 @@ public class LectureService {
             LocalTime endTime
     ) {
         return lectureRepository
-                .findLectureConflict(
-                        lectureDate, locationId, startTime, endTime
-                );
+                .findLectureConflict(lectureDate, locationId, startTime, endTime)
+                .filter(lecture -> moduleService.checkModule(lecture.getModuleId()));
     }
 
     public boolean checkLectureTimeConflict(LectureConflictDto lectureConflictDto) {
@@ -181,12 +146,17 @@ public class LectureService {
                 lectureConflictDto.getLectureDate(),
                 lectureConflictDto.getLocationId(),
                 lectureConflictDto.getStartTime(),
-                lectureConflictDto.getEndTime()).isPresent();
+                lectureConflictDto.getEndTime()
+        ).isPresent();
     }
 
     public Lecture findLectureById(Long id) {
-        return lectureRepository.findById(id)
+        Lecture lecture = lectureRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Lecture not found for this id - " + id));
+        if(moduleService.checkModule(lecture.getModuleId())) {
+            return lecture;
+        }
+        throw  new IllegalArgumentException("Lecture not found for this id - " + id);
     }
 
     public LectureViewDto getLectureById(Long id) {
@@ -225,82 +195,17 @@ public class LectureService {
         return Duration.between(lecture.getStartTime(), lecture.getEndTime());
     }
 
-    @Transactional
-    @Scheduled(cron = "0 0 0 * * ?")
-    public void changeLectureState() {
-        Optional<List<Lecture>> pendingLectureList = lectureRepository.findAllByLectureStatus(LectureStatus.PENDING);
-        pendingLectureList.ifPresent(lectures -> lectures.forEach(lecture -> {
-            if (lecture.getLectureDate().equals(Date.valueOf(LocalDate.now()))
-                    || lecture.getLectureDate().isAfter(LocalDate.now())) {
-                if (lecture.getEndTime().isAfter(LocalTime.now())) {
-                    lecture.setLectureStatus(LectureStatus.FINISHED);
-                    lectureRepository.save(lecture);
-                }
-            }
-        }));
-    }
-
-    public void changeLectureStateForModule(Integer moduleId) {
-        Optional<List<Lecture>> pendingLectureList = lectureRepository
-                .findAllByLectureStatusAndModuleId(LectureStatus.PENDING, moduleId);
-        pendingLectureList.ifPresent(lectures -> lectures.forEach(lecture -> {
-            if (lecture.getLectureDate().isEqual(LocalDate.now())
-                    || lecture.getLectureDate().isAfter(LocalDate.now())) {
-                if (lecture.getEndTime().isAfter(LocalTime.now())) {
-                    lecture.setLectureStatus(LectureStatus.FINISHED);
-                    lectureRepository.save(lecture);
-                }
-            }
-        }));
-    }
-
-    public void changeLectureStateByLectureId(Long lectureId) {
-        Lecture lecture = findLectureById(lectureId);
-        if (lecture.getLectureDate().isAfter(LocalDate.now())
-                || lecture.getLectureDate().equals(LocalDate.now())) {
-
-            if (lecture.getEndTime().isAfter(LocalTime.now())) {
-                lecture.setLectureStatus(LectureStatus.FINISHED);
-                lectureRepository.save(lecture);
-            }
-        }
-    }
-
     public List<LectureViewDto> getAllLectureForUserByModuleId(Integer moduleId) {
         List<Lecture> lectureList = lectureRepository
                 .findAllByCreatedByAndModuleId(auditInfoProvider.getCurrentUserIdentifier(), moduleId).orElse(new ArrayList<>());
         List<LectureViewDto> lectureViewDtoList = new ArrayList<>();
         for (Lecture lecture : lectureList) {
-            LectureViewDto lectureViewDto = new LectureViewDto();
-            lectureViewDto.setId(lecture.getId());
-            lectureViewDto.setLectureEndTime(lecture.getEndTime());
-            lectureViewDto.setLectureStartTime(lecture.getStartTime());
-            lectureViewDto.setLectureStatus(lecture.getLectureStatus());
-            lectureViewDto.setLectureDate(lecture.getLectureDate());
-            lectureViewDto.setLocationName(locationService.getLocationName(lecture.getLocationId()));
-            lectureViewDto.setModuleCode(moduleService.getModuleByModuleId(lecture.getModuleId()).getModuleCode());
-            lectureViewDto.setModuleId(moduleId);
-            lectureViewDto.setName(lecture.getName());
-            lectureViewDto.setCreatedBy(lecture.getCreatedBy());
-            lectureViewDto.setLectureType(lecture.getLectureType());
-
-            lectureViewDtoList.add(lectureViewDto);
-        }
-        return lectureViewDtoList;
-    }
-
-    public List<LectureViewDto> getAllFinishedLectureForUserByModuleId(Integer moduleId) {
-        List<Lecture> lectureList = lectureRepository
-                .findAllByCreatedByAndModuleId(auditInfoProvider.getCurrentUserIdentifier(), moduleId).orElse(new ArrayList<>());
-        lectureList.sort(Comparator.comparing(Lecture::getLectureDate));
-        List<LectureViewDto> lectureViewDtoList = new ArrayList<>();
-        for (Lecture lecture : lectureList) {
-            if (checkLectureIsFinished(lecture) || (lecture.getLectureDate().isEqual(LocalDate.now()) && lecture.getStartTime().isBefore(LocalTime.now()))) {
+            if (moduleService.checkModule(lecture.getModuleId())) {
                 LectureViewDto lectureViewDto = new LectureViewDto();
                 lectureViewDto.setId(lecture.getId());
                 lectureViewDto.setLectureEndTime(lecture.getEndTime());
                 lectureViewDto.setLectureStartTime(lecture.getStartTime());
-                lectureViewDto.setLectureStatus(LectureStatus.FINISHED);
+                lectureViewDto.setLectureStatus(lecture.getLectureStatus());
                 lectureViewDto.setLectureDate(lecture.getLectureDate());
                 lectureViewDto.setLocationName(locationService.getLocationName(lecture.getLocationId()));
                 lectureViewDto.setModuleCode(moduleService.getModuleByModuleId(lecture.getModuleId()).getModuleCode());
@@ -315,28 +220,58 @@ public class LectureService {
         return lectureViewDtoList;
     }
 
+    public List<LectureViewDto> getAllFinishedLectureForUserByModuleId(Integer moduleId) {
+        List<Lecture> lectureList = lectureRepository
+                .findAllByCreatedByAndModuleId(auditInfoProvider.getCurrentUserIdentifier(), moduleId).orElse(new ArrayList<>());
+        lectureList.sort(Comparator.comparing(Lecture::getLectureDate));
+        List<LectureViewDto> lectureViewDtoList = new ArrayList<>();
+        for (Lecture lecture : lectureList) {
+            if (moduleService.checkModule(lecture.getModuleId())) {
+                if (checkLectureIsFinished(lecture) || (lecture.getLectureDate().isEqual(LocalDate.now()) && lecture.getStartTime().isBefore(LocalTime.now()))) {
+                    LectureViewDto lectureViewDto = new LectureViewDto();
+                    lectureViewDto.setId(lecture.getId());
+                    lectureViewDto.setLectureEndTime(lecture.getEndTime());
+                    lectureViewDto.setLectureStartTime(lecture.getStartTime());
+                    lectureViewDto.setLectureStatus(LectureStatus.FINISHED);
+                    lectureViewDto.setLectureDate(lecture.getLectureDate());
+                    lectureViewDto.setLocationName(locationService.getLocationName(lecture.getLocationId()));
+                    lectureViewDto.setModuleCode(moduleService.getModuleByModuleId(lecture.getModuleId()).getModuleCode());
+                    lectureViewDto.setModuleId(moduleId);
+                    lectureViewDto.setName(lecture.getName());
+                    lectureViewDto.setCreatedBy(lecture.getCreatedBy());
+                    lectureViewDto.setLectureType(lecture.getLectureType());
+
+                    lectureViewDtoList.add(lectureViewDto);
+                }
+            }
+        }
+        return lectureViewDtoList;
+    }
+
     public List<LectureViewDto> getAllLectureForStudentByModuleId(Integer moduleId) {
         Boolean isStudentEnrolledTheModule = moduleService.checkStudentModuleEnrollment(moduleId);
         List<Lecture> lectureList = lectureRepository
                 .findAllByModuleId(moduleId).orElse(new ArrayList<>());
         List<LectureViewDto> lectureViewDtoList = new ArrayList<>();
         for (Lecture lecture : lectureList) {
-            if (!lecture.getLectureDate().isBefore(LocalDate.now())) {
-                if (!(lecture.getLectureDate().isEqual(LocalDate.now()) && lecture.getEndTime().isBefore(LocalTime.now()))) {
-                    LectureViewDto lectureViewDto = new LectureViewDto();
-                    lectureViewDto.setId(lecture.getId());
-                    lectureViewDto.setLectureEndTime(lecture.getEndTime());
-                    lectureViewDto.setLectureStartTime(lecture.getStartTime());
-                    lectureViewDto.setLectureStatus(lecture.getLectureStatus());
-                    lectureViewDto.setLectureDate(lecture.getLectureDate());
-                    lectureViewDto.setLocationName(locationService.getLocationName(lecture.getLocationId()));
-                    lectureViewDto.setModuleCode(moduleService.getModuleByModuleId(lecture.getModuleId()).getModuleCode());
-                    lectureViewDto.setName(lecture.getName());
-                    lectureViewDto.setCreatedBy(lecture.getCreatedBy());
-                    lectureViewDto.setModuleId(moduleId);
-                    lectureViewDto.setLectureType(lecture.getLectureType());
+            if (moduleService.checkModule(lecture.getModuleId())) {
+                if (!lecture.getLectureDate().isBefore(LocalDate.now())) {
+                    if (!(lecture.getLectureDate().isEqual(LocalDate.now()) && lecture.getEndTime().isBefore(LocalTime.now()))) {
+                        LectureViewDto lectureViewDto = new LectureViewDto();
+                        lectureViewDto.setId(lecture.getId());
+                        lectureViewDto.setLectureEndTime(lecture.getEndTime());
+                        lectureViewDto.setLectureStartTime(lecture.getStartTime());
+                        lectureViewDto.setLectureStatus(lecture.getLectureStatus());
+                        lectureViewDto.setLectureDate(lecture.getLectureDate());
+                        lectureViewDto.setLocationName(locationService.getLocationName(lecture.getLocationId()));
+                        lectureViewDto.setModuleCode(moduleService.getModuleByModuleId(lecture.getModuleId()).getModuleCode());
+                        lectureViewDto.setName(lecture.getName());
+                        lectureViewDto.setCreatedBy(lecture.getCreatedBy());
+                        lectureViewDto.setModuleId(moduleId);
+                        lectureViewDto.setLectureType(lecture.getLectureType());
 
-                    lectureViewDtoList.add(lectureViewDto);
+                        lectureViewDtoList.add(lectureViewDto);
+                    }
                 }
             }
         }
@@ -348,20 +283,22 @@ public class LectureService {
                 .findAllByCreatedByAndLectureType(auditInfoProvider.getCurrentUserIdentifier(), LectureType.LECTURE).orElse(new ArrayList<>());
         List<LectureViewDto> lectureViewDtoList = new ArrayList<>();
         for (Lecture lecture : lectureList) {
-            LectureViewDto lectureViewDto = new LectureViewDto();
-            lectureViewDto.setId(lecture.getId());
-            lectureViewDto.setLectureEndTime(lecture.getEndTime());
-            lectureViewDto.setLectureStartTime(lecture.getStartTime());
-            lectureViewDto.setLectureStatus(lecture.getLectureStatus());
-            lectureViewDto.setLectureDate(lecture.getLectureDate());
-            lectureViewDto.setLocationName(locationService.getLocationName(lecture.getLocationId()));
-            lectureViewDto.setModuleCode(moduleService.getModuleByModuleId(lecture.getModuleId()).getModuleCode());
-            lectureViewDto.setName(lecture.getName());
-            lectureViewDto.setCreatedBy(lecture.getCreatedBy());
-            lectureViewDto.setModuleId(lecture.getModuleId());
-            lectureViewDto.setLectureType(lecture.getLectureType());
+            if (moduleService.checkModule(lecture.getModuleId())) {
+                LectureViewDto lectureViewDto = new LectureViewDto();
+                lectureViewDto.setId(lecture.getId());
+                lectureViewDto.setLectureEndTime(lecture.getEndTime());
+                lectureViewDto.setLectureStartTime(lecture.getStartTime());
+                lectureViewDto.setLectureStatus(lecture.getLectureStatus());
+                lectureViewDto.setLectureDate(lecture.getLectureDate());
+                lectureViewDto.setLocationName(locationService.getLocationName(lecture.getLocationId()));
+                lectureViewDto.setModuleCode(moduleService.getModuleByModuleId(lecture.getModuleId()).getModuleCode());
+                lectureViewDto.setName(lecture.getName());
+                lectureViewDto.setCreatedBy(lecture.getCreatedBy());
+                lectureViewDto.setModuleId(lecture.getModuleId());
+                lectureViewDto.setLectureType(lecture.getLectureType());
 
-            lectureViewDtoList.add(lectureViewDto);
+                lectureViewDtoList.add(lectureViewDto);
+            }
         }
         return lectureViewDtoList;
     }

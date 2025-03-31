@@ -184,7 +184,7 @@ public class LectureAttendanceService {
                     if (attendance.getLectureId().equals(lecture.getId())) {
                         attendedLectureCount++;
                         attendedLectureHours = attendedLectureHours.plus(lectureService.calculateLectureDuration(lecture));
-                        attendedLectureIdList.add(attendance.getId());
+                        attendedLectureIdList.add(lecture.getId());
                     }
                 }
             }
