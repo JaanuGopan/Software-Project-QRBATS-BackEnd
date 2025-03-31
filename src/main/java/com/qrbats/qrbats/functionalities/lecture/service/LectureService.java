@@ -51,7 +51,7 @@ public class LectureService {
                 throw new IllegalArgumentException("You are not authorized.");
             }
             if (checkLectureIsFinished(lecture)) {
-                throw new IllegalArgumentException("Lecture is already finished.");
+                //throw new IllegalArgumentException("Lecture is already finished.");
             }
 
             if (lectureDto.getName() != null) lecture.setName(lectureDto.getName());
@@ -136,9 +136,17 @@ public class LectureService {
             LocalTime startTime,
             LocalTime endTime
     ) {
-        return lectureRepository
-                .findLectureConflict(lectureDate, locationId, startTime, endTime)
-                .filter(lecture -> moduleService.checkModule(lecture.getModuleId()));
+        Optional<Lecture> lectureConflict = lectureRepository
+                .findLectureConflict(lectureDate, locationId, startTime, endTime);
+        if (lectureConflict.isPresent() && lectureConflict.get().getLectureType().equals(LectureType.LECTURE)) {
+            if ( moduleService.checkModule(lectureConflict.get().getModuleId())) {
+                return lectureConflict;
+            }
+        } else if (lectureConflict.isPresent() && lectureConflict.get().getLectureType().equals(LectureType.EVENT)) {
+            return lectureConflict;
+        }
+
+        return Optional.empty();
     }
 
     public boolean checkLectureTimeConflict(LectureConflictDto lectureConflictDto) {
@@ -153,10 +161,12 @@ public class LectureService {
     public Lecture findLectureById(Long id) {
         Lecture lecture = lectureRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Lecture not found for this id - " + id));
-        if(moduleService.checkModule(lecture.getModuleId())) {
+        if(lecture.getLectureType().equals(LectureType.LECTURE) && moduleService.checkModule(lecture.getModuleId())) {
+            return lecture;
+        } else if (lecture.getLectureType().equals(LectureType.EVENT)) {
             return lecture;
         }
-        throw  new IllegalArgumentException("Lecture not found for this id - " + id);
+        throw new IllegalArgumentException("Lecture not found for this id - " + id);
     }
 
     public LectureViewDto getLectureById(Long id) {

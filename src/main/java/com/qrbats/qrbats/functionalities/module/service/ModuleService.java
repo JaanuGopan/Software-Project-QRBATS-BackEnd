@@ -209,5 +209,4 @@ public class ModuleService {
     public boolean checkModule(Integer moduleId) {
         return moduleRepository.existsById(moduleId);
     }
-
 }

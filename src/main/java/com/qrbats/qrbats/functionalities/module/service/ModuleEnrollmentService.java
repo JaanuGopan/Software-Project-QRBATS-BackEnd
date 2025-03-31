@@ -35,6 +35,9 @@ public class ModuleEnrollmentService {
     public void deleteAllEnrollmentByModuleId(Integer moduleId) {
         moduleEnrollmentRepository.deleteAllByModuleId(moduleId);
     }
+    public void deleteAllEnrollmentByStudentId(Integer studentId) {
+        moduleEnrollmentRepository.deleteAllByStudentId(studentId);
+    }
 
     public ModuleEnrollment enrollModule(Integer moduleId) {
         ModuleEnrollment moduleEnrollment = new ModuleEnrollment();

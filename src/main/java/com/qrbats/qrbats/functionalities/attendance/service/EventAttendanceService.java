@@ -30,6 +30,7 @@ public class EventAttendanceService {
     private final UserService userService;
     private final LocationService locationService;
     private final AuditInfoProvider auditInfoProvider;
+    private final EventAttendanceRepository eventAttendanceRepository;
 
     @Value("${attendance.lateAttendanceMinutes}")
     private Integer lateAttendanceMinutes;
@@ -39,7 +40,7 @@ public class EventAttendanceService {
         Lecture lecture = lectureService.findLectureById(eventAttendanceMarkingDto.getEventId());
         Location location = locationService.getLocationById(lecture.getLocationId());
 
-        if(attendanceRepository.findByEventIdAndAttendeeId(eventAttendanceMarkingDto.getEventId(), auditInfoProvider.getCurrentUserIdentifier()).isPresent()){
+        if (attendanceRepository.findByEventIdAndAttendeeId(eventAttendanceMarkingDto.getEventId(), auditInfoProvider.getCurrentUserIdentifier()).isPresent()) {
             throw new IllegalArgumentException("You already mark attendance for this event.");
         }
 
@@ -84,8 +85,8 @@ public class EventAttendanceService {
         Lecture event = lectureService.findLectureById(eventId);
         List<LectureAttendanceResultDto> attendanceResultDtoList = new ArrayList<>();
 
-            List<EventAttendance> eventAttendanceList = attendanceRepository.findAllByEventId(eventId)
-                    .orElse(new ArrayList<>());
+        List<EventAttendance> eventAttendanceList = attendanceRepository.findAllByEventId(eventId)
+                .orElse(new ArrayList<>());
 
         for (EventAttendance eventAttendance : eventAttendanceList) {
             User student = userService.getUserById(eventAttendance.getAttendeeId());
@@ -121,5 +122,9 @@ public class EventAttendanceService {
             attendanceViewDtoList.add(eventAttendanceViewDto);
         }
         return attendanceViewDtoList;
+    }
+
+    public void deleteEventAttendanceByAttendeeId(Integer attendeeId) {
+        eventAttendanceRepository.deleteAllByAttendeeId(attendeeId);
     }
 }

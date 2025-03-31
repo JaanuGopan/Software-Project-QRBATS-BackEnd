@@ -50,7 +50,7 @@ public class AttendanceController {
             List<LectureAttendanceResultDto> lectureAttendanceResultDtoList = lectureAttendanceService
                     .getAllAttendanceForLecture(lectureId);
             return new ResponseEntity<>(lectureAttendanceResultDtoList, HttpStatus.OK);
-        } catch (RuntimeException e){
+        } catch (IllegalArgumentException e){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
@@ -61,7 +61,7 @@ public class AttendanceController {
             List<LectureAttendanceResultDto> eventAttendanceResultDtoList = eventAttendanceService
                     .getAllAttendanceForEvent(eventId);
             return new ResponseEntity<>(eventAttendanceResultDtoList, HttpStatus.OK);
-        } catch (RuntimeException e){
+        } catch (IllegalArgumentException e){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
@@ -72,7 +72,7 @@ public class AttendanceController {
             List<EventAttendanceViewDto> eventAttendanceViewDtoList = eventAttendanceService
                     .getAllAttendanceForStudent();
             return new ResponseEntity<>(eventAttendanceViewDtoList, HttpStatus.OK);
-        } catch (RuntimeException e){
+        } catch (IllegalArgumentException e){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }

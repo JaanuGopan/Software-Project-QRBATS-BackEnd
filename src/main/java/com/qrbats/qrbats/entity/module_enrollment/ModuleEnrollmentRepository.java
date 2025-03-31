@@ -12,4 +12,5 @@ public interface ModuleEnrollmentRepository extends JpaRepository<ModuleEnrollme
     Optional<List<ModuleEnrollment>> findAllByStudentId(Integer studentId);
     Optional<ModuleEnrollment> findByStudentIdAndModuleId(Integer studentId, Integer moduleId);
     void deleteAllByModuleId(Integer moduleId);
+    void deleteAllByStudentId(Integer studentId);
 }

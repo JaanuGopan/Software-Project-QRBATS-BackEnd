@@ -20,4 +20,5 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     Optional<Attendance> findByAttendeeIdAndModuleIdAndLectureId(Integer attendeeId, Integer moduleId, Long lectureId);
 
+    void deleteAllByAttendeeId(Integer attendeeId);
 }

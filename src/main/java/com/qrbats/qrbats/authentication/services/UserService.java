@@ -3,6 +3,10 @@ package com.qrbats.qrbats.authentication.services;
 import com.qrbats.qrbats.authentication.entities.user.Role;
 import com.qrbats.qrbats.authentication.entities.user.User;
 import com.qrbats.qrbats.authentication.entities.user.repository.UserRepository;
+import com.qrbats.qrbats.entity.attendance.AttendanceRepository;
+import com.qrbats.qrbats.entity.attendance.event.EventAttendanceRepository;
+import com.qrbats.qrbats.entity.module_enrollment.ModuleEnrollmentRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,7 +16,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,6 +23,9 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final ModuleEnrollmentRepository moduleEnrollmentRepository;
+    private final AttendanceRepository attendanceRepository;
+    private final EventAttendanceRepository eventAttendanceRepository;
 
     public UserDetailsService userDetailsService(){
         return new UserDetailsService() {
@@ -55,8 +61,14 @@ public class UserService {
         return userList.stream().filter(user -> user.getRole().equals(Role.STUDENT)).toList();
     }
 
+    @Transactional
     public Boolean deleteByUserId(Integer userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("Invalid userId."));
+        if (user.getRole() == Role.STUDENT) {
+            moduleEnrollmentRepository.deleteAllByStudentId(userId);
+            attendanceRepository.deleteAllByAttendeeId(userId);
+            eventAttendanceRepository.deleteAllByAttendeeId(userId);
+        }
         userRepository.deleteById(userId);
         return true;
     }

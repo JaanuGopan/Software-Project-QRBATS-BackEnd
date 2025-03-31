@@ -219,7 +219,6 @@ public class LectureAttendanceService {
         Duration notAttendanceHours = Duration.ZERO;
         Duration finishedLectureHours = Duration.ZERO;
         int attendanceCount = 0;
-        int notAttendanceCount = 0;
         int finishedLectureCount = 0;
 
         List<Attendance> lectureAttendanceList = attendanceRepository
@@ -274,7 +273,7 @@ public class LectureAttendanceService {
         // Populate the result DTO
         studentAttendanceResultDto.setStudentAttendancesLectureList(studentAttendancesLectureList);
         studentAttendanceResultDto.setAttendanceCount(attendanceCount);
-        studentAttendanceResultDto.setNotAttendanceCount(notAttendanceCount);
+        studentAttendanceResultDto.setNotAttendanceCount(finishedLectureCount - attendanceCount);
         studentAttendanceResultDto.setFinishedLectureCount(finishedLectureCount);
         studentAttendanceResultDto.setAttendanceHours(attendanceHours.toHours() + " hours " + attendanceHours.toMinutes() % 60 + " minutes");
         studentAttendanceResultDto.setNotAttendanceHours(notAttendanceHours.toHours() + " hours " + notAttendanceHours.toMinutes() % 60 + " minutes");
@@ -282,5 +281,9 @@ public class LectureAttendanceService {
         studentAttendanceResultDto.setAttendancePercentage(attendancePercentage);
 
         return studentAttendanceResultDto;
+    }
+
+    public void deleteAttendanceForStudent(Integer studentId) {
+        attendanceRepository.deleteAllByAttendeeId(studentId);
     }
 }
