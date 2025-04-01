@@ -13,6 +13,7 @@ import com.qrbats.qrbats.functionalities.lecture.dto.LectureViewDto;
 import com.qrbats.qrbats.functionalities.location.service.LocationService;
 import com.qrbats.qrbats.functionalities.module.service.ModuleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Date;
 import java.time.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +31,8 @@ public class LectureService {
     private final AuditInfoProvider auditInfoProvider;
     private final LocationService locationService;
 
+    @Value("${lecture.checkLectureConflict}")
+    private boolean checkLectureConflict;
     public Lecture saveSingleLecture(LectureDto lectureDto) {
         validateSingleLectureDto(lectureDto);
 
@@ -96,19 +100,32 @@ public class LectureService {
         Integer locationId = lectureDto.getLocationId();
         Location location = locationService.getLocationById(locationId);
 
-        Optional<Lecture> lecture = getLectureByDateAndLocationIdBetweenStartTimeAndEndTime(
-                lectureDate, locationId, startTime, endTime
-        );
+        if (checkLectureConflict) {
+            List<Lecture> conflictLectures = getLectureByDateAndLocationIdBetweenStartTimeAndEndTime(
+                    lectureDate, locationId, startTime, endTime
+            );
 
-        if (lecture.isPresent()) {
-            if (lectureDto.getId() != null && !lectureDto.getId().equals(lecture.get().getId())) {
-                throw new IllegalArgumentException("There is another lecture on " + lectureDate
-                        + " at " + lecture.get().getStartTime() + " in " + location.getLocationName() + "."
-                );
-            } else if (lectureDto.getId() == null) {
-                throw new IllegalArgumentException("There is another lecture on " + lectureDate
-                        + " at " + lecture.get().getStartTime() + " in " + location.getLocationName() + "."
-                );
+            if (!conflictLectures.isEmpty()) {
+                if (lectureDto.getId() != null) {
+                    if (conflictLectures.size() > 1) {
+                        throw new IllegalArgumentException("Multiple scheduling conflicts detected on " + lectureDate
+                                + " at " + location.getLocationName() + ". Conflicting lectures: " +
+                                conflictLectures.stream()
+                                        .map(l -> "[Start: " + l.getStartTime() + ", End: " + l.getEndTime() + "]")
+                                        .collect(Collectors.joining(", ")) + ". Please choose a different time.");
+                    }
+                    if (!conflictLectures.get(0).getId().equals(lectureDto.getId())) {
+                        throw new IllegalArgumentException("A scheduling conflict exists on " + lectureDate
+                                + " at " + location.getLocationName() + ". Conflicting lecture: [Start: " +
+                                conflictLectures.get(0).getStartTime() + ", End: " + conflictLectures.get(0).getEndTime() + "]. Please adjust the timing.");
+                    }
+                } else {
+                    throw new IllegalArgumentException("A scheduling conflict exists on " + lectureDate
+                            + " at " + location.getLocationName() + ". Conflicting lectures: " +
+                            conflictLectures.stream()
+                                    .map(l -> "[Start: " + l.getStartTime() + ", End: " + l.getEndTime() + "]")
+                                    .collect(Collectors.joining(", ")) + ". Please select another time.");
+                }
             }
         }
 
@@ -130,38 +147,44 @@ public class LectureService {
         }
     }
 
-    public Optional<Lecture> getLectureByDateAndLocationIdBetweenStartTimeAndEndTime(
+    public List<Lecture> getLectureByDateAndLocationIdBetweenStartTimeAndEndTime(
             LocalDate lectureDate,
             Integer locationId,
             LocalTime startTime,
             LocalTime endTime
     ) {
-        Optional<Lecture> lectureConflict = lectureRepository
-                .findLectureConflict(lectureDate, locationId, startTime, endTime);
-        if (lectureConflict.isPresent() && lectureConflict.get().getLectureType().equals(LectureType.LECTURE)) {
-            if ( moduleService.checkModule(lectureConflict.get().getModuleId())) {
-                return lectureConflict;
-            }
-        } else if (lectureConflict.isPresent() && lectureConflict.get().getLectureType().equals(LectureType.EVENT)) {
-            return lectureConflict;
-        }
+        Optional<List<Lecture>> lectureConflicts = lectureRepository
+                .findAllLectureConflicts(lectureDate, locationId, startTime, endTime);
 
-        return Optional.empty();
+        List<Lecture> conflicts = new ArrayList<>();
+
+        if (lectureConflicts.isPresent()) {
+            for (Lecture lecture : lectureConflicts.get()) {
+                if (lecture.getLectureType().equals(LectureType.LECTURE)) {
+                    if (moduleService.checkModule(lecture.getModuleId())) {
+                        conflicts.add(lecture);
+                    }
+                } else if (lecture.getLectureType().equals(LectureType.EVENT)) {
+                    conflicts.add(lecture);
+                }
+            }
+        }
+        return conflicts;
     }
 
     public boolean checkLectureTimeConflict(LectureConflictDto lectureConflictDto) {
-        return getLectureByDateAndLocationIdBetweenStartTimeAndEndTime(
+        return !getLectureByDateAndLocationIdBetweenStartTimeAndEndTime(
                 lectureConflictDto.getLectureDate(),
                 lectureConflictDto.getLocationId(),
                 lectureConflictDto.getStartTime(),
                 lectureConflictDto.getEndTime()
-        ).isPresent();
+        ).isEmpty();
     }
 
     public Lecture findLectureById(Long id) {
         Lecture lecture = lectureRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Lecture not found for this id - " + id));
-        if(lecture.getLectureType().equals(LectureType.LECTURE) && moduleService.checkModule(lecture.getModuleId())) {
+        if (lecture.getLectureType().equals(LectureType.LECTURE) && moduleService.checkModule(lecture.getModuleId())) {
             return lecture;
         } else if (lecture.getLectureType().equals(LectureType.EVENT)) {
             return lecture;

@@ -29,5 +29,17 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
             @Param("lectureTime") LocalTime lectureTime,
             @Param("lectureTimeEnd") LocalTime lectureTimeEnd);
 
+    @Query("SELECT l FROM Lecture l WHERE l.lectureDate = :lectureDate " +
+            "AND l.locationId = :locationId " +
+            "AND (:lectureTime BETWEEN l.startTime AND l.endTime " +
+            "OR :lectureTimeEnd BETWEEN l.startTime AND l.endTime " +
+            "OR l.startTime BETWEEN :lectureTime AND :lectureTimeEnd)")
+    Optional<List<Lecture>> findAllLectureConflicts(
+            @Param("lectureDate") LocalDate lectureDate,
+            @Param("locationId") Integer locationId,
+            @Param("lectureTime") LocalTime lectureTime,
+            @Param("lectureTimeEnd") LocalTime lectureTimeEnd);
+
+
     void deleteAllByModuleId(Integer moduleId);
 }

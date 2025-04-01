@@ -40,6 +40,9 @@ admin:
   username: skyticker-admin
   password: skyticker-admin
 
+lecture:
+    checkLectureConflict: false
+
 attendance:
   allowableDistance: 50.0
   lateAttendanceMinutes: 30
