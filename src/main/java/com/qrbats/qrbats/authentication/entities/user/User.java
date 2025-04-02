@@ -35,6 +35,7 @@ public class User implements UserDetails {
     private Integer semester;
     private String indexNumber;
     private Integer batch;
+    private String deviceId;
 
 
    @Override

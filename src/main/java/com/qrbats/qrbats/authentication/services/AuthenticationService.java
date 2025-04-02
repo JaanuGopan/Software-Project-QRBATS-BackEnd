@@ -12,8 +12,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,6 +30,21 @@ public class AuthenticationService {
     private final AuditInfoProvider auditInfoProvider;
 
     private final OTPVerificationService otpVerificationService;
+
+
+    public Boolean checkStudentSignupDetails(String email, String indexNumber, String deviceId) {
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new IllegalArgumentException("For this email address there is already have an account.");
+        }
+        if (userRepository.findByIndexNumber(indexNumber).isPresent()) {
+            throw new IllegalArgumentException("The index number already taken.");
+        }
+        if (userRepository.findByDeviceId(deviceId).isPresent()) {
+            throw new IllegalArgumentException("This device is already linked to a different account. Please use a different device.");
+        }
+
+        return true;
+    }
 
     public User signup(SignUpRequest signUpRequest) {
 
@@ -52,6 +69,7 @@ public class AuthenticationService {
         user.setIndexNumber(signUpRequest.getIndexNumber());
         user.setRole(signUpRequest.getRole());
         user.setBatch(signUpRequest.getBatch());
+        user.setDeviceId(signUpRequest.getDeviceId());
 
         return userRepository.save(user);
     }
@@ -71,7 +89,7 @@ public class AuthenticationService {
         }
 
         Map<String, Object> extraClaims = new HashMap<>();
-        extraClaims.put("userId",user.getUserId());
+        extraClaims.put("userId", user.getUserId());
 
         var jwt = jwtService.generateToken(user, extraClaims);
         var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
@@ -95,7 +113,64 @@ public class AuthenticationService {
         return jwtAuthenticationResponse;
     }
 
-    public JwtAuthenticationResponse studentLogin(String userName, String password) {
+    public boolean verifyDeviceForStudent(String userName, String password, String deviceId) {
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userName, password));
+        } catch (AuthenticationException e) {
+            throw new IllegalArgumentException("Invalid username or password.");
+        }
+
+        User user = userRepository.findByUserName(userName)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid username or password."));
+
+        if (!user.getRole().equals(Role.STUDENT)) {
+            throw new IllegalArgumentException("You are not access to this site.");
+        }
+
+        return user.getDeviceId().equals(deviceId);
+    }
+
+    public Boolean sendOtpForDeviceVerification(String email, String username, String password, String deviceId) {
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+        } catch (AuthenticationException e) {
+            throw new IllegalArgumentException("Invalid username or password.");
+        }
+
+        User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid username or password."));
+
+        if (!user.getEmail().equals(email)) {
+           throw new IllegalArgumentException("Invalid email address for your account.");
+        }
+
+        if (!user.getRole().equals(Role.STUDENT)) {
+            throw new IllegalArgumentException("You are not access to this app.");
+        }
+
+        List<User> studentList = userRepository.findALLByRole(Role.STUDENT);
+        for (User student : studentList) {
+            if (student.getDeviceId() != null && student.getDeviceId().equals(deviceId)) {
+                throw new IllegalArgumentException("This device is already linked to a different account. Please use a different device.");
+            }
+        }
+
+        return otpVerificationService.sendOTP(email);
+    }
+
+    public Boolean otpVerificationForDeviceVerification(String email, String otp, String deviceId) {
+        if (otpVerificationService.otpVerification(email, otp)) {
+            User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("Invalid email address."));
+            if (userRepository.findByDeviceId(deviceId).isEmpty()) {
+                user.setDeviceId(deviceId);
+                userRepository.save(user);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public JwtAuthenticationResponse studentLogin(String userName, String password, String deviceId) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userName, password));
         } catch (AuthenticationException e) {
@@ -109,13 +184,16 @@ public class AuthenticationService {
             throw new IllegalArgumentException("You are not access to this site.");
         }
 
+        if (user.getDeviceId() != null && !user.getDeviceId().equals(deviceId)) {
+            throw new IllegalArgumentException("Login failed: This account is registered on a different device. Please use the original device or verify your new device.");
+        }
+
+
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("firstName", user.getFirstName());
-        extraClaims.put("lastName", user.getLastName());
         extraClaims.put("email", user.getEmail());
-        extraClaims.put("role", user.getRole());
         extraClaims.put("userId", user.getUserId());
-        if (user.getDepartmentId() != null)  extraClaims.put("departmentId", user.getDepartmentId());
+        if (user.getDepartmentId() != null) extraClaims.put("departmentId", user.getDepartmentId());
         extraClaims.put("semester", user.getSemester());
         extraClaims.put("indexNumber", user.getIndexNumber());
         extraClaims.put("batch", user.getBatch());
@@ -158,7 +236,8 @@ public class AuthenticationService {
         if (request.getEmail() != null) {
             if (!request.getEmail().equals(user.get().getEmail())) {
                 Optional<User> existUserByEmail = userRepository.findByEmail(request.getEmail());
-                if (existUserByEmail.isPresent()) throw new IllegalArgumentException("The email address already exist.");
+                if (existUserByEmail.isPresent())
+                    throw new IllegalArgumentException("The email address already exist.");
             }
         }
 
@@ -182,7 +261,8 @@ public class AuthenticationService {
         if (request.getEmail() != null) user.get().setEmail(request.getEmail());
         if (request.getFirstName() != null) user.get().setFirstName(request.getFirstName());
         if (request.getLastName() != null) user.get().setLastName(request.getLastName());
-        if (request.getDepartmentId() != null) user.get().setDepartmentId(request.getDepartmentId() == -1 ? null : request.getDepartmentId());
+        if (request.getDepartmentId() != null)
+            user.get().setDepartmentId(request.getDepartmentId() == -1 ? null : request.getDepartmentId());
         if (request.getPassword() != null && !request.getPassword().isEmpty())
             user.get().setPassword(passwordEncoder.encode(request.getPassword()));
         if (request.getSemester() != null) user.get().setSemester(request.getSemester());
@@ -204,7 +284,8 @@ public class AuthenticationService {
         if (request.getEmail() != null) {
             if (!request.getEmail().equals(user.get().getEmail())) {
                 Optional<User> existUserByEmail = userRepository.findByEmail(request.getEmail());
-                if (existUserByEmail.isPresent()) throw new IllegalArgumentException("The email address already exist.");
+                if (existUserByEmail.isPresent())
+                    throw new IllegalArgumentException("The email address already exist.");
             }
         }
 
@@ -228,7 +309,8 @@ public class AuthenticationService {
         if (request.getEmail() != null) user.get().setEmail(request.getEmail());
         if (request.getFirstName() != null) user.get().setFirstName(request.getFirstName());
         if (request.getLastName() != null) user.get().setLastName(request.getLastName());
-        if (request.getDepartmentId() != null) user.get().setDepartmentId(request.getDepartmentId() == -1 ? null : request.getDepartmentId());
+        if (request.getDepartmentId() != null)
+            user.get().setDepartmentId(request.getDepartmentId() == -1 ? null : request.getDepartmentId());
         if (request.getPassword() != null && !request.getPassword().isEmpty())
             user.get().setPassword(passwordEncoder.encode(request.getPassword()));
         if (request.getSemester() != null) user.get().setSemester(request.getSemester());
@@ -268,7 +350,7 @@ public class AuthenticationService {
     }
 
     public Boolean forgotPasswordResetPasswordForStudent(String email, String password, String userName) {
-        if (userName != null){
+        if (userName != null) {
             Optional<User> checkUser = userRepository.findByUserName(userName);
             if (checkUser.isPresent()) {
                 if (!checkUser.get().getEmail().equals(email)) {
@@ -289,15 +371,4 @@ public class AuthenticationService {
         return true;
     }
 
-    public boolean checkStudentIsExistByEmail(String email) {
-        return userRepository.findByEmail(email).isPresent();
-    }
-
-    public boolean checkStudentIndexNumberIsExist(String indexNumber) {
-        return userRepository.findByIndexNumber(indexNumber).isPresent();
-    }
-
-    public boolean checkStudentUserNameIsExist(String userName) {
-        return userRepository.findByUserName(userName).isPresent();
-    }
 }

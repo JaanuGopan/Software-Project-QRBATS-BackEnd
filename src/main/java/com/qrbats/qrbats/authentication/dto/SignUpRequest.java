@@ -1,7 +1,6 @@
 package com.qrbats.qrbats.authentication.dto;
 
 import com.qrbats.qrbats.authentication.entities.user.Role;
-import jakarta.annotation.Nullable;
 import lombok.Data;
 
 @Data
@@ -16,4 +15,5 @@ public class SignUpRequest {
     private Integer semester;
     private String indexNumber;
     private Integer batch;
+    private String deviceId;
 }

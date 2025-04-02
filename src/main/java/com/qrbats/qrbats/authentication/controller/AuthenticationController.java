@@ -12,6 +12,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -40,9 +43,35 @@ public class AuthenticationController {
     }
 
     @GetMapping("/student-login")
-    public ResponseEntity<?> studentLogin(@RequestParam String userName,@RequestParam String password){
+    public ResponseEntity<?> studentLogin(@RequestParam String userName, @RequestParam String password, @RequestParam String deviceId){
         try {
-            return ResponseEntity.ok(authenticationService.studentLogin(userName,password));
+            if (authenticationService.verifyDeviceForStudent(userName,password,deviceId)){
+                JwtAuthenticationResponse jwtAuthRes = authenticationService.studentLogin(userName, password, deviceId);
+                return ResponseEntity.ok(jwtAuthRes);
+            }else {
+                Map<String, String> response = new HashMap<>();
+                response.put("error", "DEVICE_VERIFICATION_FAILED");
+                response.put("message", "This account is registered on a different device. Please use the original device or verify your new device.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @PostMapping("/send-otp-for-device-verification")
+    public ResponseEntity<Boolean> sendOtpForDeviceVerification(@RequestParam String email, @RequestParam String username, @RequestParam String password, @RequestParam String deviceId) {
+        try {
+            return ResponseEntity.ok(authenticationService.sendOtpForDeviceVerification(email,username,password,deviceId));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @PutMapping("/change-device-otp-verification")
+    public ResponseEntity<Boolean> changeDeviceOtpVerification(@RequestParam String email, @RequestParam String otp, @RequestParam String deviceId){
+        try {
+            return ResponseEntity.ok(authenticationService.otpVerificationForDeviceVerification(email, otp, deviceId));
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
@@ -135,18 +164,12 @@ public class AuthenticationController {
         }
     }
 
-    @PostMapping("/check-student-email")
-    public ResponseEntity<Boolean> checkStudentEmailIsExist(@RequestParam String email){
-        return ResponseEntity.ok(authenticationService.checkStudentIsExistByEmail(email));
-    }
-
-    @PostMapping("/check-student-index-number")
-    public ResponseEntity<Boolean> checkStudentIndexNoIsExist(@RequestParam String indexNumber){
-        return ResponseEntity.ok(authenticationService.checkStudentIndexNumberIsExist(indexNumber));
-    }
-
-    @PostMapping("/check-student-username")
-    public ResponseEntity<Boolean> checkStudentUserNameIsExist(@RequestParam String userName){
-        return ResponseEntity.ok(authenticationService.checkStudentUserNameIsExist(userName));
+    @GetMapping("/check-student-signup-details")
+    public ResponseEntity<Boolean> checkStudentSignupDetails(@RequestParam String email, @RequestParam String indexNumber, @RequestParam String deviceId){
+        try {
+            return ResponseEntity.ok(authenticationService.checkStudentSignupDetails(email,indexNumber,deviceId));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 }

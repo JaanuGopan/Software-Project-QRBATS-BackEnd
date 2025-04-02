@@ -15,4 +15,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByIndexNumber(String indexNumber);
     Optional<List<User>> findAllByBatch(Integer batch);
     Optional<List<User>> findAllByBatchAndDepartmentId(Integer batch, Integer departmentId);
+
+    Optional<User> findByDeviceId(String deviceId);
 }
