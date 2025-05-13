@@ -18,6 +18,7 @@ import com.qrbats.qrbats.functionalities.lecture.service.LectureService;
 import com.qrbats.qrbats.functionalities.location.service.LocationService;
 import com.qrbats.qrbats.functionalities.module.service.ModuleService;
 import com.qrbats.qrbats.functionalities.module.service.ModuleEnrollmentService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,7 @@ public class LectureAttendanceService {
     @Value("${attendance.lateAttendanceMinutes}")
     private Integer lateAttendanceMinutes;
 
+    @Transactional
     public Attendance markAttendance(LectureAttendanceMarkingDto lectureAttendanceMarkingDto) {
 
         // Retrieve necessary entities
@@ -285,6 +287,7 @@ public class LectureAttendanceService {
         return studentAttendanceResultDto;
     }
 
+    @Transactional
     public void deleteAttendanceForStudent(Integer studentId) {
         attendanceRepository.deleteAllByAttendeeId(studentId);
     }

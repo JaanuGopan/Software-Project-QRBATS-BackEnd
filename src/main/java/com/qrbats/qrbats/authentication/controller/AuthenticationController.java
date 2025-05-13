@@ -51,7 +51,7 @@ public class AuthenticationController {
             }else {
                 Map<String, String> response = new HashMap<>();
                 response.put("error", "DEVICE_VERIFICATION_FAILED");
-                response.put("message", "This account is registered on a different device. Please use the original device or verify your new device.");
+                response.put("message", "This account is not registered for this device. Please use the registered device or verify your new device.");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
         } catch (IllegalArgumentException e) {

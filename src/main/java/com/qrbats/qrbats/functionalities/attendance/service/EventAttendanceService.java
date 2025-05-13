@@ -13,6 +13,7 @@ import com.qrbats.qrbats.functionalities.attendance.dto.EventAttendanceViewDto;
 import com.qrbats.qrbats.functionalities.attendance.dto.LectureAttendanceResultDto;
 import com.qrbats.qrbats.functionalities.lecture.service.LectureService;
 import com.qrbats.qrbats.functionalities.location.service.LocationService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ public class EventAttendanceService {
     @Value("${attendance.lateAttendanceMinutes}")
     private Integer lateAttendanceMinutes;
 
+    @Transactional
     public EventAttendance markEventAttendance(EventAttendanceMarkingDto eventAttendanceMarkingDto) {
         // Retrieve necessary entities
         Lecture lecture = lectureService.findLectureById(eventAttendanceMarkingDto.getEventId());
@@ -124,6 +126,7 @@ public class EventAttendanceService {
         return attendanceViewDtoList;
     }
 
+    @Transactional
     public void deleteEventAttendanceByAttendeeId(Integer attendeeId) {
         eventAttendanceRepository.deleteAllByAttendeeId(attendeeId);
     }

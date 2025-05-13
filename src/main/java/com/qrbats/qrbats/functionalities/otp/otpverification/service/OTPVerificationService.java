@@ -3,6 +3,7 @@ package com.qrbats.qrbats.functionalities.otp.otpverification.service;
 
 import com.qrbats.qrbats.functionalities.otp.OTP;
 import com.qrbats.qrbats.functionalities.otp.repository.OTPRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
@@ -24,6 +25,7 @@ public class OTPVerificationService {
      private final OTPRepository otpRepository;
      private final JavaMailSender mailSender;
 
+     @Transactional
      public boolean sendOTP(String email) {
           Optional<OTP> existEmailOtp = otpRepository.findByEmail(email);
           OTP newOTP;
@@ -84,6 +86,7 @@ public class OTPVerificationService {
           return true;
      }
      //@Scheduled(fixedRate = 60000) // Runs every minute
+     @Transactional
      public void deleteExpiredOTPs() {
           LocalDateTime oneMinuteAgo = LocalDateTime.now().minusMinutes(1);
           otpRepository.deleteByCreationTimeBefore(oneMinuteAgo);

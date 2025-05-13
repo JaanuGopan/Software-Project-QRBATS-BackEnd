@@ -6,6 +6,7 @@ import com.qrbats.qrbats.functionalities.otp.otpverification.service.OTPVerifica
 import com.qrbats.qrbats.authentication.entities.user.Role;
 import com.qrbats.qrbats.authentication.entities.user.User;
 import com.qrbats.qrbats.authentication.entities.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,7 +32,6 @@ public class AuthenticationService {
 
     private final OTPVerificationService otpVerificationService;
 
-
     public Boolean checkStudentSignupDetails(String email, String indexNumber, String deviceId) {
         if (userRepository.findByEmail(email).isPresent()) {
             throw new IllegalArgumentException("For this email address there is already have an account.");
@@ -46,6 +46,7 @@ public class AuthenticationService {
         return true;
     }
 
+    @Transactional
     public User signup(SignUpRequest signUpRequest) {
 
         Optional<User> existUserByUserName = userRepository.findByUserName(signUpRequest.getUserName());
@@ -127,7 +128,7 @@ public class AuthenticationService {
             throw new IllegalArgumentException("You are not access to this site.");
         }
 
-        return user.getDeviceId().equals(deviceId);
+        return user.getDeviceId() != null && user.getDeviceId().equals(deviceId);
     }
 
     public Boolean sendOtpForDeviceVerification(String email, String username, String password, String deviceId) {
@@ -158,6 +159,7 @@ public class AuthenticationService {
         return otpVerificationService.sendOTP(email);
     }
 
+    @Transactional
     public Boolean otpVerificationForDeviceVerification(String email, String otp, String deviceId) {
         if (otpVerificationService.otpVerification(email, otp)) {
             User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("Invalid email address."));
@@ -227,6 +229,7 @@ public class AuthenticationService {
         return null;
     }
 
+    @Transactional
     public boolean updateUser(UpdateUserRequest request) {
         Optional<User> user = userRepository.findById(auditInfoProvider.getCurrentUserIdentifier());
         if (user.isEmpty()) {
@@ -272,6 +275,7 @@ public class AuthenticationService {
         return true;
     }
 
+    @Transactional
     public boolean adminUpdateUser(UpdateUserRequest request) {
         if (request.getUserId() == null) {
             throw new IllegalArgumentException("User id cannot be null.");

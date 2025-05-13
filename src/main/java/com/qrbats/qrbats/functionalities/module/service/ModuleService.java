@@ -3,10 +3,12 @@ package com.qrbats.qrbats.functionalities.module.service;
 import com.qrbats.qrbats.authentication.entities.user.User;
 import com.qrbats.qrbats.authentication.services.UserService;
 import com.qrbats.qrbats.config.AuditInfoProvider;
+import com.qrbats.qrbats.entity.department.DepartmentCode;
 import com.qrbats.qrbats.entity.lecture.LectureRepository;
 import com.qrbats.qrbats.entity.module.Module;
 import com.qrbats.qrbats.entity.module.ModuleRepository;
 import com.qrbats.qrbats.entity.module_enrollment.ModuleEnrollment;
+import com.qrbats.qrbats.functionalities.department.service.DepartmentService;
 import com.qrbats.qrbats.functionalities.module.dto.ModuleDto;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class ModuleService {
     private final AuditInfoProvider auditInfoProvider;
     private final UserService userService;
     private final LectureRepository lectureRepository;
+    private final DepartmentService departmentService;
 
     public Module getModuleByModuleId(Integer moduleId) {
         return moduleRepository.findById(moduleId)
@@ -50,6 +53,7 @@ public class ModuleService {
         return moduleEnrollment != null;
     }
 
+    @Transactional
     public Module saveModule(ModuleDto moduleDto) {
         
         if (moduleDto.getStatingDate().isAfter(moduleDto.getEndingDate())){
@@ -194,9 +198,19 @@ public class ModuleService {
                             .anyMatch(enrollment -> enrollment.getModuleId().equals(module.getId()))
             );
         } else {
+            List<Module> isModuleList = moduleRepository
+                    .findAllByDepartmentIdAndStudentBatch(
+                            departmentService.getDepartmentByCode(DepartmentCode.DIS).getDepartmentId(),
+                            student.getBatch()
+                    )
+                    .orElse(new ArrayList<>());
+
             moduleList = moduleRepository
                     .findAllBySemesterAndDepartmentIdAndStudentBatch(student.getSemester(), student.getDepartmentId(), student.getBatch())
                     .orElse(new ArrayList<>());
+
+            moduleList.addAll(isModuleList);
+
             moduleList.removeIf(module ->
                     moduleEnrollmentList.stream()
                             .anyMatch(enrollment -> enrollment.getModuleId().equals(module.getId()))

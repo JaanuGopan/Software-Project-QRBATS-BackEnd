@@ -6,6 +6,7 @@ import com.qrbats.qrbats.entity.location.LocationCoordinates;
 import com.qrbats.qrbats.functionalities.location.dto.CreateLocationRequest;
 import com.qrbats.qrbats.functionalities.location.dto.LocationDto;
 import com.qrbats.qrbats.functionalities.location.dto.LocationNameResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class LocationService {
     @Value("${attendance.allowableDistance}")
     private Double allowableDistance;
 
+    @Transactional
     public Location createLocation(CreateLocationRequest request) {
         Optional<Location> existLocation;
         Location location;

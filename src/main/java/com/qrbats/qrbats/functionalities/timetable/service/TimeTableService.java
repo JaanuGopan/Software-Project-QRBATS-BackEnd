@@ -28,7 +28,6 @@ public class TimeTableService {
     private final LectureService lectureService;
 
     public List<Lecture> saveTimeTable(TimeTableDto timeTableDto) {
-        System.out.println("Time Table: " + timeTableDto.toString());
         Module module = moduleService.getModuleByModuleId(timeTableDto.getModuleId());
 
         if (timeTableDto.getDayList().isEmpty()) {

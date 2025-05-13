@@ -23,4 +23,6 @@ public interface ModuleRepository extends JpaRepository<Module, Integer> {
     Optional<Module> findByModuleName(String moduleName);
 
     Optional<List<Module>> findAllBySemester(Integer semester);
+
+    Optional<List<Module>> findAllByDepartmentIdAndStudentBatch(Integer departmentId, Integer batch);
 }

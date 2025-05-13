@@ -23,12 +23,12 @@ public class DepartmentService {
         }
 
         List<Department> departmentList = List.of(
-                new Department(1, DepartmentName.CIVIL_AND_ENVIRONMENTAL_ENGINEERING, DepartmentCode.DCEE),
-                new Department(2, DepartmentName.ELECTRICAL_AND_INFORMATION_ENGINEERING, DepartmentCode.DEIE),
+                new Department(1, DepartmentName.ELECTRICAL_AND_INFORMATION_ENGINEERING, DepartmentCode.DEIE),
+                new Department(2, DepartmentName.COMPUTER_ENGINEERING, DepartmentCode.DCOM),
                 new Department(3, DepartmentName.MECHANICAL_AND_MANUFACTURING_ENGINEERING, DepartmentCode.DMME),
-                new Department(4, DepartmentName.INTERDISCIPLINARY_STUDIES, DepartmentCode.DIS),
+                new Department(4, DepartmentName.CIVIL_AND_ENVIRONMENTAL_ENGINEERING, DepartmentCode.DCEE),
                 new Department(5, DepartmentName.MARINE_ENGINEERING_AND_NAVAL_ARCHITECTURE, DepartmentCode.DMENA),
-                new Department(6, DepartmentName.COMPUTER_ENGINEERING, DepartmentCode.DCOM)
+                new Department(6, DepartmentName.INTERDISCIPLINARY_STUDIES, DepartmentCode.DIS)
         );
 
         departmentRepository.saveAll(departmentList);
@@ -36,6 +36,16 @@ public class DepartmentService {
 
     public List<Department> getAllDepartment() {
         return departmentRepository.findAll();
+    }
+
+    public Department getDepartmentById(Integer departmentId) {
+       return departmentRepository.findById(departmentId)
+               .orElseThrow(() -> new IllegalArgumentException("Department not found for this id."));
+    }
+
+    public Department getDepartmentByCode(DepartmentCode departmentCode) {
+        return departmentRepository.findByDepartmentCode(departmentCode)
+                .orElseThrow(() -> new IllegalArgumentException("Department not found for this code."));
     }
 
 }

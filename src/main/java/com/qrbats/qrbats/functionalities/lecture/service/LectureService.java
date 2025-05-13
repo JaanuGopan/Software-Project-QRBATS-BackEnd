@@ -12,11 +12,11 @@ import com.qrbats.qrbats.functionalities.lecture.dto.LectureDto;
 import com.qrbats.qrbats.functionalities.lecture.dto.LectureViewDto;
 import com.qrbats.qrbats.functionalities.location.service.LocationService;
 import com.qrbats.qrbats.functionalities.module.service.ModuleService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.time.*;
@@ -33,6 +33,8 @@ public class LectureService {
 
     @Value("${lecture.checkLectureConflict}")
     private boolean checkLectureConflict;
+
+    @Transactional
     public Lecture saveSingleLecture(LectureDto lectureDto) {
         validateSingleLectureDto(lectureDto);
 
@@ -71,6 +73,7 @@ public class LectureService {
         return lectureRepository.save(lecture);
     }
 
+    @Transactional
     public void deleteLectureById(Long lectureId) {
         Lecture lecture = findLectureById(lectureId);
         if (checkLectureIsFinished(lecture)) {
@@ -79,6 +82,7 @@ public class LectureService {
         lectureRepository.delete(lecture);
     }
 
+    @Transactional
     public void deleteLecturesByModuleId(Integer moduleId) {
         Module module = moduleService.getModuleByModuleId(moduleId);
         lectureRepository.deleteAllByModuleId(moduleId);
