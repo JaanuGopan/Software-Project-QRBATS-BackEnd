@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  build And Deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,6 +29,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: target/*.jar
           target: /home/skyticker/deploy/backend
+          overwrite: true
 
       - name: Restart Spring Boot using tmux
         uses: appleboy/ssh-action@v1.0.0
