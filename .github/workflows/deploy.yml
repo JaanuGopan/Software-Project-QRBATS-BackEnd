@@ -38,7 +38,9 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            pkill -f 'java -jar' || true
+            # Kill old process if exists
+            pkill -f 'qrbats-backend.jar' || true
             tmux kill-session -t backend || true
-            tmux new-session -d -s backend "java -jar ~/skyticker/deploy/backend/target/qrbats-backend.jar"
-      
+
+            # Start new tmux session running the JAR, detached with log redirection
+            tmux new-session -d -s backend 'java -jar ~/skyticker/deploy/backend/target/qrbats-backend.jar > ~/skyticker/deploy/backend/backend.log 2>&1'
