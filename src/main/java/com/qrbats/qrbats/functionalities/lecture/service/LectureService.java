@@ -141,11 +141,11 @@ public class LectureService {
             if (lectureDate.isBefore(LocalDate.now())) {
                 throw new IllegalArgumentException("The lecture date should not be in past for " + lectureDate + " lecture.");
             }
-            if (lectureDate.isEqual(LocalDate.now())) {
+           /* if (lectureDate.isEqual(LocalDate.now())) {
                 if (startTime.isBefore(LocalTime.now())) {
                     throw new IllegalArgumentException("The lecture start time should be in future for " + lectureDate + " lecture.");
                 }
-            }
+            }*/
         } else {
             // handle lecture edit validation.
         }

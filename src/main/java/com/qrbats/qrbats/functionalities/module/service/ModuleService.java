@@ -61,7 +61,7 @@ public class ModuleService {
         }
         
         if (moduleDto.getId() == null) {
-            /*if (moduleDto.getStatingDate().isBefore(LocalDate.now())) {
+            /* if (moduleDto.getStatingDate().isBefore(LocalDate.now())) {
                 throw new IllegalArgumentException("The module start date should be in future.");
             }*/
 
