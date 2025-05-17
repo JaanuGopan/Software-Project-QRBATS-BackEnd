@@ -63,10 +63,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script_stop: true
           script: |
-            pkill -f 'java -jar' || true
-            tmux kill-session -t backend || true
-            echo "Starting Spring Boot in new tmux session..."
-            tmux new-session -d -s backend "java -jar ~/skyticker/deploy/backend/qrbats-backend.jar"
-            tmux ls || echo "No tmux sessions found"
-      
-          
+            sudo systemctl daemon-reexec
+            sudo systemctl restart skyticker.service
