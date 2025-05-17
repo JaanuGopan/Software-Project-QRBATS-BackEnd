@@ -28,7 +28,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: target/*.jar
-          target: /home/skyticker/deploy/backend
+          target: ~/skyticker/deploy/backend
           overwrite: true
 
       - name: Restart Spring Boot using tmux
