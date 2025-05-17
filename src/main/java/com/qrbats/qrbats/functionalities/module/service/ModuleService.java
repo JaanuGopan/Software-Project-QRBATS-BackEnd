@@ -57,13 +57,13 @@ public class ModuleService {
     public Module saveModule(ModuleDto moduleDto) {
         
         if (moduleDto.getStatingDate().isAfter(moduleDto.getEndingDate())){
-            throw new IllegalArgumentException("The module start time should be before module end time.");
+            throw new IllegalArgumentException("The module start date should be before module end date.");
         }
         
         if (moduleDto.getId() == null) {
-            if (moduleDto.getStatingDate().isBefore(LocalDate.now())) {
-                throw new IllegalArgumentException("The module start time should be in future.");
-            }
+            /*if (moduleDto.getStatingDate().isBefore(LocalDate.now())) {
+                throw new IllegalArgumentException("The module start date should be in future.");
+            }*/
 
             Optional<List<Module>> moduleList = moduleRepository.findAllByModuleCode(moduleDto.getModuleCode());
             if (moduleList.isPresent()){

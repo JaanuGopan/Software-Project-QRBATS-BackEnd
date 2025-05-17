@@ -70,7 +70,11 @@ public class AuthenticationService {
         user.setIndexNumber(signUpRequest.getIndexNumber());
         user.setRole(signUpRequest.getRole());
         user.setBatch(signUpRequest.getBatch());
-        user.setDeviceId(signUpRequest.getDeviceId());
+        if (signUpRequest.getDeviceId().equals("Web_Device")){
+            user.setDeviceId(signUpRequest.getDeviceId() + user.getUserId());
+        } else {
+            user.setDeviceId(signUpRequest.getDeviceId());
+        }
 
         return userRepository.save(user);
     }
@@ -128,6 +132,10 @@ public class AuthenticationService {
             throw new IllegalArgumentException("You are not access to this site.");
         }
 
+        if (deviceId.equals("Web_Device")) {
+            return user.getDeviceId() != null && user.getDeviceId().equals(deviceId + user.getUserId());
+        }
+
         return user.getDeviceId() != null && user.getDeviceId().equals(deviceId);
     }
 
@@ -164,7 +172,11 @@ public class AuthenticationService {
         if (otpVerificationService.otpVerification(email, otp)) {
             User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("Invalid email address."));
             if (userRepository.findByDeviceId(deviceId).isEmpty()) {
-                user.setDeviceId(deviceId);
+                if (deviceId.equals("Web_Device")) {
+                    user.setDeviceId(deviceId + user.getUserId());
+                } else {
+                    user.setDeviceId(deviceId);
+                }
                 userRepository.save(user);
                 return true;
             }
@@ -186,8 +198,14 @@ public class AuthenticationService {
             throw new IllegalArgumentException("You are not access to this site.");
         }
 
-        if (user.getDeviceId() != null && !user.getDeviceId().equals(deviceId)) {
-            throw new IllegalArgumentException("Login failed: This account is registered on a different device. Please use the original device or verify your new device.");
+        if (deviceId.equals("Web_Device")) {
+            if (user.getDeviceId() != null && !user.getDeviceId().equals(deviceId + user.getUserId())) {
+                throw new IllegalArgumentException("Login failed: This account is registered on a different device. Please use the original device or verify your new device.");
+            }
+        } else {
+            if (user.getDeviceId() != null && !user.getDeviceId().equals(deviceId)) {
+                throw new IllegalArgumentException("Login failed: This account is registered on a different device. Please use the original device or verify your new device.");
+            }
         }
 
 
