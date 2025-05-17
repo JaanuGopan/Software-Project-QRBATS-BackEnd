@@ -31,16 +31,15 @@ jobs:
           target: ~/skyticker/deploy/backend
           overwrite: true
 
-      - name: Restart Spring Boot using tmux
+      - name: Restart Spring Boot using nohup
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Kill old process if exists
+            # Kill existing Spring Boot process (if running)
             pkill -f 'qrbats-backend.jar' || true
-            tmux kill-session -t backend || true
 
-            # Start new tmux session running the JAR, detached with log redirection
-            tmux new-session -d -s backend 'java -jar ~/skyticker/deploy/backend/target/qrbats-backend.jar > ~/skyticker/deploy/backend/backend.log 2>&1'
+            # Run new process in background using nohup
+            nohup java -jar ~/skyticker/deploy/backend/target/qrbats-backend.jar > ~/skyticker/deploy/backend/backend.log 2>&1 &
