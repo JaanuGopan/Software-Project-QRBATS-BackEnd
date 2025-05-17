@@ -40,4 +40,5 @@ jobs:
           script: |
             pkill -f 'java -jar' || true
             tmux kill-session -t backend || true
-            tmux new-session -d -s backend "java -jar ~/skyticker/deploy/backend/target/*.jar"
+            tmux new-session -d -s backend "java -jar ~/skyticker/deploy/backend/target/qrbats-backend.jar"
+      
