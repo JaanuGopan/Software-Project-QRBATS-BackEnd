@@ -5,41 +5,45 @@ on:
     branches: [ main ]
 
 jobs:
-  build_and_deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
+      - name: Archive source code
+        run: zip -r skyticker-backend.zip . -x "*.git*"
 
-      - name: Build with Maven
-        run: mvn clean package -DskipTests
-
-      - name: Upload JAR to server via SCP
+      - name: Upload source code to server via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: target/*.jar
-          target: ~/skyticker/deploy/backend
-          overwrite: true
+          source: skyticker-backend.zip
+          target: ~/skyticker/deploy
 
-      - name: Restart Spring Boot using tmux
+      - name: SSH and Build + Restart Backend
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            cd ~/skyticker/deploy
+            rm -rf backend-src
+            mkdir backend-src
+            unzip -o skyticker-backend.zip -d backend-src
+            cd backend-src
+
+            # Build with Maven
+            mvn clean package -DskipTests
+
+            # Stop previous process
             pkill -f 'java -jar' || true
             tmux kill-session -t backend || true
-            tmux new-session -d -s backend "java -jar ~/skyticker/deploy/backend/target/qrbats-backend.jar"
+
+            # Start new process
+            tmux new-session -d -s backend "java -jar target/*.jar"
             sleep 10
-      
