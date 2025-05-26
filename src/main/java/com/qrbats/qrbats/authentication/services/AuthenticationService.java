@@ -351,6 +351,48 @@ public class AuthenticationService {
         }
     }
 
+    public Boolean forgotPasswordSendEmail(String email) {
+        Optional<User> existUser = userRepository.findByEmail(email);
+        if (existUser.isEmpty()) throw new IllegalArgumentException("No User Found For This Email " + email);
+        if (!existUser.get().getRole().equals(Role.LECTURER) && !existUser.get().getRole().equals(Role.ADMIN)) {
+            throw new IllegalArgumentException("No User Found For This Email " + email);
+        }
+
+        return otpVerificationService.sendOTP(email);
+    }
+
+    public Boolean forgotPasswordOtpVerification(String email, String otp) {
+        Optional<User> existUser = userRepository.findByEmail(email);
+        if (existUser.isEmpty()) throw new IllegalArgumentException("No User Found For This Email " + email);
+        if (!existUser.get().getRole().equals(Role.LECTURER) && !existUser.get().getRole().equals(Role.ADMIN)) {
+            throw new IllegalArgumentException("No User Found For This Email " + email);
+        }
+
+        return otpVerificationService.otpVerification(email, otp);
+    }
+
+    public Boolean forgotPasswordResetPassword(String email, String password, String userName) {
+        if (userName != null) {
+            Optional<User> checkUser = userRepository.findByUserName(userName);
+            if (checkUser.isPresent()) {
+                if (!checkUser.get().getEmail().equals(email)) {
+                    throw new IllegalArgumentException("The username already taken so please change the username.");
+                }
+            }
+        }
+        Optional<User> existUser = userRepository.findByEmail(email);
+
+        if (existUser.isEmpty()) throw new IllegalArgumentException("No User Found For This Email " + email);
+        if (!existUser.get().getRole().equals(Role.LECTURER) && !existUser.get().getRole().equals(Role.ADMIN)) {
+            throw new IllegalArgumentException("No User Found For This Email " + email);
+        }
+
+        if (userName != null) existUser.get().setUserName(userName);
+        existUser.get().setPassword(passwordEncoder.encode(password));
+        userRepository.save(existUser.get());
+        return true;
+    }
+
     public Boolean forgotPasswordSendEmailForStudent(String email) {
         Optional<User> existUser = userRepository.findByEmail(email);
         if (existUser.isEmpty()) throw new IllegalArgumentException("No User Found For This Email " + email);

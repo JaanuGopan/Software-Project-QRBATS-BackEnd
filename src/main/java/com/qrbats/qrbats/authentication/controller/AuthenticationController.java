@@ -25,7 +25,7 @@ public class AuthenticationController {
     private final UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody SignUpRequest signUpRequest){
+    public ResponseEntity<User> signup(@RequestBody SignUpRequest signUpRequest){
         try {
             return ResponseEntity.ok(authenticationService.signup(signUpRequest));
         } catch (IllegalArgumentException e) {
@@ -34,7 +34,7 @@ public class AuthenticationController {
     }
 
     @GetMapping("/login")
-    public ResponseEntity<?> staffLogin(@RequestParam String userName,@RequestParam String password){
+    public ResponseEntity<JwtAuthenticationResponse> staffLogin(@RequestParam String userName,@RequestParam String password){
         try {
             return ResponseEntity.ok(authenticationService.staffLogin(userName,password));
         } catch (IllegalArgumentException e) {
@@ -106,7 +106,7 @@ public class AuthenticationController {
     }
 
     @PutMapping("/update-user")
-    public ResponseEntity<?> updateUser(@RequestBody UpdateUserRequest request){
+    public ResponseEntity<Boolean> updateUser(@RequestBody UpdateUserRequest request){
         try {
              return ResponseEntity.ok(authenticationService.updateUser(request));
         } catch (IllegalArgumentException e) {
@@ -115,7 +115,7 @@ public class AuthenticationController {
     }
 
     @PutMapping("/admin-update-user")
-    public ResponseEntity<?> adminUpdateUser(@RequestBody UpdateUserRequest request){
+    public ResponseEntity<Boolean> adminUpdateUser(@RequestBody UpdateUserRequest request){
         try {
             return ResponseEntity.ok(authenticationService.adminUpdateUser(request));
         } catch (IllegalArgumentException e) {
@@ -124,7 +124,7 @@ public class AuthenticationController {
     }
 
     @PutMapping("/update-student")
-    public ResponseEntity<?> updateStudent(@RequestBody UpdateUserRequest request){
+    public ResponseEntity<Boolean> updateStudent(@RequestBody UpdateUserRequest request){
         try {
              return ResponseEntity.ok(authenticationService.updateUser(request));
         } catch (IllegalArgumentException e) {
@@ -137,8 +137,35 @@ public class AuthenticationController {
         return ResponseEntity.ok(authenticationService.passwordVerification(userName,password));
     }
 
-    @PostMapping("/forgot-password-send-otp-for-student")
+    @PostMapping("/forgot-password-send-otp")
     public ResponseEntity<Boolean> forgotPasswordSendEmail(@RequestParam String email){
+        try {
+            return ResponseEntity.ok(authenticationService.forgotPasswordSendEmail(email));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @GetMapping("/forgot-password-verify-otp")
+    public ResponseEntity<Boolean> forgotPasswordOtpVerification(@RequestParam String email ,@RequestParam String otp){
+        try {
+            return ResponseEntity.ok(authenticationService.forgotPasswordOtpVerification(email,otp));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @PutMapping("/forgot-password-reset-password")
+    public ResponseEntity<Boolean> forgotPasswordResetPassword(@RequestParam String email ,@RequestParam String password,@RequestParam @Nullable String userName){
+        try {
+            return ResponseEntity.ok(authenticationService.forgotPasswordResetPassword(email,password,userName));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @PostMapping("/forgot-password-send-otp-for-student")
+    public ResponseEntity<Boolean> forgotPasswordSendEmailForStudent(@RequestParam String email){
         try {
             return ResponseEntity.ok(authenticationService.forgotPasswordSendEmailForStudent(email));
         } catch (IllegalArgumentException e) {
@@ -147,7 +174,7 @@ public class AuthenticationController {
     }
 
     @GetMapping("/forgot-password-verify-otp-for-student")
-    public ResponseEntity<?> forgotPasswordOtpVerification(@RequestParam String email ,@RequestParam String otp){
+    public ResponseEntity<Boolean> forgotPasswordOtpVerificationForStudent(@RequestParam String email ,@RequestParam String otp){
         try {
             return ResponseEntity.ok(authenticationService.forgotPasswordOtpVerificationForStudent(email,otp));
         } catch (IllegalArgumentException e) {
@@ -156,7 +183,7 @@ public class AuthenticationController {
     }
 
     @PutMapping("/forgot-password-reset-password-for-student")
-    public ResponseEntity<?> forgotPasswordResetPassword(@RequestParam String email ,@RequestParam String password,@RequestParam @Nullable String userName){
+    public ResponseEntity<Boolean> forgotPasswordResetPasswordForStudent(@RequestParam String email ,@RequestParam String password,@RequestParam @Nullable String userName){
         try {
             return ResponseEntity.ok(authenticationService.forgotPasswordResetPasswordForStudent(email,password,userName));
         } catch (IllegalArgumentException e) {
