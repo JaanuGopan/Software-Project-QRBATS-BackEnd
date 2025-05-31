@@ -45,7 +45,7 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "skyticker-backend.jar"
+          source: "*.jar"
           target: "~/skyticker/deploy/backend"
           overwrite: true
 
