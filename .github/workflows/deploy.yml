@@ -45,7 +45,7 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "*.jar"
+          source: "skyticker-backend.jar"
           target: "~/skyticker/deploy/backend"
           overwrite: true
 
@@ -88,5 +88,4 @@ jobs:
           script_stop: true
           script: |
             sudo systemctl daemon-reexec
-            sudo systemctl daemon-reload
             sudo systemctl restart skyticker.service
