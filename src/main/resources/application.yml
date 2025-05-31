@@ -5,9 +5,9 @@ spring:
   application:
     name: qrbats
   datasource:
-    url: jdbc:postgresql://localhost:5432/skytickerdb
-    username: skyticker
-    password: skyticker
+    url: jdbc:postgresql://localhost:5432/${DATASOURCE_DB_NAME:skytickerdb}
+    username: ${DATASOURCE_USERNAME:skyticker}
+    password: ${DATASOURCE_PASSWORD:skyticker}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -21,8 +21,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: skyticker.uor@gmail.com
-    password: qbcj cajs yqfk pmsa
+    username: ${MAIL_USERNAME:skyticker.uor@gmail.com}
+    password: ${MAIL_PASSWORD:qbcj cajs yqfk pmsa}
     properties:
       mail:
         smtp:
@@ -31,14 +31,14 @@ spring:
             enable: true
 
 jwt:
-  secretKey: d25e426164bb3111be43543e48adb4cb196b88d714901c993db61bc025c14d23
+  secretKey: ${SECRET_KEY:d25e426164bb3111be43543e48adb4cb196b88d714901c993db61bc025c14d23}
 
 admin:
-  email: skyticker.uor@gmail.com
-  firstName: skyticker
-  lastName: admin
-  username: skyticker-admin
-  password: skyticker-admin
+  email: ${ADMIN_EMAIL:skyticker.uor@gmail.com}
+  firstName: ${ADMIN_FIRST_NAME:skyticker}
+  lastName: ${ADMIN_LAST_NAME:admin}
+  username: ${ADMIN_USERNAME:skyticker-admin}
+  password: ${ADMIN_PASSWORD:skyticker-admin}
 
 lecture:
     checkLectureConflict: false
