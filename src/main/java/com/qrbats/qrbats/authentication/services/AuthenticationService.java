@@ -31,6 +31,7 @@ public class AuthenticationService {
     private final AuditInfoProvider auditInfoProvider;
 
     private final OTPVerificationService otpVerificationService;
+    private final UserService userService;
 
     public Boolean checkStudentSignupDetails(String email, String indexNumber, String deviceId) {
         if (userRepository.findByEmail(email).isPresent()) {
@@ -347,8 +348,15 @@ public class AuthenticationService {
         if (user.isPresent()) {
             return passwordEncoder.matches(password, user.get().getPassword());
         } else {
-            throw new IllegalArgumentException("Requested UserName has not exist.");
+            throw new IllegalArgumentException("Incorrect Username.");
         }
+    }
+
+    public Boolean passwordVerificationForProfileEdit(String userName, String password) {
+        User user = userService.getAuthenticatedUser();
+        if (passwordEncoder.matches(password, user.getPassword()) && user.getUsername().equals(userName))
+            return true;
+        else throw new IllegalArgumentException("Incorrect Username or Password.");
     }
 
     public Boolean forgotPasswordSendEmail(String email) {

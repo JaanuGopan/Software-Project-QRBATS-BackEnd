@@ -137,6 +137,15 @@ public class AuthenticationController {
         return ResponseEntity.ok(authenticationService.passwordVerification(userName,password));
     }
 
+    @GetMapping("/verify-password-profile-edit")
+    public ResponseEntity<Boolean> verifyPasswordForProfileEdit(@RequestParam String userName,@RequestParam String password){
+        try {
+            return ResponseEntity.ok(authenticationService.passwordVerificationForProfileEdit(userName,password));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
     @PostMapping("/forgot-password-send-otp")
     public ResponseEntity<Boolean> forgotPasswordSendEmail(@RequestParam String email){
         try {
