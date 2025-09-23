@@ -33,6 +33,15 @@ public class AuthenticationController {
         }
     }
 
+    @PostMapping("/admin-creates-user")
+    public ResponseEntity<User> adminCreatesUser(@RequestBody SignUpRequest signUpRequest){
+        try {
+            return ResponseEntity.ok(authenticationService.adminCreatesUser(signUpRequest));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
     @GetMapping("/login")
     public ResponseEntity<JwtAuthenticationResponse> staffLogin(@RequestParam String userName,@RequestParam String password){
         try {

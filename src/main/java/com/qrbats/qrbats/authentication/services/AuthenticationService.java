@@ -71,13 +71,21 @@ public class AuthenticationService {
         user.setIndexNumber(signUpRequest.getIndexNumber());
         user.setRole(signUpRequest.getRole());
         user.setBatch(signUpRequest.getBatch());
-        if (signUpRequest.getDeviceId().equals("Web_Device")){
-            user.setDeviceId(signUpRequest.getDeviceId() + user.getUserId());
-        } else {
-            user.setDeviceId(signUpRequest.getDeviceId());
+        if (signUpRequest.getDeviceId() != null) {
+            if (signUpRequest.getDeviceId().equals("Web_Device")){
+                user.setDeviceId(signUpRequest.getDeviceId() + user.getUserId());
+            } else {
+                user.setDeviceId(signUpRequest.getDeviceId());
+            }
         }
 
         return userRepository.save(user);
+    }
+
+    @Transactional
+    public User adminCreatesUser(SignUpRequest signUpRequest) {
+        User createdUser = signup(signUpRequest);
+        return createdUser;
     }
 
     public JwtAuthenticationResponse staffLogin(String userName, String password) {
