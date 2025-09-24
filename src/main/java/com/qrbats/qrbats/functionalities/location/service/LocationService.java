@@ -73,10 +73,8 @@ public class LocationService {
         return distance <= allowableDistance;
     }
 
-
-
-    public void addLocations() {
-        List<String> locations = Arrays.asList(
+    public List<String> getLocations() {
+        return Arrays.asList(
                 "50,6.07953758447428,80.19206030748484,NCC",
                 "50,6.079133810214307,80.19155422805409,LT1",
                 "50,6.078789414282487,80.1912795418734,LT2",
@@ -86,19 +84,42 @@ public class LocationService {
                 "50,6.078150890028423,80.19217574681655,DEIE",
                 "50,6.078473748481698,80.19184438229699,DMME",
                 "50,6.0781203313993455,80.19141948746949,DCEE",
-                "50,6.077142619941645,80.19093951556941,Mechanical Workshop area"
-                //"50,6.079493081707097,80.19168340470081,Library",
-                //"50,6.079493081707097,80.19168340470081,Study Hall",
+                "50,6.077142619941645,80.19093951556941,Mechanical Workshop area",
+                "50,6.079311039842098,80.19185410791715,OCC",
+                "50,6.07953758447428,80.19206030748484,Seminar Room",
+                "50,6.079493081707097,80.19168340470081,Library",
+                "50,6.079493081707097,80.19168340470081,Study Hall"
         );
+    }
 
-        for (String location : locations) {
-            String[] values = location.split(",");
-            Location entity = new Location();
-            entity.setAllowableRadius(Double.parseDouble(values[0]));
-            entity.setLocationCoordinates(
-                    new LocationCoordinates(Double.parseDouble(values[1]),Double.parseDouble(values[2])));
-            entity.setLocationName(values[3]);
-            repository.save(entity);
+    @Transactional
+    public void addLocations() {
+        List<String> locations = getLocations();
+
+        // Fetch current DB data as strings in the same format as getLocations()
+        List<String> existing = locationRepository.findAll().stream()
+                .map(loc -> String.format(
+                        "%s,%s,%s,%s",
+                        loc.getAllowableRadius(),
+                        loc.getLocationCoordinates().getLatitude(),
+                        loc.getLocationCoordinates().getLongitude(),
+                        loc.getLocationName()
+                ))
+                .toList();
+
+        // Only update if different
+        if (!existing.equals(locations)) {
+            locationRepository.deleteAll();
+
+            for (String location : locations) {
+                String[] values = location.split(",");
+                Location entity = new Location();
+                entity.setAllowableRadius(Double.parseDouble(values[0]));
+                entity.setLocationCoordinates(
+                        new LocationCoordinates(Double.parseDouble(values[1]), Double.parseDouble(values[2])));
+                entity.setLocationName(values[3]);
+                locationRepository.save(entity); // changed from repository to locationRepository
+            }
         }
     }
 

@@ -3,8 +3,6 @@ package com.qrbats.qrbats;
 import com.qrbats.qrbats.authentication.entities.user.Role;
 import com.qrbats.qrbats.authentication.entities.user.User;
 import com.qrbats.qrbats.authentication.entities.user.repository.UserRepository;
-import com.qrbats.qrbats.entity.location.Location;
-import com.qrbats.qrbats.entity.location.LocationRepository;
 import com.qrbats.qrbats.functionalities.department.service.DepartmentService;
 import com.qrbats.qrbats.functionalities.location.service.LocationService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +21,6 @@ import java.util.List;
 public class QrbatsApplication implements CommandLineRunner {
 
 	private final UserRepository userRepository;
-	private final LocationRepository locationRepository;
 	private final LocationService locationService;
 	private final PasswordEncoder passwordEncoder;
 	private final DepartmentService departmentService;
@@ -46,11 +43,8 @@ public class QrbatsApplication implements CommandLineRunner {
 
 	public void run(String... args){
 		List<User> adminAccounts =userRepository.findALLByRole(Role.ADMIN);
-		List<Location> locations = locationRepository.findAll();
 
-		if(locations.isEmpty()){
-			locationService.addLocations();
-		}
+		locationService.addLocations();
 
 		if(adminAccounts.isEmpty()){
 			User user = new User();
