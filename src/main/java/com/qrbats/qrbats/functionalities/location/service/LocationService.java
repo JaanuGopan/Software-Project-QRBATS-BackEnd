@@ -11,10 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -96,32 +93,56 @@ public class LocationService {
     public void addLocations() {
         List<String> locations = getLocations();
 
-        // Fetch current DB data as strings in the same format as getLocations()
-        List<String> existing = locationRepository.findAll().stream()
-                .map(loc -> String.format(
-                        "%s,%s,%s,%s",
-                        loc.getAllowableRadius(),
-                        loc.getLocationCoordinates().getLatitude(),
-                        loc.getLocationCoordinates().getLongitude(),
-                        loc.getLocationName()
-                ))
-                .toList();
+        // Load existing DB entities
+        List<Location> existingEntities = repository.findAll();
 
-        // Only update if different
-        if (!existing.equals(locations)) {
-            locationRepository.deleteAll();
+        // Convert existing entities to a Map for quick lookup by name (or use composite key if needed)
+        Map<String, Location> existingMap = existingEntities.stream()
+                .collect(Collectors.toMap(Location::getLocationName, loc -> loc));
 
-            for (String location : locations) {
-                String[] values = location.split(",");
-                Location entity = new Location();
-                entity.setAllowableRadius(Double.parseDouble(values[0]));
-                entity.setLocationCoordinates(
-                        new LocationCoordinates(Double.parseDouble(values[1]), Double.parseDouble(values[2])));
-                entity.setLocationName(values[3]);
-                locationRepository.save(entity); // changed from repository to locationRepository
+        for (String location : locations) {
+            String[] values = location.split(",");
+
+            double allowableRadius = Double.parseDouble(values[0]);
+            double latitude = Double.parseDouble(values[1]);
+            double longitude = Double.parseDouble(values[2]);
+            String locationName = values[3];
+
+            Location existing = existingMap.get(locationName);
+
+            if (existing != null) {
+                // Check if something changed → then update
+                if (existing.getAllowableRadius() != allowableRadius ||
+                        existing.getLocationCoordinates().getLatitude() != latitude ||
+                        existing.getLocationCoordinates().getLongitude() != longitude) {
+
+                    existing.setAllowableRadius(allowableRadius);
+                    existing.setLocationCoordinates(new LocationCoordinates(latitude, longitude));
+                    repository.save(existing);
+                }
+                // else: unchanged → do nothing
+            } else {
+                // New location → insert
+                Location newEntity = new Location();
+                newEntity.setAllowableRadius(allowableRadius);
+                newEntity.setLocationCoordinates(new LocationCoordinates(latitude, longitude));
+                newEntity.setLocationName(locationName);
+                repository.save(newEntity);
+            }
+        }
+
+        // Optional: delete locations from DB that are not in the incoming list
+        Set<String> incomingNames = locations.stream()
+                .map(loc -> loc.split(",")[3])
+                .collect(Collectors.toSet());
+
+        for (Location existing : existingEntities) {
+            if (!incomingNames.contains(existing.getLocationName())) {
+                repository.delete(existing);
             }
         }
     }
+
 
     public List<LocationDto> getAllLocation() {
         List<Location> locationList = repository.findAll();
